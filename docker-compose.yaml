@@ -1,0 +1,9 @@
+version: '2'
+
+services:    
+  straico_proxy:
+    build: .
+    ports: 
+      - "3214:3214"
+    restart: always
+ 
