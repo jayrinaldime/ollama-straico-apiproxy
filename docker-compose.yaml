@@ -6,4 +6,8 @@ services:
     ports: 
       - "3214:3214"
     restart: always
+    environment:
+      # example
+      # - STRAICO_API_KEY=ko-111111111111111111111111111111111111111111111111
+      - STRAICO_API_KEY=<... ADD YOUR STRAICO API KEY HERE >
  
