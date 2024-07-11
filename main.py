@@ -244,7 +244,12 @@ def ollamachat():
 
 @app.route("/api/generate", methods=["POST"])
 def ollamagenerate():
-    msg = request.json
+    try:
+        msg = request.json
+    except:
+        msg = json.loads(request.data.decode())
+
+    pprint.pprint(msg)
     request_msg = msg["prompt"]
     model = msg.get("model")
     if msg.get("stream") == False:
@@ -284,6 +289,7 @@ def list_straico_models():
         "quantization_level": "Q4_0"
       }
     } for m in models] })
+
 import time
 def generate_ollama_pull_stream():
 
