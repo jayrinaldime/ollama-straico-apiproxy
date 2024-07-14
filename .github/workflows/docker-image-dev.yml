@@ -5,13 +5,13 @@ on:
     branches:
       - 'feature/**'
       - 'bug/**'
-      - [ develop ]
+      - 'develop'
 
   pull_request:
     branches:
       - 'feature/**'
       - 'bug/**'
-      - [ develop ]
+      - 'develop'
 
 jobs:
   build-and-push:
