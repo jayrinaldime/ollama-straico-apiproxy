@@ -5,10 +5,13 @@ on:
     branches:
       - 'feature/**'
       - 'bug/**'
+      - [ develop ]
+
   pull_request:
     branches:
       - 'feature/**'
       - 'bug/**'
+      - [ develop ]
 
 jobs:
   build-and-push:
@@ -43,4 +46,3 @@ jobs:
         push: true
         tags: |
           ghcr.io/${{ github.repository }}:dev
-          ghcr.io/${{ github.repository }}:dev-${{ github.sha }}
