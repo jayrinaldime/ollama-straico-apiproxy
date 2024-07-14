@@ -2,7 +2,7 @@ import time
 import json
 from app import app, logging
 from flask import request, jsonify, Response
-from backend.straico import list_model, prompt_completion
+from backend import list_model, prompt_completion
 
 logger = logging.getLogger(__name__)
 
