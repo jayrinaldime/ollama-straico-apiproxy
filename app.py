@@ -2,7 +2,7 @@ from flask import Flask
 import logging
 import os
 
-log_level = os.environ.get('LOG_LEVEL', 'INFO').upper()
+log_level = os.environ.get('LOG_LEVEL', 'ERROR').upper()
 
 # Configure the logging
 logging.basicConfig(
