@@ -11,6 +11,8 @@ def prompt_completion(msg: str, model: str= "openai/gpt-3.5-turbo-0125") -> str:
               headers = {"Authorization": f"Bearer {STRAICO_API_KEY}"},
               data = {"model": model,
                       "message": msg})
+    logger.debug(f"status code: {r.status_code}")
+    logger.debug(f"response body: {r.content}")
     return r.json()["data"]["completion"]["choices"][-1]["message"]["content"]
 
 
