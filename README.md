@@ -15,8 +15,6 @@ This allows you to use any application that supports Ollama while leveraging Str
 - Docker
 - Docker Compose
 
-## Installation
-
 ### 1. Install Docker
 
 Follow the official Docker installation guide for your operating system:
@@ -29,30 +27,51 @@ Follow the official Docker installation guide for your operating system:
 
 Docker Compose is included with Docker Desktop for Windows and macOS. For Linux, follow the [official installation guide](https://docs.docker.com/compose/install/).
 
-### 3. Clone the Repository
 
-```bash
-git clone https://github.com/jayrinaldime/OllamaStraicoAPIProxy.git
-cd OllamaStraicoAPIProxy
+## Deploy
+
+### Standalone
+
+Open command prompt or terminal app and execute the command below.
+
+Please change the `K0-1111111111111111` with your actual straico api key. 
+``` bash
+$ docker container run -e STRAICO_API_KEY=K0-1111111111111111 -p 3214:3214 -d ghcr.io/jayrinaldime/ollama-straico-apiproxy:latest
 ```
+This code runs a Docker container with the following specifications:
 
-### 4. Configure Environment Variables
+1. Sets an environment variable STRAICO_API_KEY with the value K0-1111111111111111
+2. Maps port 3214 on the host to port 3214 in the container
+3. Runs the container in detached mode
+4. Uses the image ghcr.io/jayrinaldime/ollama-straico-apiproxy:latest
 
-Create a `.env` file in the project root and add the necessary environment variables:
+### Docker Compose 
 
-```
-STRAICO_API_KEY=your_straico_api_key
-```
+1. Create a folder anywhere 
+1. Inside the folder create a file named **docker-compose.yml**
+1. In docker-compose.yml file set the following content 
+   
+   ``` yaml
+   ---
+   services:
+      straico_proxy:
+         image: ghcr.io/jayrinaldime/ollama-straico-apiproxy
+         ports:
+            - 3214:3214
+         environment:
+            STRAICO_API_KEY: K0-1111111111111111
+         restart: always
 
-### 5. Build and Run the Project
+   ```
+   * Please change the `K0-1111111111111111` with your actual straico api key. 
+1. open console / terminal app and navigate to the created folder in step #1 
+1. Execute command
+   
+   ```bash
+   docker-compose up -d
+    ```
 
-Use Docker Compose to build and run the project:
-
-```bash
-docker-compose up -d
-```
-
-This command will build the Docker image and start the container in detached mode.
+   * This command will download docker image and start the container in detached mode.
 
 ## Usage
 
@@ -62,16 +81,16 @@ Once the container is running, you can use any Ollama-compatible application by 
 
 List and describe the main API endpoints here.
 
+### Ollama 
+   1. /api/generate
+   1. /api/chat
+   1. /api/tags
 
-## To-Do List 
-
-1. Add Docker Image to GitHub Container Registry
-   - Create a workflow to build and push the Docker image
-   - Update readme with instructions to pull the image
-
-2. Ensure integration with:
-   - [continue.dev](https://www.continue.dev/)
-   - [aider.chat](https://aider.chat/)
+### LM Studio
+   1. /v1/chat/completions 
+      * alias: /chat/completions
+   1. /v1/completions
+   1. /v1/models 
 
 ## Known Working Integrations
 
@@ -81,21 +100,33 @@ OllamaStraicoAPIProxy has been tested and confirmed to work with the following a
    - Integration: [Ollama for Home Assistant](https://www.home-assistant.io/integrations/ollama/)
    - Description: Use OllamaStraicoAPIProxy with Home Assistant for AI-powered home automation tasks.
 
-2. **Logseq**
+1. **Logseq**
    - Plugin: [ollama-logseq](https://github.com/omagdy7/ollama-logseq)
    - Description: Integrate OllamaStraicoAPIProxy with Logseq for enhanced note-taking and knowledge management.
 
-3. **Obsidian**
+1. **Obsidian**
    - Plugin: [obsidian-ollama](https://github.com/hinterdupfinger/obsidian-ollama)
    - Description: Use OllamaStraicoAPIProxy within Obsidian for AI-assisted note-taking and writing.
 
-4. **Snippety**
+1. **Snippety**
    - Website: [https://snippety.app/](https://snippety.app/)
-   - Description: Leverage OllamaStraicoAPIProxy with Snippety for improved code snippet management and generation.
+   - Description: Leverage OllamaStraicoAPIProxy with Snippety for AI assisted snippet management and generation.
+
+1. **Rivet** 
+   - Website: [https://rivet.ironcladapp.com/](https://rivet.ironcladapp.com/)
+   - Description: Allows using Ollama Chat and OpenAI Chat (via LM Studio)
+
+1. **Continue.dev** 
+   - Website: [https://www.continue.dev/](https://www.continue.dev/)
+   - Description: Generate code using Ollama and LM Studio
 
 Please note that while these integrations have been tested, you may need to adjust settings or configurations to point to your OllamaStraicoAPIProxy instance instead of a local Ollama installation.
 
+## To-Do List 
 
+1. Ensure integration with:
+   - [aider.chat](https://aider.chat/)
+   
 ## Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request.
