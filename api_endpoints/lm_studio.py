@@ -1,16 +1,17 @@
-import time
 import json
-from app import app
+from app import app, logging
 from flask import request, jsonify, Response
 from backend.straico import list_model, prompt_completion
-import pprint
 import uuid
-def start_response(rid):
-    START_RESPONSE = {
+
+logger = logging.getLogger(__name__)
+
+def start_response(rid, model):
+    return {
         "id": f"chatcmpl-{rid}",
         "object": "chat.completion.chunk",
         "created": 1716456766,
-        "model": "lmstudio-community/Meta-Llama-3-8B-Instruct-GGUF/Meta-Llama-3-8B-Instruct-Q8_0.gguf",
+        "model": model,
         "choices": [
             {
                 "index": 0,
@@ -22,14 +23,13 @@ def start_response(rid):
             }
         ]
     }
-    return START_RESPONSE
 
-def end_response(rid):
-    END_RESPONSE = {
+def end_response(rid, model):
+    return {
         "id": f"chatcmpl-{rid}",
         "object": "chat.completion.chunk",
         "created": 1716456766,
-        "model": "lmstudio-community/Meta-Llama-3-8B-Instruct-GGUF/Meta-Llama-3-8B-Instruct-Q8_0.gguf",
+        "model": model,
         "choices": [
             {
                 "index": 0,
@@ -38,39 +38,40 @@ def end_response(rid):
             }
         ]
     }
-    return END_RESPONSE
 
-
+def stream_data_response(msg):
+    return "data: " + json.dumps(msg) + '\n'
 def generate_json_data(msg, model):
     request_id = str(uuid.uuid4())
-    yield "data: " + json.dumps(start_response(request_id)) + '\n'
+    yield stream_data_response(start_response(request_id, model))
     d = prompt_completion(json.dumps(msg, indent=True), model)
-    print("Response", d)
+    logger.debug(f"Response {d}")
 
-    yield "data: " + json.dumps({
-    "id": f"chatcmpl-{request_id}",
-    "object": "chat.completion.chunk",
-    "created": 1716456766,
-    "model": "lmstudio-community/Meta-Llama-3-8B-Instruct-GGUF/Meta-Llama-3-8B-Instruct-Q8_0.gguf",
-    "choices": [
-        {
-            "index": 0,
-            "delta": {
-                "role": "assistant",
-                "content": d
-            },
-            "finish_reason": None
-        }
-    ]
-})+ '\n'
-    yield "data: "+ json.dumps(end_response(request_id)) + '\n'
+    yield stream_data_response({
+        "id": f"chatcmpl-{request_id}",
+        "object": "chat.completion.chunk",
+        "created": 1716456766,
+        "model": model,
+        "choices": [
+            {
+                "index": 0,
+                "delta": {
+                    "role": "assistant",
+                    "content": d
+                },
+                "finish_reason": None
+            }
+        ]
+    })
+
+    yield stream_data_response(end_response(request_id, model))
 
     yield "[DONE]"
 
 @app.route('/chat/completions', methods=['POST'])
 @app.route('/v1/chat/completions', methods=['POST'])
 def chat_completions():
-    pprint.pprint(request.json)
+    logger.debug(request.json)
     post_json_data = request.json
     msg = post_json_data["messages"]
     model = post_json_data.get("model") or "openai/gpt-3.5-turbo-0125"
@@ -82,7 +83,7 @@ def chat_completions():
 @app.route('/v1/completions', methods=['POST'])
 def completions():
     msg = request.json["prompt"]
-    print(msg)
+    logger.debug(msg)
     if request.method == 'POST':
         return Response(generate_json_data(msg), content_type='text/event-stream')
     else:
