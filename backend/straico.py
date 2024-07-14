@@ -7,10 +7,10 @@ import platform
 logger = logging.getLogger(__name__)
 
 STRAICO_API_KEY = environ["STRAICO_API_KEY"]
-logger.info(f"STRAICO_API_KEY={STRAICO_API_KEY}")
+logger.debug(f"STRAICO_API_KEY={STRAICO_API_KEY}")
 
 CLIENT_USER_AGENT = f"{PROJECT_NAME}/{VERSION} ({platform.system()}; {platform.processor()};) py/{platform.python_version()}"
-logger.debug(f"Straico Client User Agent set = {CLIENT_USER_AGENT}")
+logger.debug(f"Straico Client User Agent = {CLIENT_USER_AGENT}")
 
 def prompt_completion(msg: str, model: str= "openai/gpt-3.5-turbo-0125") -> str:
     # some  clients add :latest
