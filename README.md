@@ -1,4 +1,4 @@
-# OllamaStraicoAPIProxy
+# Ollama Straico API Proxy
 
 ![Python](https://img.shields.io/badge/Python-3.x-blue.svg)
 ![Docker](https://img.shields.io/badge/Docker-Supported-brightgreen.svg)
