@@ -189,6 +189,10 @@ def response_stream(model, response):
     yield json_stream_json_dump({
         "model": model,
         "created_at": "2023-12-12T14:13:43.416799Z",
+        "message": {
+            "role": "assistant",
+            "content": ""
+        },
         "done": True,
         "total_duration": 5191566416,
         "load_duration": 2154458,
