@@ -2,6 +2,7 @@
 
 ![Python](https://img.shields.io/badge/Python-3.x-blue.svg)
 ![Docker](https://img.shields.io/badge/Docker-Supported-brightgreen.svg)
+[![Build and Push Docker Images](https://github.com/jayrinaldime/ollama-straico-apiproxy/actions/workflows/docker-image.yml/badge.svg)](https://github.com/jayrinaldime/ollama-straico-apiproxy/actions/workflows/docker-image.yml)
 
 ## Project Description
 
