@@ -127,6 +127,7 @@ Please note that while these integrations have been tested, you may need to adju
 
 ## To-Do List 
 
+1. Test LM Studio API Endpoints
 1. Ensure integration with:
    - [aider.chat](https://aider.chat/)
    
