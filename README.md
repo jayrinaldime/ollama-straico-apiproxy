@@ -31,24 +31,7 @@ Docker Compose is included with Docker Desktop for Windows and macOS. For Linux,
 
 ## Deploy
 
-### Standalone
-
-Open command prompt or terminal app and execute the command below.
-
-Please change the `K0-1111111111111111` with your actual straico api key. 
-``` bash
-$ docker image pull ghcr.io/jayrinaldime/ollama-straico-apiproxy:latest
-$ docker container run -e STRAICO_API_KEY=K0-1111111111111111 -p 3214:3214 -d ghcr.io/jayrinaldime/ollama-straico-apiproxy:latest
-```
-This code runs a Docker container with the following specifications:
-
-1. Ensures the you are using the latest docker image 
-1. Sets an environment variable STRAICO_API_KEY with the value K0-1111111111111111
-1. Maps port 3214 on the host to port 3214 in the container
-1. Runs the container in detached mode
-1. Uses the image ghcr.io/jayrinaldime/ollama-straico-apiproxy:latest
-
-### Docker Compose 
+### Docker Compose (Recommended Way)
 
 1. Create a folder anywhere 
 1. Inside the folder create a file named **docker-compose.yml**
@@ -71,10 +54,46 @@ This code runs a Docker container with the following specifications:
 1. Execute command
    
    ```bash
-   docker-compose up -d --pull
+   $ docker compose pull
+   $ docker compose up -d 
+    ```
+  
+   * This command will download the latest docker image and start the container in detached mode.
+
+#### How to shutdown 
+
+1. open console / terminal app and navigate to the created folder in Section Docker Compose step #1 
+1. execute command 
+   ```bash
+   $ docker compose down
     ```
 
-   * This command will download the latest docker image and start the container in detached mode.
+#### How to update  
+
+1. open console / terminal app and navigate to the created folder in Section Docker Compose step #1 
+1. execute command 
+   ```bash
+   $ docker compose down
+   $ docker compose pull
+   $ docker compose up -d 
+    ```
+
+### Standalone
+
+Open command prompt or terminal app and execute the command below.
+
+Please change the `K0-1111111111111111` with your actual straico api key. 
+``` bash
+$ docker image pull ghcr.io/jayrinaldime/ollama-straico-apiproxy:latest
+$ docker container run -e STRAICO_API_KEY=K0-1111111111111111 -p 3214:3214 -d ghcr.io/jayrinaldime/ollama-straico-apiproxy:latest
+```
+This code runs a Docker container with the following specifications:
+
+1. Ensures the you are using the latest docker image 
+1. Sets an environment variable STRAICO_API_KEY with the value K0-1111111111111111
+1. Maps port 3214 on the host to port 3214 in the container
+1. Runs the container in detached mode
+1. Uses the image ghcr.io/jayrinaldime/ollama-straico-apiproxy:latest
 
 ## Usage
 
