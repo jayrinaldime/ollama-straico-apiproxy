@@ -142,6 +142,11 @@ OllamaStraicoAPIProxy has been tested and confirmed to work with the following a
    - Website: [https://www.continue.dev/](https://www.continue.dev/)
    - Description: Generate code using Ollama and LM Studio
 
+1. **Open WebUI** 
+   - Website: [https://docs.openwebui.com/](https://docs.openwebui.com/)
+   - Description: Allows using Ollama with Open WebUI 
+   - Sample Configuration: [docker-compose.yaml](https://gist.github.com/jayrinaldime/2f4442ded08c283249fbd3c568234173)
+
 Please note that while these integrations have been tested, you may need to adjust settings or configurations to point to your OllamaStraicoAPIProxy instance instead of a local Ollama installation.
 
 ## To-Do List 
