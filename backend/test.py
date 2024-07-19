@@ -86,3 +86,9 @@ def list_model():
                        'pricing': {'coins': 0.5, 'words': 100}}
                 ], 'success': True}
 
+def user_detail():
+    return {'data': {'first_name': 'Test',
+                      'last_name': 'User',
+                      'coins': 999999.99,
+                      'plan': 'Diamond Pack'},
+                     'success': True}

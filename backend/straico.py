@@ -37,3 +37,8 @@ def list_model():
                      headers=HEADER)
     return r.json()
 
+def user_detail():
+    r = requests.get("https://api.straico.com/v0/user",
+                     headers=HEADER)
+    return r.json()
+

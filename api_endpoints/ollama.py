@@ -2,7 +2,7 @@ import time
 import json
 from app import app, logging
 from flask import request, jsonify, Response
-from backend import list_model, prompt_completion
+from backend import list_model, prompt_completion, user_detail
 
 logger = logging.getLogger(__name__)
 
@@ -166,6 +166,12 @@ def ollamachat():
                   "eval_count": 298,
                   "eval_duration": 4799921000
                 }, 200
+
+
+@app.route("/api/user", methods=["GET"])
+def user():
+    models = user_detail().get("data", {})
+    return jsonify({"user": models})
 
 def json_stream_json_dump(obj):
     return json.dumps(obj, indent=False).replace('\n', '')+ "\n"
