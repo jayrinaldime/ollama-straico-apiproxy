@@ -17,7 +17,7 @@ Nunc ac arcu ex. Proin ultrices ultricies semper. Ut id mauris eget tortor tinci
 """
 
 def list_model():
-    return {'data': [
+    return {'data': {"chat":[
                       {'name': 'Anthropic: Claude 3 Haiku',
                        'model': 'anthropic/claude-3-haiku:beta',
                        'pricing': {'coins': 1, 'words': 100}},
@@ -84,7 +84,7 @@ def list_model():
                       {'name': 'Qwen 2 72B Instruct',
                        'model': 'qwen/qwen-2-72b-instruct',
                        'pricing': {'coins': 0.5, 'words': 100}}
-                ], 'success': True}
+                ]}, 'success': True}
 
 def user_detail():
     return {'data': {'first_name': 'Test',

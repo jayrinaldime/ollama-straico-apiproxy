@@ -1,7 +1,8 @@
-# OllamaStraicoAPIProxy
+# Ollama Straico API Proxy
 
 ![Python](https://img.shields.io/badge/Python-3.x-blue.svg)
 ![Docker](https://img.shields.io/badge/Docker-Supported-brightgreen.svg)
+[![Build and Push Docker Images](https://github.com/jayrinaldime/ollama-straico-apiproxy/actions/workflows/docker-image.yml/badge.svg)](https://github.com/jayrinaldime/ollama-straico-apiproxy/actions/workflows/docker-image.yml)
 
 ## Project Description
 
@@ -30,22 +31,7 @@ Docker Compose is included with Docker Desktop for Windows and macOS. For Linux,
 
 ## Deploy
 
-### Standalone
-
-Open command prompt or terminal app and execute the command below.
-
-Please change the `K0-1111111111111111` with your actual straico api key. 
-``` bash
-$ docker container run -e STRAICO_API_KEY=K0-1111111111111111 -p 3214:3214 -d ghcr.io/jayrinaldime/ollama-straico-apiproxy:latest
-```
-This code runs a Docker container with the following specifications:
-
-1. Sets an environment variable STRAICO_API_KEY with the value K0-1111111111111111
-2. Maps port 3214 on the host to port 3214 in the container
-3. Runs the container in detached mode
-4. Uses the image ghcr.io/jayrinaldime/ollama-straico-apiproxy:latest
-
-### Docker Compose 
+### Docker Compose (Recommended Way)
 
 1. Create a folder anywhere 
 1. Inside the folder create a file named **docker-compose.yml**
@@ -68,10 +54,46 @@ This code runs a Docker container with the following specifications:
 1. Execute command
    
    ```bash
-   docker-compose up -d
+   $ docker compose pull
+   $ docker compose up -d 
+    ```
+  
+   * This command will download the latest docker image and start the container in detached mode.
+
+#### How to shutdown 
+
+1. open console / terminal app and navigate to the created folder in Section Docker Compose step #1 
+1. execute command 
+   ```bash
+   $ docker compose down
     ```
 
-   * This command will download docker image and start the container in detached mode.
+#### How to update  
+
+1. open console / terminal app and navigate to the created folder in Section Docker Compose step #1 
+1. execute command 
+   ```bash
+   $ docker compose down
+   $ docker compose pull
+   $ docker compose up -d 
+    ```
+
+### Standalone
+
+Open command prompt or terminal app and execute the command below.
+
+Please change the `K0-1111111111111111` with your actual straico api key. 
+``` bash
+$ docker image pull ghcr.io/jayrinaldime/ollama-straico-apiproxy:latest
+$ docker container run -e STRAICO_API_KEY=K0-1111111111111111 -p 3214:3214 -d ghcr.io/jayrinaldime/ollama-straico-apiproxy:latest
+```
+This code runs a Docker container with the following specifications:
+
+1. Ensures the you are using the latest docker image 
+1. Sets an environment variable STRAICO_API_KEY with the value K0-1111111111111111
+1. Maps port 3214 on the host to port 3214 in the container
+1. Runs the container in detached mode
+1. Uses the image ghcr.io/jayrinaldime/ollama-straico-apiproxy:latest
 
 ## Usage
 
@@ -120,10 +142,16 @@ OllamaStraicoAPIProxy has been tested and confirmed to work with the following a
    - Website: [https://www.continue.dev/](https://www.continue.dev/)
    - Description: Generate code using Ollama and LM Studio
 
+1. **Open WebUI** 
+   - Website: [https://docs.openwebui.com/](https://docs.openwebui.com/)
+   - Description: Allows using Ollama with Open WebUI 
+   - Sample Configuration: [docker-compose.yaml](https://gist.github.com/jayrinaldime/2f4442ded08c283249fbd3c568234173)
+
 Please note that while these integrations have been tested, you may need to adjust settings or configurations to point to your OllamaStraicoAPIProxy instance instead of a local Ollama installation.
 
 ## To-Do List 
 
+1. Test LM Studio API Endpoints
 1. Ensure integration with:
    - [aider.chat](https://aider.chat/)
    

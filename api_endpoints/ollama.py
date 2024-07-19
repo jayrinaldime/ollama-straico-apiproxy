@@ -5,10 +5,10 @@ from flask import request, jsonify, Response
 from backend import list_model, prompt_completion, user_detail
 
 logger = logging.getLogger(__name__)
-
+MODEL_SIZE = 7365960935
 @app.route("/api/version", methods=["GET"])
 def ollama_version():
-    version = {'version': '0.1.41'}
+    version = {'version': '0.2.5'}
     logger.info(version)
     return version, 200
 
@@ -18,23 +18,55 @@ def ollama_delete():
     return "",200
 
 @app.route("/api/pull", methods=["POST"])
-def ollama_pull():
-    logger.debug(request.data)
-    return Response(generate_ollama_pull_stream(), content_type='application/x-ndjson')
+def ollama_pull(x=0):
+    logger.debug(f"Pull request {request.data}")
+    try:
+        is_stream_request = request.json().get("stream") or True
+    except:
+        is_stream_request = True
+
+    if is_stream_request:
+        return Response(generate_ollama_pull_stream(), content_type='application/x-ndjson')
+    else:
+        return {"status": "success"}, 200
+
+def stream_json_response(response):
+    return json.dumps(response)+'\n'
 def generate_ollama_pull_stream():
-    yield '{"status":"pulling manifest"}\n'
-    time.sleep(0.1)
-    yield '''{"status": "downloading sha256:fd52b10ee3ee9d753b9ed07a6f764ef2d83628fde5daf39a3d84b86752902182",
-     "digest": "sha256:fd52b10ee3ee9d753b9ed07a6f764ef2d83628fde5daf39a3d84b86752902182", "total": 455,
-     "completed": 455}\n'''
-    time.sleep(0.1)
-    yield '''{{"status": "verifying sha256 digest"}\n'''
-    time.sleep(0.1)
-    yield '''{{"status": "writing manifest"}\n'''
-    time.sleep(0.1)
-    yield '''{{"status": "removing any unused layers"}\n'''
-    time.sleep(0.1)
-    yield '''{{"status": "success"}\n'''
+    step_sleep = 0.2
+    download_sleep = 0.005
+    yield stream_json_response({"status":"pulling manifest"})
+    time.sleep(step_sleep)
+    for i in range(20):
+        yield stream_json_response(
+            {
+                "status": "pulling ff82381e2bea",
+                "digest": "sha256:ff82381e2bea77d91c1b824c7afb83f6fb73e9f7de9dda631bcdbca564aa5435",
+                "total": MODEL_SIZE
+            }
+        )
+        time.sleep(download_sleep)
+    for i in range(1,100,5):
+        yield stream_json_response(
+            {
+                "status": "pulling ff82381e2bea",
+                "digest": "sha256:ff82381e2bea77d91c1b824c7afb83f6fb73e9f7de9dda631bcdbca564aa5435",
+                "total": MODEL_SIZE,
+                "completed": int(MODEL_SIZE*(i/100))
+            }
+        )
+        time.sleep(download_sleep)
+
+    yield stream_json_response({"status": "verifying sha256 digest"})
+    time.sleep(step_sleep)
+
+    yield stream_json_response({"status": "writing manifest"})
+    time.sleep(step_sleep)
+
+    yield stream_json_response({"status": "removing any unused layers"})
+    time.sleep(step_sleep)
+
+    yield stream_json_response({"status": "success"})
 
 @app.route("/api/show", methods=["POST"])
 def show_model_details():
@@ -79,14 +111,21 @@ def show_model_details():
 
 @app.route("/api/tags", methods=["GET"])
 def list_straico_models():
-    models = list_model()["data"]
+    models = list_model().get("data")
+    if models is None:
+        return jsonify({"models": []})
+
+    if "chat" in models:
+        models = models["chat"]
+
     return jsonify({
       "models": [
         {
           "name": m["model"],
-          "model": m["model"],
+          # Open Web UI does not work without explicit tag
+          "model": m["model"] if ":" in m["model"] else m["model"]+":latest",
           "modified_at": "2023-11-04T14:56:49.277302595-07:00",
-          "size": 7365960935,
+          "size": MODEL_SIZE,
           "digest": m["model"], #"9f438cb9cd581fc025612d27f7c1a6669ff83a8bb0ed86c94fcf4c5440555697",
           "details": {
             "format": "gguf",
@@ -129,10 +168,10 @@ def ollamagenerate():
 def ollamachat():
     try:
         msg = request.json
-        model = msg["model"]
     except:
         msg = json.loads(request.data.decode())
 
+    model = msg["model"]
     if "stream" in msg:
         streaming = msg.get("stream")
     else:
@@ -149,7 +188,7 @@ def ollamachat():
         pass
 
     if streaming:
-        return Response(response_stream(model,response), content_type='application/json')
+        return Response(response_stream(model,response), content_type='application/x-ndjson')
     else:
         return {
                   "model": model,
@@ -181,7 +220,7 @@ def response_stream(model, response):
                               "created_at": "2023-12-12T14:13:43.416799Z",
                               "message": {
                                 "role": "assistant",
-                                "content":response
+                                "content": response
                               },
                               "done": False,
                               "total_duration": 5191566416,
@@ -199,6 +238,7 @@ def response_stream(model, response):
             "role": "assistant",
             "content": ""
         },
+        "done_reason": "stop",
         "done": True,
         "total_duration": 5191566416,
         "load_duration": 2154458,
