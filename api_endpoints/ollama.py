@@ -111,7 +111,7 @@ def show_model_details():
 
 @app.route("/api/tags", methods=["GET"])
 def list_straico_models():
-    models = list_model()["data"]["chat"]
+    models = list_model()["data"] #["chat"]
 
     return jsonify({
       "models": [
