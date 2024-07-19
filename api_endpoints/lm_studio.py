@@ -96,6 +96,13 @@ def lmstudio_list_model():
    'model': 'anthropic/claude-3-haiku:beta',
    'pricing': {'coins': 1, 'words': 100}}
     """
+    models = list_model().get("data")
+    if models is None:
+        return jsonify({"models": []})
+
+    if "chat" in models:
+        models = models["chat"]
+
     models = [{
                 "id": model["model"],
                 "object": "model",
@@ -103,7 +110,7 @@ def lmstudio_list_model():
                 "permission": [
                     {}
                 ]
-            } for model in list_model()["data"]]
+            } for model in models]
     response = {
         "data": models,
         "object": "list"
