@@ -111,11 +111,12 @@ def show_model_details():
 
 @app.route("/api/tags", methods=["GET"])
 def list_straico_models():
-    models = list_model()["data"]
+    models = list_model()["data"]["chat"]
+
     return jsonify({
       "models": [
         {
-          "name": m["name"],
+          "name": m["model"],
           # Open Web UI does not work without explicit tag
           "model": m["model"] if ":" in m["model"] else m["model"]+":latest",
           "modified_at": "2023-11-04T14:56:49.277302595-07:00",
