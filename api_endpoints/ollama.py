@@ -121,7 +121,7 @@ def list_straico_models():
     return jsonify({
       "models": [
         {
-          "name": m["model"],
+          "name": m["name"],
           # Open Web UI does not work without explicit tag
           "model": m["model"] if ":" in m["model"] else m["model"]+":latest",
           "modified_at": "2023-11-04T14:56:49.277302595-07:00",
