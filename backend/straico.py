@@ -49,7 +49,7 @@ def prompt_completion(msg: str, model: str= "openai/gpt-3.5-turbo-0125") -> str:
 
     models = get_model_mapping()
     model_values = [m["model"] for m in models]
-    model_name_mapping = dict(((m["name"], m["model"]) for m in models))
+
     is_model_found = model in model_values
 
     if not is_model_found:
@@ -57,9 +57,11 @@ def prompt_completion(msg: str, model: str= "openai/gpt-3.5-turbo-0125") -> str:
             model = model.replace(":latest","")
             is_model_found = model in model_values
 
-        if not is_model_found and model in model_name_mapping:
-            model = model_name_mapping[model]
-            is_model_found = model in model_values
+        if not is_model_found:
+            model_name_mapping = dict(((m["name"], m["model"]) for m in models))
+            if model in model_name_mapping:
+                model = model_name_mapping[model]
+                is_model_found = model in model_values
 
         if not is_model_found:
             raise Exception(f"Unknown Model {model}")
