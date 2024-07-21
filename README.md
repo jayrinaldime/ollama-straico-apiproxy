@@ -11,93 +11,14 @@ This allows you to use any application that supports Ollama while leveraging Str
 
 **Disclaimer:** This is not an official Ollama or Straico product.
 
-## Prerequisites
 
-- Docker
-- Docker Compose
+## Setup 
 
-### 1. Install Docker
-
-Follow the official Docker installation guide for your operating system:
-
-- [Install Docker on Windows](https://docs.docker.com/desktop/install/windows-install/)
-- [Install Docker on macOS](https://docs.docker.com/desktop/install/mac-install/)
-- [Install Docker on Linux](https://docs.docker.com/engine/install/)
-
-### 2. Install Docker Compose
-
-Docker Compose is included with Docker Desktop for Windows and macOS. For Linux, follow the [official installation guide](https://docs.docker.com/compose/install/).
-
-
-## Deploy
-
-### Docker Compose (Recommended Way)
-
-1. Create a folder anywhere 
-1. Inside the folder create a file named **docker-compose.yml**
-1. In docker-compose.yml file set the following content 
-   
-   ``` yaml
-   ---
-   services:
-      straico_proxy:
-         image: ghcr.io/jayrinaldime/ollama-straico-apiproxy
-         ports:
-            - 3214:3214
-         environment:
-            STRAICO_API_KEY: K0-1111111111111111
-         restart: always
-
-   ```
-   * Please change the `K0-1111111111111111` with your actual straico api key. 
-1. open console / terminal app and navigate to the created folder in step #1 
-1. Execute command
-   
-   ```bash
-   $ docker compose pull
-   $ docker compose up -d 
-    ```
-  
-   * This command will download the latest docker image and start the container in detached mode.
-
-#### How to shutdown 
-
-1. open console / terminal app and navigate to the created folder in Section Docker Compose step #1 
-1. execute command 
-   ```bash
-   $ docker compose down
-    ```
-
-#### How to update  
-
-1. open console / terminal app and navigate to the created folder in Section Docker Compose step #1 
-1. execute command 
-   ```bash
-   $ docker compose down
-   $ docker compose pull
-   $ docker compose up -d 
-    ```
-
-### Standalone
-
-Open command prompt or terminal app and execute the command below.
-
-Please change the `K0-1111111111111111` with your actual straico api key. 
-``` bash
-$ docker image pull ghcr.io/jayrinaldime/ollama-straico-apiproxy:latest
-$ docker container run -e STRAICO_API_KEY=K0-1111111111111111 -p 3214:3214 -d ghcr.io/jayrinaldime/ollama-straico-apiproxy:latest
-```
-This code runs a Docker container with the following specifications:
-
-1. Ensures the you are using the latest docker image 
-1. Sets an environment variable STRAICO_API_KEY with the value K0-1111111111111111
-1. Maps port 3214 on the host to port 3214 in the container
-1. Runs the container in detached mode
-1. Uses the image ghcr.io/jayrinaldime/ollama-straico-apiproxy:latest
+Please follow the [Setup Guide](https://github.com/jayrinaldime/ollama-straico-apiproxy/wiki/Deployment-Ollama%E2%80%90straico%E2%80%90apiproxy#basic-deployment).
 
 ## Usage
 
-Once the container is running, you can use any Ollama-compatible application by pointing it to `http://localhost:3214` (or the appropriate host and port if you've modified the configuration).
+Once the container is running, you can use any Ollama-compatible application by pointing it to `http://localhost:11434` (or the appropriate host and port if you've modified the configuration).
 
 ## API Endpoints
 
@@ -146,6 +67,11 @@ OllamaStraicoAPIProxy has been tested and confirmed to work with the following a
    - Website: [https://docs.openwebui.com/](https://docs.openwebui.com/)
    - Description: Allows using Ollama with Open WebUI 
    - Sample Configuration: [docker-compose.yaml](https://gist.github.com/jayrinaldime/2f4442ded08c283249fbd3c568234173)
+
+1. **Flowise** 
+   - Website: [https://flowiseai.com/](https://flowiseai.com/)
+   - Description: Allows using Ollama with Flowise
+   - Sample Configuration: [docker-compose.yaml](https://gist.github.com/jayrinaldime/f17c8eec1fe75573d06147ffb7199535)
 
 Please note that while these integrations have been tested, you may need to adjust settings or configurations to point to your OllamaStraicoAPIProxy instance instead of a local Ollama installation.
 
