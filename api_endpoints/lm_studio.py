@@ -1,4 +1,6 @@
 import json
+import time
+
 from app import app, logging
 from flask import request, jsonify, Response
 from backend import list_model, prompt_completion
@@ -40,10 +42,10 @@ def end_response(rid, model):
     }
 
 def stream_data_response(msg):
-    return "data: " + json.dumps(msg) + '\n'
+    return "data: " + json.dumps(msg) + '\n\n'
 def generate_json_data(msg, model):
     request_id = str(uuid.uuid4())
-    yield stream_data_response(start_response(request_id, model))
+    #yield stream_data_response(start_response(request_id, model))
     d = prompt_completion(json.dumps(msg, indent=True), model)
     logger.debug(f"Response {d}")
 
@@ -66,7 +68,7 @@ def generate_json_data(msg, model):
 
     yield stream_data_response(end_response(request_id, model))
 
-    yield "[DONE]"
+    yield "data: [DONE]\n\n"
 
 @app.route('/chat/completions', methods=['POST'])
 @app.route('/v1/chat/completions', methods=['POST'])
@@ -83,9 +85,10 @@ def chat_completions():
 @app.route('/v1/completions', methods=['POST'])
 def completions():
     msg = request.json["prompt"]
+    model = request.json("model") or "openai/gpt-3.5-turbo-0125"
     logger.debug(msg)
     if request.method == 'POST':
-        return Response(generate_json_data(msg), content_type='text/event-stream')
+        return Response(generate_json_data(msg,model), content_type='text/event-stream')
     else:
         return jsonify({"error": "Method not allowed"}), 405
 
