@@ -162,7 +162,7 @@ def ollamagenerate():
                   "eval_duration": 4232710000
                 }
 
-    return Response(generate_ollama_stream(request_msg, model), content_type='application/json')
+    return Response(generate_ollama_stream(request_msg, model), content_type='application/x-ndjson')
 
 @app.route("/api/chat", methods=["POST"])
 def ollamachat():
@@ -213,7 +213,7 @@ def user():
     return jsonify({"user": models})
 
 def json_stream_json_dump(obj):
-    return json.dumps(obj, indent=False).replace('\n', '')+ "\n"
+    return json.dumps(obj)+ "\n\n"
 def response_stream(model, response):
     yield json_stream_json_dump({
                               "model": model,
@@ -250,29 +250,22 @@ def response_stream(model, response):
 
 def generate_ollama_stream(msg, model):
     logger.debug(msg)
-    yield json_stream_json_dump({
-                                  "model": model,
-                                  "created_at": "2023-12-12T14:13:43.416799Z",
-                                  "response": "\n",
-                                  "done": False
-                                    })
-
     response = prompt_completion(msg, model)
-    r = json_stream_json_dump({
-                                "model": model,
-                                "created_at": "2023-12-12T14:14:43.416799Z",
-                                "response": response,
-                                "done": False
-                             })
-    logger.debug(r)
-    yield r
+    for i in range(0, len(response), 5):
+        r = json_stream_json_dump({
+                                    "model": model,
+                                    "created_at": "2023-12-12T14:14:43.416799Z",
+                                    "response": response[i:i+5],
+                                    "done": False
+                                 })
+        yield r
 
     yield json_stream_json_dump({
         "model": model,
         "created_at": "2023-12-12T14:14:43.416799Z",
         "response": "",
         "done": True,
-        "context": [1, 2, 3],
+        "done_reason": "stop",
         "total_duration": 10706818083,
         "load_duration": 6338219291,
         "prompt_eval_count": 26,
