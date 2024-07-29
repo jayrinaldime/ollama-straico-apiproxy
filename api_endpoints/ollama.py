@@ -218,11 +218,17 @@ Please only output plain json
 
     logger.debug(msg)
     logger.debug(model)
+    if type(messages) == list and len(messages) ==1 and type(messages[0]) == dict and "content" in messages[0]:
+        messages = messages[0]["content"]
     request_msg = json.dumps(messages, indent=True)
     response = prompt_completion(request_msg, model)
     try:
         response = json.loads(response)
-        response = response[0]["content"]
+        response_type = type(response)
+        if response_type == dict and "content" in response:
+            response = response["content"]
+        elif response_type == list and len(response) > 0 and type(response[0]) == dict and "content" in response[0]:
+            response = response[0]["content"]
     except:
         pass
     response_type = type(response)
@@ -246,28 +252,24 @@ Please only output plain json
         if type(response) == list and len(response) > 0:
             response = response[0]
 
-        if type(response) == dict:
-            if streaming:
-                return Response(response_stream(model, response["tool_calls"], is_tool=True),
-                                content_type='application/x-ndjson')
-            else:
-                return {
-                    "model": model,
-                    "created_at": "2024-07-22T20:33:28.123648Z",
-                    "message": {
-                        "role": "assistant",
-                        "content": "",
-                        "tool_calls": response["tool_calls"]
-                    },
-                    "done_reason": "stop",
-                    "done": True,
-                    "total_duration": 885095291,
-                    "load_duration": 3753500,
-                    "prompt_eval_count": 122,
-                    "prompt_eval_duration": 328493000,
-                    "eval_count": 33,
-                    "eval_duration": 552222000
-                }, 200
+        if type(response) == dict and "tool_calls" in response:
+            return {
+                "model": model,
+                "created_at": "2024-07-22T20:33:28.123648Z",
+                "message": {
+                    "role": "assistant",
+                    "content": "",
+                    "tool_calls": response["tool_calls"]
+                },
+                "done_reason": "stop",
+                "done": True,
+                "total_duration": 885095291,
+                "load_duration": 3753500,
+                "prompt_eval_count": 122,
+                "prompt_eval_duration": 328493000,
+                "eval_count": 33,
+                "eval_duration": 552222000
+            }, 200
 
     if len(messages) > 1 and response_type == str:
         response = response.strip()
