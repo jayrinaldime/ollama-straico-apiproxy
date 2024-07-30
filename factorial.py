@@ -6,7 +6,12 @@ def calculate_factorial(number):
     return math.factorial(number)
 
 if __name__ == "__main__":
-    print("Enter a number to calculate its factorial:")
-    number = int(input())
-    result = calculate_factorial(number)
-    print(f"The factorial of {number} is {result}")
+    while True:
+        print("Enter a number to calculate its factorial:")
+        number = int(input())
+        result = calculate_factorial(number)
+        print(f"The factorial of {number} is {result}")
+
+        repeat = input("Do you want to calculate another factorial? (yes/no): ").strip().lower()
+        if repeat != 'yes':
+            break
