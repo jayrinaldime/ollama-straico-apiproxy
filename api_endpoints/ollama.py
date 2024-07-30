@@ -318,7 +318,7 @@ def user():
 
 
 def json_stream_json_dump(obj):
-    return json.dumps(obj) + "\n\n"
+    return json.dumps(obj) + "\n"
 
 
 def response_stream(model, response, is_tool=False):
@@ -379,14 +379,16 @@ def response_stream(model, response, is_tool=False):
 def generate_ollama_stream(msg, model):
     logger.debug(msg)
     response = prompt_completion(msg, model)
-    for i in range(0, len(response), 5):
-        r = json_stream_json_dump({
+
+    #for i in range(0, len(response), 5):
+    r = json_stream_json_dump({
             "model": model,
             "created_at": "2023-12-12T14:14:43.416799Z",
-            "response": response[i:i + 5],
+            "response": response,#[i:i + 5],
             "done": False
         })
-        yield r
+    yield r
+        #time.sleep(0.1)
 
     yield json_stream_json_dump({
         "model": model,
