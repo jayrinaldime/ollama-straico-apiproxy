@@ -71,8 +71,11 @@ def generate_json_data(response, model):
 @app.route('/chat/completions', methods=['POST'])
 @app.route('/v1/chat/completions', methods=['POST'])
 def chat_completions():
-    logger.debug(request.json)
-    post_json_data = request.json
+    try:
+        post_json_data = request.json
+    except:
+        post_json_data = json.loads(request.data.decode())
+
     msg = post_json_data["messages"]
     model = post_json_data.get("model") or "openai/gpt-3.5-turbo-0125"
     streaming = post_json_data.get("stream", True)
