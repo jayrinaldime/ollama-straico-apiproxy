@@ -1,2 +1,3 @@
-fastapi[standard]
+fastapi
+uvicorn
 aio-straico==0.0.5
