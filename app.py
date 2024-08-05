@@ -1,4 +1,4 @@
-from flask import Flask
+from fastapi import FastAPI
 import logging
 import os
 
@@ -11,4 +11,4 @@ logging.basicConfig(
     datefmt='%Y-%m-%d %H:%M:%S'
 )
 
-app = Flask(__name__)
+app = FastAPI()
