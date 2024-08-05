@@ -1,11 +1,14 @@
 import json
 import time
-
-from app import app, logging
-from flask import request, jsonify, Response
-from backend import list_model, prompt_completion
 import uuid
+import logging
 
+from fastapi import FastAPI, Request, Response
+from fastapi.responses import JSONResponse
+
+from backend import list_model, prompt_completion
+
+app = FastAPI()
 logger = logging.getLogger(__name__)
 
 def start_response(rid, model):
@@ -68,22 +71,22 @@ def generate_json_data(response, model):
 
     yield "data: [DONE]\n\n"
 
-@app.route('/chat/completions', methods=['POST'])
-@app.route('/v1/chat/completions', methods=['POST'])
-def chat_completions():
+@app.post('/chat/completions')
+@app.post('/v1/chat/completions')
+async def chat_completions(request: Request):
     try:
-        post_json_data = request.json
+        post_json_data = await request.json()
     except:
-        post_json_data = json.loads(request.data.decode())
+        post_json_data = json.loads((await request.body()).decode())
 
     msg = post_json_data["messages"]
     model = post_json_data.get("model") or "openai/gpt-3.5-turbo-0125"
     streaming = post_json_data.get("stream", True)
     response = prompt_completion(json.dumps(msg, indent=True), model)
-    if streaming:
-        return Response(generate_json_data(response,model), content_type='text/event-stream')
+    if streaming: 
+        return Response(generate_json_data(response, model), media_type='text/event-stream')
     else:
-        return jsonify({
+        return JSONResponse(content={
   "id": "chatcmpl-gg711phlqdwixyxif16bm",
   "object": "chat.completion",
   "created": 1722418755,
@@ -105,21 +108,22 @@ def chat_completions():
   }
 }), 200
 
-@app.route('/v1/completions', methods=['POST'])
-def completions():
-    msg = request.json["prompt"]
-    model = request.json("model") or "openai/gpt-3.5-turbo-0125"
+@app.post('/v1/completions')
+async def completions(request: Request):
+    post_json_data = await request.json()
+    msg = post_json_data["prompt"]
+    model = post_json_data.get("model") or "openai/gpt-3.5-turbo-0125"
     logger.debug(msg)
     if request.method == 'POST':
         return Response(generate_json_data(msg,model), content_type='text/event-stream')
     else:
-        return jsonify({"error": "Method not allowed"}), 405
+        return JSONResponse(content={"error": "Method not allowed"}, status_code=405)
 
-@app.route('/api/models', methods=["GET"])
-@app.route('/v1/api/models', methods=["GET"])
-@app.route('/v1/models', methods=["GET"])
-@app.route('/models', methods=["GET"])
-def lmstudio_list_models():
+@app.get('/api/models')
+@app.get('/v1/api/models')
+@app.get('/v1/models')
+@app.get('/models')
+async def lmstudio_list_models():
     """
     {'name': 'Anthropic: Claude 3 Haiku',
    'model': 'anthropic/claude-3-haiku:beta',
@@ -144,5 +148,5 @@ def lmstudio_list_models():
         "data": models,
         "object": "list"
     }
-    return jsonify(response)
+    return JSONResponse(content=response)
 
