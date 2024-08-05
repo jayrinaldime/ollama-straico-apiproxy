@@ -115,8 +115,11 @@ def completions():
     else:
         return jsonify({"error": "Method not allowed"}), 405
 
+@app.route('/api/models', methods=["GET"])
+@app.route('/v1/api/models', methods=["GET"])
 @app.route('/v1/models', methods=["GET"])
-def lmstudio_list_model():
+@app.route('/models', methods=["GET"])
+def lmstudio_list_models():
     """
     {'name': 'Anthropic: Claude 3 Haiku',
    'model': 'anthropic/claude-3-haiku:beta',
