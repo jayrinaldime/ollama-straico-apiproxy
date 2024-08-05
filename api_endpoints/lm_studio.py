@@ -4,12 +4,12 @@ import uuid
 import logging
 
 from fastapi import FastAPI, Request, Response
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, StreamingResponse
 from app import app
-from backend import list_model, prompt_completion
-
 from aio_straico import aio_straico_client
 
+
+logger = logging.getLogger(__name__)
 
 def start_response(rid, model):
     return {
@@ -41,7 +41,7 @@ def stream_data_response(msg):
     return "data: " + json.dumps(msg) + "\n\n"
 
 
-def generate_json_data(response, model):
+async def generate_json_data(response, model):
     request_id = str(uuid.uuid4())
     logger.debug(f"Response {response}")
 
@@ -77,14 +77,14 @@ async def chat_completions(request: Request):
     msg = post_json_data["messages"]
     model = post_json_data.get("model") or "openai/gpt-3.5-turbo-0125"
     streaming = post_json_data.get("stream", True)
-    response = prompt_completion(json.dumps(msg, indent=True), model)
-    if streaming:
-        return Response(
-            generate_json_data(response, model), media_type="text/event-stream"
-        )
-    else:
-        return (
-            JSONResponse(
+    async with aio_straico_client() as client:
+        response = await client.prompt_completion(model, json.dumps(msg, indent=True))
+        if streaming:
+            return StreamingResponse(
+                generate_json_data(response, model), media_type="text/event-stream"
+            )
+
+        return JSONResponse(
                 content={
                     "id": "chatcmpl-gg711phlqdwixyxif16bm",
                     "object": "chat.completion",
@@ -103,9 +103,7 @@ async def chat_completions(request: Request):
                         "total_tokens": 491,
                     },
                 }
-            ),
-            200,
-        )
+            )
 
 
 @app.post("/v1/completions")
@@ -114,11 +112,14 @@ async def completions(request: Request):
     msg = post_json_data["prompt"]
     model = post_json_data.get("model") or "openai/gpt-3.5-turbo-0125"
     logger.debug(msg)
-    if request.method == "POST":
-        return Response(
-            generate_json_data(msg, model), content_type="text/event-stream"
-        )
-    else:
+
+    async with aio_straico_client() as client:
+        response = await client.prompt_completion(model, msg)
+        if request.method == "POST":
+            return StreamingResponse(
+                generate_json_data(msg, model), content_type="text/event-stream"
+            )
+
         return JSONResponse(content={"error": "Method not allowed"}, status_code=405)
 
 
