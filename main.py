@@ -8,6 +8,7 @@ from api_endpoints import lm_studio
 from api_endpoints import ollama
 
 from os import environ
+import uvicorn
 
 if __name__ == '__main__':
     logger = logging.getLogger(__name__)
@@ -15,4 +16,4 @@ if __name__ == '__main__':
     is_debug = log_level in ["INFO", "DEBUG"]
     HOST = environ.get("HOST", "0.0.0.0")
     PORT= int(environ.get("PORT", "3214"))
-    #app.run(debug=is_debug, host=HOST, port=PORT)
+    uvicorn.run(app, host=HOST, port=PORT, log_level=log_level.lower())
