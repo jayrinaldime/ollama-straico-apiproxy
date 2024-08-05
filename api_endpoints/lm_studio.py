@@ -131,7 +131,7 @@ async def lmstudio_list_models():
     """
     models = list_model().get("data")
     if models is None:
-        return jsonify({"models": []})
+        return JSONResponse(content={"models": []})
 
     if "chat" in models:
         models = models["chat"]
