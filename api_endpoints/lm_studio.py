@@ -6,7 +6,7 @@ import logging
 from fastapi import FastAPI, Request, Response
 from fastapi.responses import JSONResponse, StreamingResponse
 from app import app
-from aio_straico import aio_straico_client
+from backend.straico import prompt_completion, list_model
 
 
 logger = logging.getLogger(__name__)
@@ -77,33 +77,33 @@ async def chat_completions(request: Request):
     msg = post_json_data["messages"]
     model = post_json_data.get("model") or "openai/gpt-3.5-turbo-0125"
     streaming = post_json_data.get("stream", True)
-    async with aio_straico_client() as client:
-        response = await client.prompt_completion(model, json.dumps(msg, indent=True))
-        if streaming:
-            return StreamingResponse(
-                generate_json_data(response, model), media_type="text/event-stream"
-            )
+    response = await prompt_completion(json.dumps(msg, indent=True), model)
 
-        return JSONResponse(
-                content={
-                    "id": "chatcmpl-gg711phlqdwixyxif16bm",
-                    "object": "chat.completion",
-                    "created": 1722418755,
-                    "model": model,
-                    "choices": [
-                        {
-                            "index": 0,
-                            "message": {"role": "assistant", "content": response},
-                            "finish_reason": "stop",
-                        }
-                    ],
-                    "usage": {
-                        "prompt_tokens": 426,
-                        "completion_tokens": 65,
-                        "total_tokens": 491,
-                    },
-                }
-            )
+    if streaming:
+        return StreamingResponse(
+            generate_json_data(response, model), media_type="text/event-stream"
+        )
+
+    return JSONResponse(
+            content={
+                "id": "chatcmpl-gg711phlqdwixyxif16bm",
+                "object": "chat.completion",
+                "created": 1722418755,
+                "model": model,
+                "choices": [
+                    {
+                        "index": 0,
+                        "message": {"role": "assistant", "content": response},
+                        "finish_reason": "stop",
+                    }
+                ],
+                "usage": {
+                    "prompt_tokens": 426,
+                    "completion_tokens": 65,
+                    "total_tokens": 491,
+                },
+            }
+        )
 
 
 @app.post("/v1/completions")
@@ -112,15 +112,10 @@ async def completions(request: Request):
     msg = post_json_data["prompt"]
     model = post_json_data.get("model") or "openai/gpt-3.5-turbo-0125"
     logger.debug(msg)
-
-    async with aio_straico_client() as client:
-        response = await client.prompt_completion(model, msg)
-        if request.method == "POST":
-            return StreamingResponse(
-                generate_json_data(msg, model), content_type="text/event-stream"
-            )
-
-        return JSONResponse(content={"error": "Method not allowed"}, status_code=405)
+    response = await prompt_completion(msg, model)
+    return StreamingResponse(
+        generate_json_data(response, model), content_type="text/event-stream"
+    )
 
 
 @app.get("/api/models")
@@ -134,22 +129,21 @@ async def lmstudio_list_models():
     'pricing': {'coins': 1, 'words': 100}}
     """
 
-    async with aio_straico_client() as client:
-        models = await client.models(v=1)
-        if models is None:
-            return JSONResponse(content={"models": []})
+    models = await list_model()
+    if models is None:
+        return JSONResponse(content={"models": []})
 
-        if "chat" in models:
-            models = models["chat"]
+    if "chat" in models:
+        models = models["chat"]
 
-        models = [
-            {
-                "id": model["model"],
-                "object": "model",
-                "owned_by": model["name"].split(":")[0],
-                "permission": [{}],
-            }
-            for model in models
-        ]
-        response = {"data": models, "object": "list"}
-        return JSONResponse(content=response)
+    models = [
+        {
+            "id": model["model"],
+            "object": "model",
+            "owned_by": model["name"].split(":")[0],
+            "permission": [{}],
+        }
+        for model in models
+    ]
+    response = {"data": models, "object": "list"}
+    return JSONResponse(content=response)
