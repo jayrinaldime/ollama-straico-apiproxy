@@ -1,9 +1,7 @@
-import requests
 from os import environ
 from app import logging
 from const import VERSION, PROJECT_NAME
 import platform
-from functools import lru_cache, wraps
 from datetime import datetime, timedelta
 from aio_straico import aio_straico_client
 
