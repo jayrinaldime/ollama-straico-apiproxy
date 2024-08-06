@@ -6,6 +6,7 @@ on:
       - 'feature/**'
       - 'bug/**'
       - 'develop'
+      - 'fastapi'
 
   pull_request:
     branches:
