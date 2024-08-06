@@ -45,7 +45,7 @@ async def get_model_mapping():
 
 async def prompt_completion(msg: str, model: str = "openai/gpt-3.5-turbo-0125") -> str:
     # some  clients add :latest
-    models = get_model_mapping()
+    models = await get_model_mapping()
     model_values = [m["model"] for m in models]
 
     is_model_found = model in model_values
