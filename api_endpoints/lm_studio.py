@@ -1,15 +1,15 @@
 import json
-import time
 import uuid
 import logging
 
-from fastapi import FastAPI, Request, Response
+from fastapi import Request
 from fastapi.responses import JSONResponse, StreamingResponse
 from app import app
 from backend.straico import prompt_completion, list_model
 
 
 logger = logging.getLogger(__name__)
+
 
 def start_response(rid, model):
     return {
@@ -85,25 +85,25 @@ async def chat_completions(request: Request):
         )
 
     return JSONResponse(
-            content={
-                "id": "chatcmpl-gg711phlqdwixyxif16bm",
-                "object": "chat.completion",
-                "created": 1722418755,
-                "model": model,
-                "choices": [
-                    {
-                        "index": 0,
-                        "message": {"role": "assistant", "content": response},
-                        "finish_reason": "stop",
-                    }
-                ],
-                "usage": {
-                    "prompt_tokens": 426,
-                    "completion_tokens": 65,
-                    "total_tokens": 491,
-                },
-            }
-        )
+        content={
+            "id": "chatcmpl-gg711phlqdwixyxif16bm",
+            "object": "chat.completion",
+            "created": 1722418755,
+            "model": model,
+            "choices": [
+                {
+                    "index": 0,
+                    "message": {"role": "assistant", "content": response},
+                    "finish_reason": "stop",
+                }
+            ],
+            "usage": {
+                "prompt_tokens": 426,
+                "completion_tokens": 65,
+                "total_tokens": 491,
+            },
+        }
+    )
 
 
 @app.post("/v1/completions")

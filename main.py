@@ -7,7 +7,7 @@ except:
 from app import app, logging, log_level
 from api_endpoints import lm_studio
 
-# from api_endpoints import ollama
+from api_endpoints import ollama
 
 from os import environ
 import uvicorn
