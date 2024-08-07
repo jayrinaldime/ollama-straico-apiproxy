@@ -345,7 +345,7 @@ Please only output plain json
 
 @app.get("/api/user")
 async def user():
-    models = (await user_detail()).get("data", {})
+    models = await user_detail()
     return JSONResponse(content={"user": models})
 
 
