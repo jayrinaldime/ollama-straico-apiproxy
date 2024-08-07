@@ -17,14 +17,15 @@ def ollama_version():
 
 
 @app.delete("/api/delete")
-def ollama_delete(request: Request):
-    logger.debug(request.data)
+async def ollama_delete(request: Request):
+    data = await request.body()
+    logger.debug(data)
     return ""
 
 
 @app.post("/api/pull")
 async def ollama_pull(request: Request):
-    logger.debug(f"Pull request {request.data}")
+    logger.debug(f"Pull request {await request.body()}")
     try:
         is_stream_request = (await request.json()).get("stream") or True
     except:
@@ -163,7 +164,7 @@ async def ollamagenerate(request: Request):
     try:
         msg = await request.json()
     except:
-        msg = json.loads(await request.data().decode())
+        msg = json.loads((await request.body()).decode())
 
     logger.debug(msg)
     request_msg = msg["prompt"]
@@ -195,7 +196,7 @@ async def ollamachat(request: Request):
     try:
         msg = await request.json()
     except:
-        msg = json.loads((await request.data()).decode())
+        msg = json.loads((await request.body()).decode())
 
     model = msg["model"]
     tools = msg.get("tools")

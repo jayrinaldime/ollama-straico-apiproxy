@@ -108,7 +108,10 @@ async def chat_completions(request: Request):
 
 @app.post("/v1/completions")
 async def completions(request: Request):
-    post_json_data = await request.json()
+    try:
+        post_json_data = await request.json()
+    except:
+        post_json_data = json.loads((await request.body()).decode())
     msg = post_json_data["prompt"]
     model = post_json_data.get("model") or "openai/gpt-3.5-turbo-0125"
     logger.debug(msg)
