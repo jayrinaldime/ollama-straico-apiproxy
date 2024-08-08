@@ -4,6 +4,7 @@ from const import VERSION, PROJECT_NAME
 import platform
 from datetime import datetime, timedelta
 from aio_straico import aio_straico_client
+from aio_straico.api.v0 import ImageSize
 
 logger = logging.getLogger(__name__)
 
@@ -72,3 +73,15 @@ async def list_model():
 async def user_detail():
     async with aio_straico_client() as client:
         return await client.user()
+
+
+async def image_generation(model: str, n: int, prompt: str, size: ImageSize, directory):
+    async with aio_straico_client() as client:
+        images = await client.image_generation_as_images(
+            model=model,
+            description=prompt,
+            size=size,
+            variations=n,
+            destination_directory_path=directory,
+        )
+        return images
