@@ -15,6 +15,7 @@ model_last_update_dt = None
 # logger.debug(f"Straico Client User Agent = {CLIENT_USER_AGENT}")
 
 CACHE_MODEL_LIST = int(environ.get("STRAICO_CACHE_MODEL_LIST", "60"))
+TIMEOUT = int(environ.get("STRAICO_TIMEOUT", "500"))
 
 
 async def get_model_mapping():
@@ -59,19 +60,19 @@ async def prompt_completion(msg: str, model: str = "openai/gpt-3.5-turbo-0125") 
 
     post_request_data = {"model": model, "message": msg}
     logger.debug(f"Request Post Data: {post_request_data}")
-    async with aio_straico_client() as client:
+    async with aio_straico_client(timeout=TIMEOUT) as client:
         response = await client.prompt_completion(model, msg)
         logger.debug(f"response body: {response}")
         return response["completion"]["choices"][-1]["message"]["content"]
 
 
 async def list_model():
-    async with aio_straico_client() as client:
+    async with aio_straico_client(timeout=TIMEOUT) as client:
         return await client.models(v=1)
 
 
 async def user_detail():
-    async with aio_straico_client() as client:
+    async with aio_straico_client(timeout=TIMEOUT) as client:
         return await client.user()
 
 
