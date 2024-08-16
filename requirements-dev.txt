@@ -3,3 +3,4 @@ flask
 pytest
 pytest-asyncio
 ollama
+python-multipart
