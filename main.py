@@ -6,17 +6,17 @@ except:
     pass
 from os import environ
 
-from app import app, logging, log_level
+from app import app, logging, log_level, TRANSCRIPTION_ENABLED, EMBEDDING_ENABLED
 from api_endpoints import lm_studio
 from api_endpoints import lm_studio_tts
 from api_endpoints import ollama
 
 
-if app.EMBEDDING_ENABLED:
+if EMBEDDING_ENABLED:
     from api_endpoints import lm_studio_embedding
     from api_endpoints import ollama_embedding
 
-if app.TRANSCRIPTION_ENABLED:
+if TRANSCRIPTION_ENABLED:
     from api_endpoints import lm_studio_transcription
 
 import uvicorn

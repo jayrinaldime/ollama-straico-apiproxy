@@ -5,7 +5,7 @@ from fastapi import Request
 from fastapi import UploadFile, Form, File
 from fastapi.responses import StreamingResponse, JSONResponse
 from typing import Optional
-from app import app
+from app import app, TRANSCRIPTION_ENABLED
 from backend.straico_platform import tts, download_file, stt
 
 from io import BytesIO
@@ -41,7 +41,7 @@ async def lm_studio_tts(request: Request):
     return StreamingResponse(stream, media_type="application/octet-stream")
 
 
-if not app.TRANSCRIPTION_ENABLED:
+if not TRANSCRIPTION_ENABLED:
 
     @app.post("/v1/audio/transcriptions")
     async def lm_studio_stt(
