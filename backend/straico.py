@@ -15,7 +15,7 @@ model_last_update_dt = None
 # logger.debug(f"Straico Client User Agent = {CLIENT_USER_AGENT}")
 
 CACHE_MODEL_LIST = int(environ.get("STRAICO_CACHE_MODEL_LIST", "60"))
-TIMEOUT = int(environ.get("STRAICO_TIMEOUT", "500"))
+TIMEOUT = int(environ.get("STRAICO_TIMEOUT", "600"))
 
 
 async def get_model_mapping():
@@ -77,7 +77,7 @@ async def user_detail():
 
 
 async def image_generation(model: str, n: int, prompt: str, size: ImageSize, directory):
-    async with aio_straico_client() as client:
+    async with aio_straico_client(timeout=TIMEOUT) as client:
         images = await client.image_generation_as_images(
             model=model,
             description=prompt,

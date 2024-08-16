@@ -1,17 +1,17 @@
-name: Developer Build and Push Docker Images
+name: Builtin Embedding|Whisper Build and Push Docker Images
 
 on:
   push:
     branches:
-      - 'feature/**'
-      - 'bug/**'
       - 'develop'
+      - 'main'
 
   pull_request:
     branches:
-      - 'feature/**'
-      - 'bug/**'
       - 'develop'
+      - 'main'
+  
+  workflow_dispatch:
 
 jobs:
   build-and-push:
@@ -41,8 +41,8 @@ jobs:
       uses: docker/build-push-action@v6
       with:
         context: .
-        file: ./Dockerfile
+        file: ./dockerfile_whisper_embedding
         platforms: linux/amd64,linux/arm64
         push: true
         tags: |
-          ghcr.io/${{ github.repository }}:dev
+          ghcr.io/${{ github.repository }}:all

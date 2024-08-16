@@ -1,0 +1,6 @@
+fastapi
+uvicorn
+aio-straico==0.0.6
+sentencepiece
+einops
+sentence-transformers
