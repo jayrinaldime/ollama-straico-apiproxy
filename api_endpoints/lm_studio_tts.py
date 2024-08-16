@@ -2,12 +2,16 @@ import json
 import logging
 
 from fastapi import Request
-from fastapi.responses import StreamingResponse
+from fastapi import UploadFile, Form, File
+from fastapi.responses import StreamingResponse, JSONResponse
+from typing import Optional
 from app import app
-from backend.straico_platform import tts, download_file
+from backend.straico_platform import tts, download_file, stt
 
 from io import BytesIO
 from os import environ
+import tempfile
+import pathlib
 
 logger = logging.getLogger(__name__)
 
@@ -35,3 +39,15 @@ async def lm_studio_tts(request: Request):
     speech_blob = await download_file(speech_url)
     stream = BytesIO(speech_blob)
     return StreamingResponse(stream, media_type="application/octet-stream")
+
+
+if not app.TRANSCRIPTION_ENABLED:
+
+    @app.post("/v1/audio/transcriptions")
+    async def lm_studio_stt(
+        file: UploadFile = File(...), model: Optional[str] = Form(None)
+    ):
+        contents = await file.read()
+        logger.debug(file.filename)
+        text = await stt(contents, file.filename)
+        return JSONResponse(content={"text": text})

@@ -29,3 +29,24 @@ async def download_file(file_url):
         response = await session.get(file_url, timeout=300)
         response.raise_for_status()
         return response.content
+
+
+async def stt(binary_data, filename):
+    files = {
+        "file": (
+            filename,
+            binary_data,
+            "audio/wav",  # "audio/mpeg",
+        ),
+    }
+
+    async with AsyncClient() as session:
+        response = await session.post(
+            "https://platform.straico.com/api/auth/whisper",
+            headers={"x-access-token": STRAICO_PLATFORM_ACCESS_TOKEN},
+            files=files,
+            timeout=300,
+        )
+        response.raise_for_status()
+        if response.json():
+            return response.json()["text"]

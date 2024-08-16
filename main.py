@@ -11,24 +11,12 @@ from api_endpoints import lm_studio
 from api_endpoints import lm_studio_tts
 from api_endpoints import ollama
 
-EMBEDDING_ENABLED = environ.get("EMBEDDING_ENABLED", "false").lower().strip()
-if EMBEDDING_ENABLED in ["0", "false", "no"]:
-    EMBEDDING_ENABLED = False
-else:
-    EMBEDDING_ENABLED = True
 
-if EMBEDDING_ENABLED:
+if app.EMBEDDING_ENABLED:
     from api_endpoints import lm_studio_embedding
     from api_endpoints import ollama_embedding
 
-
-TRANSCRIPTION_ENABLED = environ.get("TRANSCRIPTION_ENABLED", "false").lower().strip()
-if TRANSCRIPTION_ENABLED in ["0", "false", "no"]:
-    TRANSCRIPTION_ENABLED = False
-else:
-    TRANSCRIPTION_ENABLED = True
-
-if TRANSCRIPTION_ENABLED:
+if app.TRANSCRIPTION_ENABLED:
     from api_endpoints import lm_studio_transcription
 
 import uvicorn
