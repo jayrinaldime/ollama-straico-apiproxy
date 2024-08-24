@@ -15,13 +15,9 @@ app = FastAPI()
 
 
 EMBEDDING_ENABLED = os.environ.get("EMBEDDING_ENABLED", "false").lower().strip()
-if EMBEDDING_ENABLED in ["0", "false", "no"]:
-    EMBEDDING_ENABLED = False
-else:
-    EMBEDDING_ENABLED = True
+EMBEDDING_ENABLED = EMBEDDING_ENABLED not in ["0", "false", "no"]
 
 TRANSCRIPTION_ENABLED = os.environ.get("TRANSCRIPTION_ENABLED", "false").lower().strip()
-if TRANSCRIPTION_ENABLED in ["0", "false", "no"]:
-    TRANSCRIPTION_ENABLED = False
-else:
-    TRANSCRIPTION_ENABLED = True
+TRANSCRIPTION_ENABLED = TRANSCRIPTION_ENABLED not in ["0", "false", "no"]
+
+PLATFORM_ENABLED = os.environ.get("STRAICO_PLATFORM_ACCESS_TOKEN") is not None

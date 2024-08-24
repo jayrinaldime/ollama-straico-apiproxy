@@ -68,6 +68,24 @@ async def generate_json_data(response, model):
     yield "data: [DONE]\n\n"
 
 
+def _get_msg_text(content):
+    text = []
+    for content_object in content:
+        if content_object["type"] == "text":
+            text.append(content_object["text"])
+    return "\n".join(text)
+
+
+def _get_msg_image(content):
+    images = []
+    for content_object in content:
+        if content_object["type"] == "image_url":
+            data = content_object["image_url"]["url"]
+            starting_index = data.find(",")
+            images.append(data[starting_index:])
+    return images
+
+
 @app.post("/chat/completions")
 @app.post("/v1/chat/completions")
 async def chat_completions(request: Request):
@@ -76,10 +94,25 @@ async def chat_completions(request: Request):
     except:
         post_json_data = json.loads((await request.body()).decode())
 
-    msg = post_json_data["messages"]
-    model = post_json_data.get("model") or "openai/gpt-3.5-turbo-0125"
     streaming = post_json_data.get("stream", True)
-    response = await prompt_completion(json.dumps(msg, indent=True), model)
+    model = post_json_data.get("model") or "openai/gpt-3.5-turbo-0125"
+    msg = post_json_data["messages"]
+    logger.debug(msg)
+    logger.debug(model)
+    if (
+        type(msg) == list
+        and len(msg) == 1
+        and type(msg[0]) == dict
+        and "content" in msg[0]
+    ):
+        if type(msg[0]["content"]) == str:
+            response = await prompt_completion(msg[0]["content"], model=model)
+        else:
+            images = _get_msg_image(msg[0]["content"])
+            msg = _get_msg_text(msg[0]["content"])
+            response = await prompt_completion(msg, images=images, model=model)
+    else:
+        response = await prompt_completion(json.dumps(msg, indent=True), model=model)
 
     if streaming:
         return StreamingResponse(
@@ -117,7 +150,7 @@ async def completions(request: Request):
     msg = post_json_data["prompt"]
     model = post_json_data.get("model") or "openai/gpt-3.5-turbo-0125"
     logger.debug(msg)
-    response = await prompt_completion(msg, model)
+    response = await prompt_completion(msg, model=model)
     return StreamingResponse(
         generate_json_data(response, model), content_type="text/event-stream"
     )

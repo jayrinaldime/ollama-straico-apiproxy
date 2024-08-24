@@ -6,11 +6,19 @@ except:
     pass
 from os import environ
 
-from app import app, logging, log_level, TRANSCRIPTION_ENABLED, EMBEDDING_ENABLED
+from app import (
+    app,
+    logging,
+    log_level,
+    TRANSCRIPTION_ENABLED,
+    EMBEDDING_ENABLED,
+    PLATFORM_ENABLED,
+)
 from api_endpoints import lm_studio
-from api_endpoints import lm_studio_tts
 from api_endpoints import ollama
 
+if PLATFORM_ENABLED:
+    from api_endpoints import lm_studio_tts
 
 if EMBEDDING_ENABLED:
     from api_endpoints import lm_studio_embedding

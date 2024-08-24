@@ -170,7 +170,7 @@ async def ollamagenerate(request: Request):
     request_msg = msg["prompt"]
     model = msg.get("model")
     if msg.get("stream") == False:
-        response = await prompt_completion(msg["prompt"], model)
+        response = await prompt_completion(msg["prompt"], model=model)
         return JSONResponse(
             content={
                 "model": model,
@@ -234,15 +234,18 @@ Please only output plain json
 
     logger.debug(msg)
     logger.debug(model)
+    images = None
     if (
         type(messages) == list
         and len(messages) == 1
         and type(messages[0]) == dict
         and "content" in messages[0]
     ):
+        images = messages[0].get("images")
         messages = messages[0]["content"]
+
     request_msg = json.dumps(messages, indent=True)
-    response = await prompt_completion(request_msg, model)
+    response = await prompt_completion(request_msg, images, model)
     try:
         response = json.loads(response)
         response_type = type(response)
@@ -407,7 +410,7 @@ async def response_stream(model, response, is_tool=False):
 
 async def generate_ollama_stream(msg, model):
     logger.debug(msg)
-    response = await prompt_completion(msg, model)
+    response = await prompt_completion(msg, model=model)
 
     # for i in range(0, len(response), 5):
     r = json_stream_json_dump(
