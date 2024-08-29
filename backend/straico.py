@@ -101,7 +101,7 @@ async def prompt_completion(
 
         if not is_model_found:
             raise Exception(f"Unknown Model {model}")
-    if not PLATFORM_ENABLED or images is None:
+    if not PLATFORM_ENABLED or images is None or len(images) == 0:
         post_request_data = {"model": model, "message": msg}
         logger.debug(f"Request Post Data: {post_request_data}")
         async with aio_straico_client(timeout=TIMEOUT) as client:
