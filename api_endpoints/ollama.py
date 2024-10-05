@@ -12,7 +12,7 @@ MODEL_SIZE = 7365960935
 @app.get("/api/version")
 @app.get("/ollama/api/version")
 def ollama_version():
-    version = {"version": "0.3.0"}
+    version = {"version": "0.3.12"}
     logger.info(version)
     return JSONResponse(content=version)
 
