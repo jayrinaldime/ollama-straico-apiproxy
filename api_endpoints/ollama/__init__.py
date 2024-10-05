@@ -1,3 +1,8 @@
 from . import basic
 from . import chat
-from . import embedding
+
+import app
+
+if app.EMBEDDING_ENABLED:
+    from . import embedding
+

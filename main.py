@@ -14,18 +14,7 @@ from app import (
     EMBEDDING_ENABLED,
     PLATFORM_ENABLED,
 )
-from api_endpoints.lm_studio import basic, chat, image
-from api_endpoints.ollama import basic, chat
-
-if PLATFORM_ENABLED:
-    from api_endpoints.lm_studio import text_to_speech
-
-if EMBEDDING_ENABLED:
-    from api_endpoints.lm_studio import embedding
-    from api_endpoints.ollama import embedding
-
-if TRANSCRIPTION_ENABLED:
-    from api_endpoints.lm_studio import speech_to_text
+from api_endpoints import lm_studio, ollama
 
 import uvicorn
 
