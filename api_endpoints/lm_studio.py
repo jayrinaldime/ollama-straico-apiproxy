@@ -9,7 +9,7 @@ from app import app
 from backend.straico import prompt_completion, list_model, image_generation
 from aio_straico.api.v0 import ImageSize
 from base64 import encodebytes
-import openai_response
+from . import openai_response
 logger = logging.getLogger(__name__)
 
 def _get_msg_text(content):
@@ -67,10 +67,9 @@ async def chat_completions(request: Request):
             streamed_response(response, model), media_type="text/event-stream"
         )
 
-
-    response = openai_response.basic.completion_response.response
+    basic_response = openai_response.basic.completion_response.response
     return JSONResponse(
-        content=response(response, model)
+        content=basic_response(response, model)
     )
 
 
