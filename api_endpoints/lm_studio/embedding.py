@@ -1,9 +1,8 @@
 import json
-import logging
 
 from fastapi import Request
 from fastapi.responses import JSONResponse
-from app import app
+from app import app, logging
 
 from backend.embedding import get_embedding_model
 
@@ -17,7 +16,6 @@ default_embedding_model = environ.get(
 
 
 @app.post("/v1/embeddings")
-@app.post("/lmstudio/v1/embeddings")
 async def lm_studio_embedding(request: Request):
     try:
         post_json_data = await request.json()

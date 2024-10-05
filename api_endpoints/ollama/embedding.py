@@ -1,9 +1,8 @@
 import json
-import logging
 
 from fastapi import Request
 from fastapi.responses import JSONResponse
-from app import app
+from app import app, logging
 
 from backend.embedding import get_embedding_model
 
@@ -16,9 +15,7 @@ default_embedding_model = environ.get(
     "DEFAULT_EMBEDDING_MODEL", "nomic-ai/nomic-embed-text-v1.5"
 )
 
-
 @app.post("/api/embeddings")
-@app.post("/ollama/api/embeddings")
 async def ollama_embedding(request: Request):
     try:
         post_json_data = await request.json()
@@ -37,7 +34,6 @@ async def ollama_embedding(request: Request):
 
 
 @app.post("/api/embed")
-@app.post("/ollama/api/embed")
 async def ollama_embed(request: Request):
     start_dt = datetime.now()
     try:

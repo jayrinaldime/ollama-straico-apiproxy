@@ -1,11 +1,10 @@
 import json
-import logging
 
 from fastapi import Request
 from fastapi import UploadFile, Form, File
 from fastapi.responses import StreamingResponse, JSONResponse
 from typing import Optional
-from app import app, TRANSCRIPTION_ENABLED
+from app import app, TRANSCRIPTION_ENABLED, logging
 from backend.straico_platform import tts, download_file, stt
 
 from io import BytesIO
@@ -21,7 +20,6 @@ default_embedding_model = environ.get(
 
 
 @app.post("/v1/audio/speech")
-@app.post("/lmstudio/v1/audio/speech")
 async def lm_studio_tts(request: Request):
     try:
         post_json_data = await request.json()

@@ -1,9 +1,8 @@
-import logging
 import whisper
 import pathlib
 from fastapi import UploadFile, Form, File
 from fastapi.responses import JSONResponse
-from app import app
+from app import app, logging
 from typing import Optional
 import tempfile
 import asyncio
@@ -35,7 +34,6 @@ async def process_in_background(queue, filename, model_name):
 
 
 @app.post("/v1/audio/transcriptions")
-@app.post("/lmstudio/v1/audio/transcriptions")
 async def lm_studio_transcriptions(
     file: UploadFile = File(...), model: Optional[str] = Form(None)
 ):
