@@ -88,13 +88,15 @@ def _get_msg_image(content):
 
 @app.post("/chat/completions")
 @app.post("/v1/chat/completions")
+@app.post("/lmstudio/chat/completions")
+@app.post("/lmstudio/v1/chat/completions")
 async def chat_completions(request: Request):
     try:
         post_json_data = await request.json()
     except:
         post_json_data = json.loads((await request.body()).decode())
 
-    streaming = post_json_data.get("stream", True)
+    streaming = post_json_data.get("stream", False)
     if "tools" in post_json_data:
         streaming = False
 
@@ -145,6 +147,7 @@ async def chat_completions(request: Request):
 
 
 @app.post("/v1/completions")
+@app.post("lmstudio/v1/completions")
 async def completions(request: Request):
     try:
         post_json_data = await request.json()
@@ -163,6 +166,10 @@ async def completions(request: Request):
 @app.get("/v1/api/models")
 @app.get("/v1/models")
 @app.get("/models")
+@app.get("/lmstudio/api/models")
+@app.get("/lmstudio/v1/api/models")
+@app.get("/lmstudio/v1/models")
+@app.get("/lmstudio/models")
 async def lmstudio_list_models():
     """
      {'name': 'Anthropic: Claude 3 Haiku',
@@ -191,6 +198,7 @@ async def lmstudio_list_models():
 
 
 @app.post("/v1/images/generations")
+@app.post("/lmstudio/v1/images/generations")
 async def lm_image_generation(request: Request):
     try:
         post_json_data = await request.json()

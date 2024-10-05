@@ -21,6 +21,7 @@ default_embedding_model = environ.get(
 
 
 @app.post("/v1/audio/speech")
+@app.post("/lmstudio/v1/audio/speech")
 async def lm_studio_tts(request: Request):
     try:
         post_json_data = await request.json()

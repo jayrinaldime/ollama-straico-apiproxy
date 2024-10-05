@@ -10,6 +10,7 @@ MODEL_SIZE = 7365960935
 
 
 @app.get("/api/version")
+@app.get("/ollama/api/version")
 def ollama_version():
     version = {"version": "0.3.0"}
     logger.info(version)
@@ -17,6 +18,7 @@ def ollama_version():
 
 
 @app.delete("/api/delete")
+@app.get("/ollama/api/delete")
 async def ollama_delete(request: Request):
     data = await request.body()
     logger.debug(data)
@@ -24,6 +26,7 @@ async def ollama_delete(request: Request):
 
 
 @app.post("/api/pull")
+@app.post("/ollama/api/pull")
 async def ollama_pull(request: Request):
     logger.debug(f"Pull request {await request.body()}")
     try:
@@ -81,6 +84,7 @@ async def generate_ollama_pull_stream():
 
 
 @app.post("/api/show")
+@app.post("/ollama/api/show")
 def show_model_details():
     return JSONResponse(
         content={
@@ -123,6 +127,7 @@ def show_model_details():
 
 
 @app.get("/api/tags")
+@app.get("/ollama/api/tags")
 async def list_straico_models():
     models = await list_model()
     if models is None:
@@ -160,6 +165,7 @@ async def list_straico_models():
 
 
 @app.post("/api/generate")
+@app.post("/ollama/api/generate")
 async def ollamagenerate(request: Request):
     try:
         msg = await request.json()
@@ -192,6 +198,7 @@ async def ollamagenerate(request: Request):
 
 
 @app.post("/api/chat")
+@app.post("/ollama/api/chat")
 async def ollamachat(request: Request):
     try:
         msg = await request.json()
@@ -348,6 +355,7 @@ Please only output plain json
 
 
 @app.get("/api/user")
+@app.get("/ollama/api/user")
 async def user():
     models = await user_detail()
     return JSONResponse(content={"user": models})

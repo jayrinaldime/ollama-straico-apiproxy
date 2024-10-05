@@ -18,6 +18,7 @@ default_embedding_model = environ.get(
 
 
 @app.post("/api/embeddings")
+@app.post("/ollama/api/embeddings")
 async def ollama_embedding(request: Request):
     try:
         post_json_data = await request.json()
@@ -36,6 +37,7 @@ async def ollama_embedding(request: Request):
 
 
 @app.post("/api/embed")
+@app.post("/ollama/api/embed")
 async def ollama_embed(request: Request):
     start_dt = datetime.now()
     try:
