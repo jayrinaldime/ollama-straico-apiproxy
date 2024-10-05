@@ -95,6 +95,9 @@ async def chat_completions(request: Request):
         post_json_data = json.loads((await request.body()).decode())
 
     streaming = post_json_data.get("stream", True)
+    if "tools" in post_json_data:
+        streaming = False
+
     model = post_json_data.get("model") or "openai/gpt-3.5-turbo-0125"
     msg = post_json_data["messages"]
     logger.debug(msg)
