@@ -9,64 +9,8 @@ from app import app
 from backend.straico import prompt_completion, list_model, image_generation
 from aio_straico.api.v0 import ImageSize
 from base64 import encodebytes
-
+import openai_response
 logger = logging.getLogger(__name__)
-
-
-def start_response(rid, model):
-    return {
-        "id": f"chatcmpl-{rid}",
-        "object": "chat.completion.chunk",
-        "created": 1716456766,
-        "model": model,
-        "choices": [
-            {
-                "index": 0,
-                "delta": {"role": "assistant", "content": ""},
-                "finish_reason": None,
-            }
-        ],
-    }
-
-
-def end_response(rid, model):
-    return {
-        "id": f"chatcmpl-{rid}",
-        "object": "chat.completion.chunk",
-        "created": 1716456766,
-        "model": model,
-        "choices": [{"index": 0, "delta": {}, "finish_reason": "stop"}],
-    }
-
-
-def stream_data_response(msg):
-    return "data: " + json.dumps(msg) + "\n\n"
-
-
-async def generate_json_data(response, model):
-    request_id = str(uuid.uuid4())
-    logger.debug(f"Response {response}")
-
-    yield stream_data_response(
-        {
-            "id": f"chatcmpl-{request_id}",
-            "object": "chat.completion.chunk",
-            "created": 1716456766,
-            "model": model,
-            "choices": [
-                {
-                    "index": 0,
-                    "delta": {"role": "assistant", "content": response},
-                    "finish_reason": None,
-                }
-            ],
-        }
-    )
-
-    yield stream_data_response(end_response(request_id, model))
-
-    yield "data: [DONE]\n\n"
-
 
 def _get_msg_text(content):
     text = []
@@ -97,9 +41,6 @@ async def chat_completions(request: Request):
         post_json_data = json.loads((await request.body()).decode())
 
     streaming = post_json_data.get("stream", False)
-    if "tools" in post_json_data:
-        streaming = False
-
     model = post_json_data.get("model") or "openai/gpt-3.5-turbo-0125"
     msg = post_json_data["messages"]
     logger.debug(msg)
@@ -120,29 +61,16 @@ async def chat_completions(request: Request):
         response = await prompt_completion(json.dumps(msg, indent=True), model=model)
 
     if streaming:
+        # generate_json_data
+        streamed_response = openai_response.stream.completion_response.streamed_response
         return StreamingResponse(
-            generate_json_data(response, model), media_type="text/event-stream"
+            streamed_response(response, model), media_type="text/event-stream"
         )
 
+
+    response = openai_response.basic.completion_response.response
     return JSONResponse(
-        content={
-            "id": "chatcmpl-gg711phlqdwixyxif16bm",
-            "object": "chat.completion",
-            "created": 1722418755,
-            "model": model,
-            "choices": [
-                {
-                    "index": 0,
-                    "message": {"role": "assistant", "content": response},
-                    "finish_reason": "stop",
-                }
-            ],
-            "usage": {
-                "prompt_tokens": 426,
-                "completion_tokens": 65,
-                "total_tokens": 491,
-            },
-        }
+        content=response(response, model)
     )
 
 
@@ -157,8 +85,11 @@ async def completions(request: Request):
     model = post_json_data.get("model") or "openai/gpt-3.5-turbo-0125"
     logger.debug(msg)
     response = await prompt_completion(msg, model=model)
+
+    # generate_json_data
+    streamed_response = openai_response.stream.completion_response_stream.streamed_response
     return StreamingResponse(
-        generate_json_data(response, model), content_type="text/event-stream"
+        streamed_response(response, model), content_type="text/event-stream"
     )
 
 
