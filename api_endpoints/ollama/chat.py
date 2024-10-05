@@ -8,6 +8,8 @@ logger = logging.getLogger(__name__)
 MODEL_SIZE = 7365960935
 
 from .response.stream.completion_response import generate_ollama_stream, response_stream
+
+
 @app.post("/api/generate")
 async def ollamagenerate(request: Request):
     try:
@@ -38,6 +40,7 @@ async def ollamagenerate(request: Request):
     return StreamingResponse(
         generate_ollama_stream(request_msg, model), media_type="application/x-ndjson"
     )
+
 
 @app.post("/api/chat")
 async def ollamachat(request: Request):

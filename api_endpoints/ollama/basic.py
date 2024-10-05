@@ -5,8 +5,10 @@ from fastapi import Request
 from fastapi.responses import JSONResponse, StreamingResponse
 from backend import list_model, prompt_completion, user_detail
 from .response.stream import completion_response
+
 logger = logging.getLogger(__name__)
 MODEL_SIZE = 7365960935
+
 
 @app.get("/api/version")
 def ollama_version():
@@ -67,13 +69,17 @@ async def generate_ollama_pull_stream():
         )
         await asyncio.sleep(download_sleep)
 
-    yield completion_response.json_stream_json_dump({"status": "verifying sha256 digest"})
+    yield completion_response.json_stream_json_dump(
+        {"status": "verifying sha256 digest"}
+    )
     await asyncio.sleep(step_sleep)
 
     yield completion_response.json_stream_json_dump({"status": "writing manifest"})
     await asyncio.sleep(step_sleep)
 
-    yield completion_response.json_stream_json_dump({"status": "removing any unused layers"})
+    yield completion_response.json_stream_json_dump(
+        {"status": "removing any unused layers"}
+    )
     await asyncio.sleep(step_sleep)
 
     yield completion_response.json_stream_json_dump({"status": "success"})
@@ -157,10 +163,12 @@ async def list_straico_models():
         }
     )
 
+
 @app.get("/api/user")
 async def user():
     models = await user_detail()
     return JSONResponse(content={"user": models})
+
 
 async def generate_ollama_stream(msg, model):
     logger.debug(msg)

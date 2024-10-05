@@ -15,6 +15,7 @@ default_embedding_model = environ.get(
     "DEFAULT_EMBEDDING_MODEL", "nomic-ai/nomic-embed-text-v1.5"
 )
 
+
 @app.post("/api/embeddings")
 async def ollama_embedding(request: Request):
     try:

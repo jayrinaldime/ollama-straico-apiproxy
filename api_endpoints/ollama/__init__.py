@@ -5,4 +5,3 @@ import app
 
 if app.EMBEDDING_ENABLED:
     from . import embedding
-

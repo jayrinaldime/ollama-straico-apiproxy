@@ -18,10 +18,10 @@ response = {
                         "type": "function",
                         "function": {
                             "arguments": "{'order_id': 'order_12345'}",
-                            "name": "get_delivery_date"
-                        }
+                            "name": "get_delivery_date",
+                        },
                     }
-                ]
+                ],
             }
         }
     ]
@@ -30,30 +30,40 @@ response = {
 # Create a message containing the result of the function call
 function_call_result_message = {
     "role": "tool",
-    "content": json.dumps({
-        "order_id": order_id,
-        "delivery_date": delivery_date.strftime('%Y-%m-%d %H:%M:%S')
-    }),
-    "tool_call_id": response['choices'][0]['message']['tool_calls'][0]['id']
+    "content": json.dumps(
+        {
+            "order_id": order_id,
+            "delivery_date": delivery_date.strftime("%Y-%m-%d %H:%M:%S"),
+        }
+    ),
+    "tool_call_id": response["choices"][0]["message"]["tool_calls"][0]["id"],
 }
 
 # Prepare the chat completion call payload
 completion_payload = {
     "model": "gpt-4o",
     "messages": [
-        {"role": "system", "content": "You are a helpful customer support assistant. Use the supplied tools to assist the user."},
-        {"role": "user", "content": "Hi, can you tell me the delivery date for my order?"},
-        {"role": "assistant", "content": "Hi there! I can help with that. Can you please provide your order ID?"},
+        {
+            "role": "system",
+            "content": "You are a helpful customer support assistant. Use the supplied tools to assist the user.",
+        },
+        {
+            "role": "user",
+            "content": "Hi, can you tell me the delivery date for my order?",
+        },
+        {
+            "role": "assistant",
+            "content": "Hi there! I can help with that. Can you please provide your order ID?",
+        },
         {"role": "user", "content": "i think it is order_12345"},
-        response['choices'][0]['message'],
-        function_call_result_message
-    ]
+        response["choices"][0]["message"],
+        function_call_result_message,
+    ],
 }
 
 # Call the OpenAI API's chat completions endpoint to send the tool call result back to the model
 response = openai.chat.completions.create(
-    model=completion_payload["model"],
-    messages=completion_payload["messages"]
+    model=completion_payload["model"], messages=completion_payload["messages"]
 )
 print(response.json())
 

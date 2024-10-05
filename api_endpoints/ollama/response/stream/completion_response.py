@@ -4,8 +4,10 @@ import json
 
 logger = logging.getLogger(__name__)
 
+
 def json_stream_json_dump(obj):
     return json.dumps(obj) + "\n"
+
 
 async def response_stream(model, response, is_tool=False):
     if is_tool:
@@ -57,7 +59,10 @@ async def response_stream(model, response, is_tool=False):
         }
     )
 
+
 import logging
+
+
 async def generate_ollama_stream(msg, model):
     logger.debug(msg)
     response = await prompt_completion(msg, model=model)

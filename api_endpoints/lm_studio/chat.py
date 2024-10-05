@@ -6,7 +6,9 @@ from backend.straico import prompt_completion
 from .response.stream.completion_response import streamed_response
 from .response.basic.completion_response import response as basic_response
 from random import randint
+
 logger = logging.getLogger(__name__)
+
 
 def _get_msg_text(content):
     text = []
@@ -25,6 +27,7 @@ def _get_msg_image(content):
             images.append(data[starting_index:])
     return images
 
+
 @app.post("/chat/completions")
 @app.post("/v1/chat/completions")
 async def chat_completions(request: Request):
@@ -32,7 +35,6 @@ async def chat_completions(request: Request):
         post_json_data = await request.json()
     except:
         post_json_data = json.loads((await request.body()).decode())
-
 
     model = post_json_data.get("model") or "openai/gpt-3.5-turbo-0125"
     msg = post_json_data["messages"]
@@ -42,9 +44,12 @@ async def chat_completions(request: Request):
         last_request = msg[-1]
         if last_request["role"] == "tool":
             tools = None
-            msg.append({
-                "role": "system",
-                "content": "Please interpret the answer in behave of the user."})
+            msg.append(
+                {
+                    "role": "system",
+                    "content": "Please interpret the answer in behave of the user.",
+                }
+            )
 
     if tools is not None and len(tools) != 0:
         streaming = False
@@ -112,41 +117,39 @@ Please only output plain json when using tools.
         if type(response) == list and len(response) > 0:
             response = response[0]
 
-        if type(response) == dict and "tool_calls" in response :
+        if type(response) == dict and "tool_calls" in response:
             if len(response["tool_calls"]) == 0:
                 response = ""
                 original_response = ""
             else:
                 for f in response["tool_calls"]:
-                    i = randint(10000000,999999999)
+                    i = randint(10000000, 999999999)
                     f["id"] = f"call_{i:}"
                 print("Tool:", response["tool_calls"])
                 return JSONResponse(
                     content={
-                    "id": "chatcmpl-abc123",
-                    "object": "chat.completion",
-                    "created": 1699896916,
-                    "model": model,
-                    "choices": [
-                        {
-                            "index": 0,
-                            "message": {
-                                "role": "assistant",
-                                "tool_calls": response["tool_calls"]
-                            },
-                            "logprobs": None,
-                            "finish_reason": "tool_calls"
-                        }
-                    ],
-                    "usage": {
-                        "prompt_tokens": 82,
-                        "completion_tokens": 17,
-                        "total_tokens": 99,
-                        "completion_tokens_details": {
-                            "reasoning_tokens": 0
-                        }
+                        "id": "chatcmpl-abc123",
+                        "object": "chat.completion",
+                        "created": 1699896916,
+                        "model": model,
+                        "choices": [
+                            {
+                                "index": 0,
+                                "message": {
+                                    "role": "assistant",
+                                    "tool_calls": response["tool_calls"],
+                                },
+                                "logprobs": None,
+                                "finish_reason": "tool_calls",
+                            }
+                        ],
+                        "usage": {
+                            "prompt_tokens": 82,
+                            "completion_tokens": 17,
+                            "total_tokens": 99,
+                            "completion_tokens_details": {"reasoning_tokens": 0},
+                        },
                     }
-                }
                 )
     if type(response) == dict:
         original_response = response
@@ -167,10 +170,10 @@ Please only output plain json when using tools.
                 pass
 
             if (
-                    type(original_response) == dict
-                    and "role" in original_response
-                    and original_response["role"] == "assistant"
-                    and "content" in original_response
+                type(original_response) == dict
+                and "role" in original_response
+                and original_response["role"] == "assistant"
+                and "content" in original_response
             ):
                 original_response = original_response["content"]
 
@@ -183,9 +186,8 @@ Please only output plain json when using tools.
             streamed_response(original_response, model), media_type="text/event-stream"
         )
 
-    return JSONResponse(
-        content=basic_response(original_response, model)
-    )
+    return JSONResponse(content=basic_response(original_response, model))
+
 
 @app.post("/v1/completions")
 async def completions(request: Request):

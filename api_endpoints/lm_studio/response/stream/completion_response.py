@@ -4,8 +4,10 @@ import json
 
 logger = logging.getLogger(__name__)
 
+
 def stream_data_response(msg):
     return "data: " + json.dumps(msg) + "\n\n"
+
 
 def end_response(rid, model):
     return {

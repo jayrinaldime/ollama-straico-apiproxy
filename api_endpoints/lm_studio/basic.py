@@ -5,6 +5,7 @@ from backend.straico import list_model
 
 logger = logging.getLogger(__name__)
 
+
 @app.get("/api/models")
 @app.get("/v1/api/models")
 @app.get("/v1/models")
@@ -34,4 +35,3 @@ async def lmstudio_list_models():
     ]
     response = {"data": models, "object": "list"}
     return JSONResponse(content=response)
-
