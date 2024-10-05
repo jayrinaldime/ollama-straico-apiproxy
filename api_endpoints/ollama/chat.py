@@ -69,8 +69,8 @@ Do not add "Here is..." or anything like that.
 
 Act like a script, you are given an optional input and the instructions to perform, you answer with the output of the requested task.
 
-Please only output plain json  
-                    """,
+Please only output plain json.
+                    """.strip(),
             }
         ]
         messages = parent_tool + messages
