@@ -167,37 +167,4 @@ async def list_straico_models():
 @app.get("/api/user")
 async def user():
     models = await user_detail()
-    return JSONResponse(content={"user": models})
-
-
-async def generate_ollama_stream(msg, model):
-    logger.debug(msg)
-    response = await prompt_completion(msg, model=model)
-
-    # for i in range(0, len(response), 5):
-    r = completion_response.json_stream_json_dump(
-        {
-            "model": model,
-            "created_at": "2023-12-12T14:14:43.416799Z",
-            "response": response,  # [i:i + 5],
-            "done": False,
-        }
-    )
-    yield r
-    # time.sleep(0.1)
-
-    yield completion_response.json_stream_json_dump(
-        {
-            "model": model,
-            "created_at": "2023-12-12T14:14:43.416799Z",
-            "response": "",
-            "done": True,
-            "done_reason": "stop",
-            "total_duration": 10706818083,
-            "load_duration": 6338219291,
-            "prompt_eval_count": 26,
-            "prompt_eval_duration": 130079000,
-            "eval_count": 259,
-            "eval_duration": 4232710000,
-        }
-    )
+    return JSONResponse(content=models)
