@@ -6,6 +6,7 @@ from backend.straico import prompt_completion
 from .response.stream.completion_response import streamed_response
 from .response.basic.completion_response import response as basic_response
 from random import randint
+import re
 
 logger = logging.getLogger(__name__)
 
@@ -151,6 +152,43 @@ Please only output plain json when using tools.
                         },
                     }
                 )
+        if type(response) == str and "tool_calls" in response:
+            pattern = r"\{\s*\"tool_calls\":\s*\["
+            match = re.search(pattern, response, re.DOTALL)
+            if match:
+                msg = response[0: match.start()].strip()
+                tool_call = response[match.start():].strip()
+                try:
+                    tool_call = json.loads(tool_call)
+                    return JSONResponse(
+                    content={
+                        "id": "chatcmpl-abc123",
+                        "object": "chat.completion",
+                        "created": 1699896916,
+                        "model": model,
+                        "choices": [
+                            {
+                                "index": 0,
+                                "message": {
+                                    "role": "assistant",
+                                    "tool_calls": tool_call["tool_calls"],
+                                    "content": msg
+                                },
+                                "logprobs": None,
+                                "finish_reason": "tool_calls",
+                            }
+                        ],
+                        "usage": {
+                            "prompt_tokens": 82,
+                            "completion_tokens": 17,
+                            "total_tokens": 99,
+                            "completion_tokens_details": {"reasoning_tokens": 0},
+                        },
+                    }
+                )
+                except:
+                    pass
+
     if type(response) == dict:
         original_response = response
 
