@@ -80,7 +80,7 @@ async def model_listing():
 
 
 async def prompt_completion(
-    msg: str, images=None, model: str = "openai/gpt-3.5-turbo-0125"
+    msg: str, images=None, model: str = "openai/gpt-3.5-turbo-0125", temperature:float = None, max_tokens:float = None
 ) -> str:
     # some  clients add :latest
     models = await get_model_mapping()
@@ -104,8 +104,13 @@ async def prompt_completion(
     if not PLATFORM_ENABLED or images is None or len(images) == 0:
         post_request_data = {"model": model, "message": msg}
         logger.debug(f"Request Post Data: {post_request_data}")
+        settings = {}
+        if temperature is not None:
+            settings["temperature"] = temperature
+        if max_tokens is not None:
+            settings["max_tokens"] = max_tokens
         async with aio_straico_client(timeout=TIMEOUT) as client:
-            response = await client.prompt_completion(model, msg)
+            response = await client.prompt_completion(model, msg, **settings)
             logger.debug(f"response body: {response}")
             return response["completion"]["choices"][-1]["message"]["content"]
     else:

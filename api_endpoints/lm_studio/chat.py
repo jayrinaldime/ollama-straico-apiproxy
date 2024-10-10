@@ -41,6 +41,11 @@ async def chat_completions(request: Request):
     msg = post_json_data["messages"]
     tools = post_json_data.get("tools")
 
+    settings = {
+        "temperature": post_json_data.get("temperature"),
+        "max_tokens": post_json_data.get("max_tokens")
+    }
+
     if type(msg) == list:
         last_request = msg[-1]
         if last_request["role"] == "tool":
@@ -90,13 +95,13 @@ Please only output plain json when using tools.
         and "content" in msg[0]
     ):
         if type(msg[0]["content"]) == str:
-            response = await prompt_completion(msg[0]["content"], model=model)
+            response = await prompt_completion(msg[0]["content"], model=model, **settings)
         else:
             images = _get_msg_image(msg[0]["content"])
             msg = _get_msg_text(msg[0]["content"])
-            response = await prompt_completion(msg, images=images, model=model)
+            response = await prompt_completion(msg, images=images, model=model, **settings)
     else:
-        response = await prompt_completion(json.dumps(msg, indent=True), model=model)
+        response = await prompt_completion(json.dumps(msg, indent=True), model=model, **settings)
 
     response_type = type(response)
     original_response = response

@@ -20,8 +20,13 @@ async def ollamagenerate(request: Request):
     logger.debug(msg)
     request_msg = msg["prompt"]
     model = msg.get("model")
+
+    settings = {}
+    if "options" in msg and "temperature" in msg["options"]:
+        settings["temperature"] = msg["options"]["temperature"]
+
     if msg.get("stream") == False:
-        response = await prompt_completion(msg["prompt"], model=model)
+        response = await prompt_completion(msg["prompt"], model=model, **settings)
         return JSONResponse(
             content={
                 "model": model,
@@ -52,6 +57,11 @@ async def ollamachat(request: Request):
     model = msg["model"]
     tools = msg.get("tools")
     messages = msg["messages"]
+
+    settings = {}
+    if "options" in msg and "temperature" in msg["options"]:
+        settings["temperature"] = msg["options"]["temperature"]
+
     if tools and len(tools) != 0:
         parent_tool = [
             {
@@ -96,7 +106,7 @@ Please only output plain json.
         messages = messages[0]["content"]
 
     request_msg = json.dumps(messages, indent=True)
-    response = await prompt_completion(request_msg, images, model)
+    response = await prompt_completion(request_msg, images, model, **settings)
     try:
         response = json.loads(response)
         response_type = type(response)
