@@ -22,8 +22,10 @@ async def ollamagenerate(request: Request):
     model = msg.get("model")
 
     settings = {}
-    if "options" in msg and "temperature" in msg["options"]:
-        settings["temperature"] = msg["options"]["temperature"]
+    if "options" in msg:
+        options = msg["options"]
+        settings["temperature"] = options.get("temperature")
+        settings["max_tokens"] = options.get("max_tokens")
 
     if msg.get("stream") == False:
         response = await prompt_completion(msg["prompt"], model=model, **settings)
@@ -59,8 +61,10 @@ async def ollamachat(request: Request):
     messages = msg["messages"]
 
     settings = {}
-    if "options" in msg and "temperature" in msg["options"]:
-        settings["temperature"] = msg["options"]["temperature"]
+    if "options" in msg:
+        options = msg["options"]
+        settings["temperature"] = options.get("temperature")
+        settings["max_tokens"] = options.get("max_tokens")
 
     if tools and len(tools) != 0:
         parent_tool = [
@@ -185,6 +189,9 @@ Please only output plain json.
                 and "content" in original_response
             ):
                 original_response = original_response["content"]
+
+    if type(original_response) in [dict, list]:
+        original_response = json.dumps(original_response)
 
     if streaming:
         return StreamingResponse(
