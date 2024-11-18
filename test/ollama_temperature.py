@@ -15,5 +15,7 @@ response = client.chat(model=MODEL, messages=MSGS, options={"temperature": 2})
 print(response)
 
 
-response = client.generate(model=MODEL, prompt=MSGS[0]["content"], options={"temperature": 2})
+response = client.generate(
+    model=MODEL, prompt=MSGS[0]["content"], options={"temperature": 2}
+)
 print(response)

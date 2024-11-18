@@ -80,7 +80,11 @@ async def model_listing():
 
 
 async def prompt_completion(
-    msg: str, images=None, model: str = "openai/gpt-3.5-turbo-0125", temperature:float = None, max_tokens:float = None
+    msg: str,
+    images=None,
+    model: str = "openai/gpt-3.5-turbo-0125",
+    temperature: float = None,
+    max_tokens: float = None,
 ) -> str:
     # some  clients add :latest
     models = await get_model_mapping()

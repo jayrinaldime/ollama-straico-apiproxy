@@ -43,7 +43,7 @@ async def chat_completions(request: Request):
 
     settings = {
         "temperature": post_json_data.get("temperature"),
-        "max_tokens": post_json_data.get("max_tokens")
+        "max_tokens": post_json_data.get("max_tokens"),
     }
 
     if type(msg) == list:
@@ -95,13 +95,19 @@ Please only output plain json when using tools.
         and "content" in msg[0]
     ):
         if type(msg[0]["content"]) == str:
-            response = await prompt_completion(msg[0]["content"], model=model, **settings)
+            response = await prompt_completion(
+                msg[0]["content"], model=model, **settings
+            )
         else:
             images = _get_msg_image(msg[0]["content"])
             msg = _get_msg_text(msg[0]["content"])
-            response = await prompt_completion(msg, images=images, model=model, **settings)
+            response = await prompt_completion(
+                msg, images=images, model=model, **settings
+            )
     else:
-        response = await prompt_completion(json.dumps(msg, indent=True), model=model, **settings)
+        response = await prompt_completion(
+            json.dumps(msg, indent=True), model=model, **settings
+        )
 
     response_type = type(response)
     original_response = response
@@ -161,36 +167,36 @@ Please only output plain json when using tools.
             pattern = r"\{\s*\"tool_calls\":\s*\["
             match = re.search(pattern, response, re.DOTALL)
             if match:
-                msg = response[0: match.start()].strip()
-                tool_call = response[match.start():].strip()
+                msg = response[0 : match.start()].strip()
+                tool_call = response[match.start() :].strip()
                 try:
                     tool_call = json.loads(tool_call)
                     return JSONResponse(
-                    content={
-                        "id": "chatcmpl-abc123",
-                        "object": "chat.completion",
-                        "created": 1699896916,
-                        "model": model,
-                        "choices": [
-                            {
-                                "index": 0,
-                                "message": {
-                                    "role": "assistant",
-                                    "tool_calls": tool_call["tool_calls"],
-                                    "content": msg
-                                },
-                                "logprobs": None,
-                                "finish_reason": "tool_calls",
-                            }
-                        ],
-                        "usage": {
-                            "prompt_tokens": 82,
-                            "completion_tokens": 17,
-                            "total_tokens": 99,
-                            "completion_tokens_details": {"reasoning_tokens": 0},
-                        },
-                    }
-                )
+                        content={
+                            "id": "chatcmpl-abc123",
+                            "object": "chat.completion",
+                            "created": 1699896916,
+                            "model": model,
+                            "choices": [
+                                {
+                                    "index": 0,
+                                    "message": {
+                                        "role": "assistant",
+                                        "tool_calls": tool_call["tool_calls"],
+                                        "content": msg,
+                                    },
+                                    "logprobs": None,
+                                    "finish_reason": "tool_calls",
+                                }
+                            ],
+                            "usage": {
+                                "prompt_tokens": 82,
+                                "completion_tokens": 17,
+                                "total_tokens": 99,
+                                "completion_tokens_details": {"reasoning_tokens": 0},
+                            },
+                        }
+                    )
                 except:
                     pass
 
