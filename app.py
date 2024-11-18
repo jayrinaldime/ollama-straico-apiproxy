@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 import logging
 import os
+from fastapi.middleware.cors import CORSMiddleware
 
 log_level = os.environ.get("LOG_LEVEL", "ERROR").upper()
 
@@ -13,6 +14,15 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 app = FastAPI()
+
+# Add CORS middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Allow all origins
+    allow_credentials=True,
+    allow_methods=["*"],  # Allow all methods
+    allow_headers=["*"],  # Allow all headers
+)
 
 EMBEDDING_ENABLED = os.environ.get("EMBEDDING_ENABLED", "false").lower().strip()
 EMBEDDING_ENABLED = EMBEDDING_ENABLED not in ["0", "false", "no"]
