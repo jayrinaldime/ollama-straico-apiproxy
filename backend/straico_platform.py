@@ -11,24 +11,32 @@ PLATFORM_BASE_URL = "https://platform.straico.com/api"
 
 
 @asynccontextmanager
-async def autoerase_upload_image(image_path):
+async def autoerase_upload_image(*image_paths):
+    image_urls = []
+    image_ids = []
     try:
-        size = image_path.stat().st_size
+        for image_path in image_paths:
+            size = image_path.stat().st_size
 
-        img_url = await _upload(image_path)
-        # pprint.pprint(img_url)
+            img_url = await _upload(image_path)
+            upload_stat = await _file_upload(img_url["url"], image_path.name, size, "image")
 
-        upload_stat = await _file_upload(img_url["url"], image_path.name, size, "image")
-        yield upload_stat
+            url = upload_stat["file"]["url"]
+            word_count = upload_stat["file"]["words"]
+            image_id = upload_stat["file"]["_id"]
+            image_ids.append(image_id)
+            image_urls.append({"url": url, "words": word_count})
+        yield image_urls
     finally:
-        deleted = await _file_delete(upload_stat["file"]["_id"])
+        for image_id in image_ids:
+            deleted = await _file_delete(image_id)
 
 
 @asynccontextmanager
-async def autoerase_chat(model_id, model_cost, img_url, img_words, text_prompt):
+async def autoerase_chat(model_id, model_cost, img_url, text_prompt):
     try:
         chat_response = await _chat(
-            model_id, model_cost, text_prompt, img_url, img_words
+            model_id, model_cost, text_prompt, img_url
         )
         yield chat_response
 
@@ -162,12 +170,18 @@ async def download_file(file_url):
         return response.content
 
 
-async def _chat(model_id, model_cost, text_prompt, image_url, image_word):
+async def _chat(model_id, model_cost, text_prompt, image_url):
     utc_now = datetime.now(timezone.utc)
     str_now = utc_now.strftime("%Y-%m-%dT%H:%M:%S.%f")[:-3] + "Z"
 
     word_count = _word_count(text_prompt)
+    image_word = sum(img["words"] for img in image_url)
     prompt_cost = word_count + image_word
+    image_msg = [{
+            "type": "image_url",
+            "image_url": image
+        } for image in image_url]
+    image_msg.append({"type": "text", "text": text_prompt})
 
     cost_str = str(int(model_cost * prompt_cost * 100) / 100)
     async with AsyncClient() as session:
@@ -175,13 +189,11 @@ async def _chat(model_id, model_cost, text_prompt, image_url, image_word):
             PLATFORM_BASE_URL + "/ai/chat",
             headers={"x-access-token": STRAICO_PLATFORM_ACCESS_TOKEN},
             json={
-                "message": [
-                    {
-                        "type": "image_url",
-                        "image_url": {"url": image_url, "words": image_word},
-                    },
-                    {"type": "text", "text": text_prompt},
-                ],
+                "message": image_msg,
+                "originalPrompt": None,
+                "LLMRole": "",
+                "basePrompt": "",
+                "systemInstructions": "",
                 "hash": None,
                 "date": str_now,
                 "files": None,
@@ -191,6 +203,8 @@ async def _chat(model_id, model_cost, text_prompt, image_url, image_word):
                 "behaviours": [],
                 "currentPrompt": None,
                 "capabilities": [],
+                "source": "web",
+                "version": "v2.2.0"
             },
             timeout=300,
         )

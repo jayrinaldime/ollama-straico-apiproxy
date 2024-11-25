@@ -100,16 +100,19 @@ Please only output plain json.
     logger.debug(msg)
     logger.debug(model)
     images = None
-    if (
-        type(messages) == list
-        and len(messages) == 1
-        and type(messages[0]) == dict
-        and "content" in messages[0]
-    ):
-        images = messages[0].get("images")
-        messages = messages[0]["content"]
+    if type(messages) == list and len(messages) >= 1 and type(messages[0]):
+        images = []
+        new_messages = []
+        for message in messages:
+            if "images" in message:
+                img = message["images"]
+                if len(img) > 0:
+                    images.append(*img)
+                del message["images"]
+            new_messages.append(message)
+        messages = new_messages
 
-    request_msg = json.dumps(messages, indent=True)
+    request_msg = json.dumps(messages, indent=True, ensure_ascii=False)
     response = await prompt_completion(request_msg, images, model, **settings)
     try:
         response = json.loads(response)

@@ -124,22 +124,23 @@ async def prompt_completion(
         model_id, model_cost = platform_model_map[model]
 
         with TemporaryDirectory() as tmpdirname:
+            local_image_path = []
+            for index, image in enumerate(images):
+                utc_now = datetime.now(timezone.utc)
+                str_now = utc_now.strftime("%Y-%m-%dT%H:%M:%S.%f")[:-3] + f"{index:03}Z.png"
+                pathfile = Path(tmpdirname) / str_now
+                with pathfile.open("wb") as fp:
+                    data = base64.urlsafe_b64decode(
+                        image
+                    )  # .standard_b64decode(images[0])
+                    fp.write(data)
+                local_image_path.append(pathfile)
 
-            utc_now = datetime.now(timezone.utc)
-            str_now = utc_now.strftime("%Y-%m-%dT%H:%M:%S.%f")[:-3] + "Z.png"
-            pathfile = Path(tmpdirname) / str_now
-            with pathfile.open("wb") as fp:
-                data = base64.urlsafe_b64decode(
-                    images[0]
-                )  # .standard_b64decode(images[0])
-                fp.write(data)
-
-            async with autoerase_upload_image(pathfile) as upload_stat:
+            async with autoerase_upload_image(*local_image_path) as upload_stat:
                 async with autoerase_chat(
                     model_id,
                     model_cost,
-                    upload_stat["file"]["url"],
-                    upload_stat["file"]["words"],
+                    upload_stat,
                     msg,
                 ) as chat_response:
                     return chat_response["message"]["data"]["content"]

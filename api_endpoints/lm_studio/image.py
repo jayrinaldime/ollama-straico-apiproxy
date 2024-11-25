@@ -6,7 +6,6 @@ from fastapi.responses import JSONResponse
 from app import app, logging
 from backend.straico import image_generation
 from aio_straico.api.v0 import ImageSize
-from base64 import encodebytes
 
 
 logger = logging.getLogger(__name__)
