@@ -34,16 +34,11 @@ async def lm_image_generation(request: Request):
     elif x < y:
         size = ImageSize.portrait
 
-    with tempfile.TemporaryDirectory() as directory:
-        images = await image_generation(
-            model=model, n=n, prompt=prompt, size=size, directory=directory
-        )
-        encoded_images = []
+    images = await image_generation(
+        model=model, n=n, prompt=prompt, size=size
+    )
 
-        for image_path in images:
-            with image_path.open("rb") as reader:
-                bin_image = reader.read(-1)
-                data_base64 = encodebytes(bin_image).decode()
-                encoded_images.append({"b64_json": data_base64})
+    image_urls = [{"url": image_url} for image_url in images["images"]]
+    print(image_urls)
 
-    return JSONResponse(content={"created": 1589478378, "data": encoded_images})
+    return JSONResponse(content={"created": 1589478378, "data": image_urls})

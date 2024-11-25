@@ -155,13 +155,12 @@ async def user_detail():
         return await client.user()
 
 
-async def image_generation(model: str, n: int, prompt: str, size: ImageSize, directory):
+async def image_generation(model: str, n: int, prompt: str, size: ImageSize):
     async with aio_straico_client(timeout=TIMEOUT) as client:
-        images = await client.image_generation_as_images(
+        images = await client.image_generation(
             model=model,
             description=prompt,
             size=size,
             variations=n,
-            destination_directory_path=directory,
         )
         return images
