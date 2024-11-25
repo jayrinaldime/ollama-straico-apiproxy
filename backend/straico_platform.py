@@ -183,7 +183,8 @@ async def _chat(model_id, model_cost, text_prompt, image_url):
         } for image in image_url]
     image_msg.append({"type": "text", "text": text_prompt})
 
-    cost_str = str(int(model_cost * prompt_cost * 100) / 100)
+    cost = int(model_cost * prompt_cost * 100) / 100
+    cost_str = f"{cost:.3f}"
     async with AsyncClient() as session:
         response = await session.post(
             PLATFORM_BASE_URL + "/ai/chat",
