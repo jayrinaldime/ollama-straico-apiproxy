@@ -100,14 +100,14 @@ Please only output plain json.
     logger.debug(msg)
     logger.debug(model)
     images = None
-    if type(messages) == list and len(messages) >= 1 and type(messages[0]):
+    if type(messages) == list and len(messages) >= 1 and type(messages[0]) == dict:
         images = []
         new_messages = []
         for message in messages:
             if "images" in message:
                 img = message["images"]
                 if len(img) > 0:
-                    images.append(*img)
+                    images += img
                 del message["images"]
             new_messages.append(message)
         messages = new_messages
