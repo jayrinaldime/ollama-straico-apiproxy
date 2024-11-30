@@ -14,18 +14,34 @@
         h1 { color: #333; }
         .description { color: #666; }
         .user-info {
+            display: flex;
+            justify-content: space-between;
             padding: 10px; 
             border-radius: 5px; 
-            margin-bottom: 15px; 
+            margin-bottom: 15px;
+            background-color: #f4f4f4;
+        }
+        .user-info div {
+            text-align: center;
+            flex: 1;
         }
     </style>
 </head>
 <body>
     <h1>{{ title }}</h1>
     <div class="user-info">
-        <p><strong>Name:</strong> {{ user.first_name }} {{ user.last_name }}</p>
-        <p><strong>Coins:</strong> {{ user.coins }}</p>
-        <p><strong>Plan:</strong> {{ user.plan }}</p>
+        <div>
+            <strong>Name</strong>
+            <p>{{ user.first_name }} {{ user.last_name }}</p>
+        </div>
+        <div>
+            <strong>Coins</strong>
+            <p>{{ user.coins }}</p>
+        </div>
+        <div>
+            <strong>Plan</strong>
+            <p>{{ user.plan }}</p>
+        </div>
     </div>
     <p class="description">{{ description }}</p>
     <ul>
