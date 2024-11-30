@@ -8,6 +8,31 @@ from backend.straico_platform import list_rag_documents  # Add this import
 # Add template configuration
 templates = Jinja2Templates(directory="templates")
 
+# Add file validation constants
+MAX_FILE_SIZE = 10 * 1024 * 1024  # 10 MB
+ALLOWED_EXTENSIONS = {'.pdf', '.docx', '.csv', '.txt', '.xlsx', '.py'}
+MAX_FILES = 4
+
+def secure_filename(filename):
+    """
+    Generate a secure filename by removing potentially dangerous characters
+    and ensuring a safe filename
+    """
+    # Remove directory path if present
+    filename = os.path.basename(filename)
+    
+    # Remove non-ascii characters and replace with '_'
+    filename = "".join(
+        c if c.isalnum() or c in ('-', '_', '.') else '_' 
+        for c in filename
+    )
+    
+    # Ensure filename is not empty
+    if not filename:
+        filename = 'unnamed_file'
+    
+    return filename
+
 @app.get("/", response_class=HTMLResponse)
 async def root(request: Request):
     details = await user_detail()
@@ -46,3 +71,12 @@ async def delete_rag_endpoint(rag_id: str):
         raise HTTPException(status_code=500, detail=str(e))
 
 
+import os
+import tempfile
+from pathlib import Path
+from typing import List
+
+from fastapi import File, UploadFile, HTTPException, Form
+from fastapi.responses import JSONResponse
+
+logger = logging.getLogger(__name__)
