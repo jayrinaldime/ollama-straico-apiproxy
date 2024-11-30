@@ -9,10 +9,7 @@ from os import environ
 from app import (
     app,
     logging,
-    log_level,
-    TRANSCRIPTION_ENABLED,
-    EMBEDDING_ENABLED,
-    PLATFORM_ENABLED,
+    log_level
 )
 from api_endpoints import lm_studio, ollama
 
