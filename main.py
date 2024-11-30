@@ -12,6 +12,7 @@ from app import (
     log_level
 )
 from api_endpoints import lm_studio, ollama
+import view
 
 import uvicorn
 
