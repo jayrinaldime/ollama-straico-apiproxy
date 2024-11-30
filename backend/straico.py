@@ -78,6 +78,10 @@ async def model_listing():
         model_id_mapping[model_name] = _id
     return model_id_mapping
 
+async def agent_promp_completion(agent_id, msg):
+    async with aio_straico_client(timeout=TIMEOUT) as client:
+        response = await client.agent_prompt_completion(agent_id, msg)
+        return response["answer"]
 
 async def prompt_completion(
     msg: str,
@@ -93,6 +97,10 @@ async def prompt_completion(
     is_model_found = model in model_values
 
     if not is_model_found:
+        if model.startswith("agent/"): # lmstudio agent request
+            model = model.split(":")[-1]
+            return await agent_promp_completion(model, msg)
+
         if model.endswith(":latest"):
             model = model.replace(":latest", "")
             is_model_found = model in model_values

@@ -2,8 +2,36 @@ from fastapi.responses import JSONResponse
 from app import app, logging
 from backend.straico import list_model, list_agents
 
-
+from asyncio import gather
 logger = logging.getLogger(__name__)
+
+
+async def list_straico_models():
+    models = (await list_model())["chat"]
+    return [
+        {
+            "id": model["model"],
+            "object": "model",
+            "owned_by": model["name"].split(":")[0],
+            "permission": [{}],
+        }
+        for model in models
+    ]
+
+async def list_agents_as_models():
+    agents = await list_agents()
+    if agents is not None and len(agents) > 0:
+        return [
+            {
+                "id":  f"agent/{m['name'].strip()}:{m['_id']}",  #m['name'],
+                "object": "model",
+                "owned_by": "Straico",
+                "permission": [{}],
+            }
+            for m in agents
+        ]
+
+    return []
 
 
 @app.get("/api/models")
@@ -16,35 +44,7 @@ async def lmstudio_list_models():
     'model': 'anthropic/claude-3-haiku:beta',
     'pricing': {'coins': 1, 'words': 100}}
     """
-    agent_request = list_agents()
-    models = await list_model()
-
-    if models is None:
-        return JSONResponse(content={"models": []})
-
-    if "chat" in models:
-        models = models["chat"]
-
-    models = [
-        {
-            "id": model["model"],
-            "object": "model",
-            "owned_by": model["name"].split(":")[0],
-            "permission": [{}],
-        }
-        for model in models
-    ]
-    agents = await agent_request
-    if agents is not None and len(agents) > 0:
-        models += [
-            {
-                "id":  f"agent/{m['name']}:{m['_id']}",
-                "object": "model",
-                "owned_by": "Straico",
-                "permission": [{}],
-            }
-            for m in agents
-        ]
-
+    models, agents = await gather(list_straico_models(), list_agents_as_models())
+    models += agents
     response = {"data": models, "object": "list"}
     return JSONResponse(content=response)
