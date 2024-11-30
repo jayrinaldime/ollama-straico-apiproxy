@@ -25,22 +25,25 @@
             text-align: center;
             flex: 1;
         }
+        .user-info div p {
+            margin: 0;
+        }
+        .user-info div strong {
+            margin-right: 5px;
+        }
     </style>
 </head>
 <body>
     <h1>{{ title }}</h1>
     <div class="user-info">
         <div>
-            <strong>Name</strong>
-            <p>{{ user.first_name }} {{ user.last_name }}</p>
+            <strong>Name:</strong> {{ user.first_name }} {{ user.last_name }}
         </div>
         <div>
-            <strong>Coins</strong>
-            <p>{{ user.coins }}</p>
+            <strong>Coins:</strong> {{ user.coins }}
         </div>
         <div>
-            <strong>Plan</strong>
-            <p>{{ user.plan }}</p>
+            <strong>Plan:</strong> {{ user.plan }}
         </div>
     </div>
     <p class="description">{{ description }}</p>
