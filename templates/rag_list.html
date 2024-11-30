@@ -166,9 +166,16 @@
             <span class="close">&times;</span>
             <h2>Add New RAG</h2>
             <form id="add-rag-form">
+                <label>Name:</label>
                 <input type="text" name="name" placeholder="RAG Name" required>
+                <label>Description:</label>
                 <textarea name="description" placeholder="Description" required></textarea>
-    
+
+                <label>Upload Files (max 4, .pdf, .docx, .csv, .txt, .xlsx, .py):</label>
+                <input type="file" name="file_to_uploads" multiple 
+                       accept=".pdf,.docx,.csv,.txt,.xlsx,.py" 
+                       onchange="validateFiles(this)">
+
                 <label>Chunking Method:</label>
                 <select name="chunking_method" id="chunking_method">
                     <option value="fixed_size">Fixed Size</option>
@@ -180,7 +187,10 @@
 
                 <!-- Conditional Chunking Fields -->
                 <div id="chunk-size-overlap" style="display:block;">
+                    <label>Chunk Size:</label>
                     <input type="number" name="chunk_size" placeholder="Chunk Size (default 1000)" value="1000">
+                    <br/>
+                    <label>Chunk Overlap:</label>
                     <input type="number" name="chunk_overlap" placeholder="Chunk Overlap (default 50)" value="50">
                 </div>
 
@@ -192,13 +202,12 @@
                         <option value="standard_deviation">Standard Deviation</option>
                         <option value="gradient">Gradient</option>
                     </select>
+                    <br/>
+                    <label>Suffer Size:</label>
                     <input type="number" name="buffer_size" placeholder="Buffer Size (default 500)" value="500">
                 </div>
 
-                <label>Upload Files (max 4, .pdf, .docx, .csv, .txt, .xlsx, .py):</label>
-                <input type="file" name="file_to_uploads" multiple 
-                       accept=".pdf,.docx,.csv,.txt,.xlsx,.py" 
-                       onchange="validateFiles(this)">
+                
 
                 <button type="submit">Add RAG</button>
             </form>
