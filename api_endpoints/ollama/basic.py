@@ -12,7 +12,7 @@ MODEL_SIZE = 7365960935
 
 @app.get("/api/version")
 def ollama_version():
-    version = {"version": "0.3.12"}
+    version = {"version": "0.4.5"}
     logger.info(version)
     return JSONResponse(content=version)
 
@@ -134,7 +134,6 @@ def show_model_details():
 
 @app.get("/api/tags")
 async def list_straico_models():
-    agents_request = list_agents()
     models = await list_model()
     if models is None:
         return JSONResponse(content={"models": []})
@@ -164,18 +163,16 @@ async def list_straico_models():
                 }
                 for m in models
             ]
-    agents = await agents_request
-    if agents is None or len(agents) ==0:
-        agent_models = []
-    else:
-        agent_models = [
+    agents = await list_agents()
+    if agents is not None or len(agents) > 0:
+        response_models += [
                 {
-                    "name": m["name"],
+                    "name": f"Agent: {m["name"].strip()} ({m['_id']})",
                     # Open Web UI does not work without explicit tag
                     "model": (
-                       f"agent/{m['name']}:{m['_id']}"
+                       f"agent/{m['name'].strip()}:{m['_id']}"
                     ),
-                    "modified_at": m["updatedAt"],
+                    "modified_at": m["updatedAt"].split(".")[0]+".277302595-07:00",
                     "size": MODEL_SIZE,
                     "digest": m[
                         "_id"
@@ -190,9 +187,10 @@ async def list_straico_models():
                 }
                 for m in agents
             ]
+
     return JSONResponse(
         content={
-            "models": response_models+agent_models
+            "models": response_models
         }
     )
 

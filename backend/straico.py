@@ -100,8 +100,10 @@ async def prompt_completion(
         if model.startswith("agent/"): # lmstudio agent request
             model = model.split(":")[-1]
             return await agent_promp_completion(model, msg)
-
-        if model.endswith(":latest"):
+        elif model.startswith("Agent: "): # Ollama agent request
+            model = model.split("(")[-1][:-1]
+            return await agent_promp_completion(model, msg)
+        elif model.endswith(":latest"):
             model = model.replace(":latest", "")
             is_model_found = model in model_values
 
