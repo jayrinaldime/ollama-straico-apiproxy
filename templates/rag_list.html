@@ -182,6 +182,7 @@
                 <input type="file" name="file_to_uploads" multiple 
                        accept=".pdf,.docx,.csv,.txt,.xlsx,.py" 
                        onchange="validateFiles(this)">
+                <div id="uploaded-files-list"></div>
 
                 <label>Chunking Method:</label>
                 <select name="chunking_method" id="chunking_method">
@@ -257,6 +258,8 @@
         function validateFiles(input) {
             const allowedTypes = ['pdf', 'docx', 'csv', 'txt', 'xlsx', 'py'];
             const maxFiles = 4;
+            const filesList = document.getElementById('uploaded-files-list');
+            filesList.innerHTML = ''; // Clear previous list
 
             if (input.files.length > maxFiles) {
                 alert(`Please select no more than ${maxFiles} files.`);
@@ -271,6 +274,11 @@
                     input.value = '';
                     return false;
                 }
+        
+                // Create and append file name display
+                const fileNameElement = document.createElement('div');
+                fileNameElement.textContent = file.name;
+                filesList.appendChild(fileNameElement);
             }
             return true;
         }
