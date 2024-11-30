@@ -5,6 +5,7 @@ from fastapi.templating import Jinja2Templates
 
 from app import app
 from backend import user_detail
+from backend.straico_platform import list_rag_documents  # Add this import
 # Add template configuration
 templates = Jinja2Templates(directory="templates")
 

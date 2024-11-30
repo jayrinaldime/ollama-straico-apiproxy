@@ -223,3 +223,19 @@ async def _delete_chat(chat_hash):
         response.raise_for_status()
         if response.json():
             return response.json()
+
+async def list_rag_documents():
+    # Using the sample JSON data structure from the previous example
+    return [
+        {
+            "name": "Test1",
+            "type": "RAG Configuration",
+            "size": "Multiple Files",
+            "upload_date": "2024-11-28T06:40:30.386Z",
+            "description": "Test Rag",
+            "original_filename": "models.py, models_to_enum.py, transcript_utils.py, v0_rag.py",
+            "chunk_size": 1000,
+            "chunk_overlap": 50,
+            "buffer_size": 100
+        }
+    ]
