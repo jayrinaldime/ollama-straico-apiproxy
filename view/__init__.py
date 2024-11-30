@@ -27,4 +27,12 @@ async def root(request: Request):
         ],
     })
 
+@app.get("/rag-list", response_class=HTMLResponse)
+async def rag_list(request: Request):
+    rag_docs = await list_rag_documents()
+    return templates.TemplateResponse("rag_list.html", {
+        "request": request,
+        "rag_docs": rag_docs
+    })
+
 
