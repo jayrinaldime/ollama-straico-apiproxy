@@ -1,9 +1,13 @@
-from fastapi import FastAPI, Request, HTTPException
+import tempfile
+from pathlib import Path
+from typing import List
+
+from fastapi import FastAPI, Request, HTTPException, Form, File, UploadFile
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.templating import Jinja2Templates
 
 from app import app
-from backend import user_detail, list_rags, delete_rag
+from backend import user_detail, list_rags, delete_rag, create_rag
 from backend.straico_platform import list_rag_documents  # Add this import
 # Add template configuration
 templates = Jinja2Templates(directory="templates")
@@ -74,7 +78,7 @@ async def create_rag_endpoint(
     with tempfile.TemporaryDirectory() as temp_dir:
         try:
             # Validate files first
-            await validate_uploaded_files(file_to_uploads)
+            # await validate_uploaded_files(file_to_uploads)
             
             # Save files to temporary directory
             file_paths = []
@@ -130,14 +134,3 @@ async def delete_rag_endpoint(rag_id: str):
         )
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-
-
-import os
-import tempfile
-from pathlib import Path
-from typing import List
-
-from fastapi import File, UploadFile, HTTPException, Form
-from fastapi.responses import JSONResponse
-
-logger = logging.getLogger(__name__)

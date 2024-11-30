@@ -175,6 +175,19 @@ async def delete_rag(rag_id: str):
         logger.error(f"Failed to delete RAG: {e}")
         raise
 
+async def create_rag(
+                name,
+                description,
+                original_filename,
+                file_to_uploads,
+                chunking_method,
+                chunk_size,
+                chunk_overlap,
+                breakpoint_threshold_type,
+                buffer_size
+            ):
+    pass
+
 async def list_agents():
     async with aio_straico_client(timeout=TIMEOUT) as client:
         return await client.agents()
