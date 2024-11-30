@@ -3,7 +3,7 @@ import json
 from app import app, logging
 from fastapi import Request
 from fastapi.responses import JSONResponse, StreamingResponse
-from backend import list_model, prompt_completion, user_detail
+from backend import list_model, list_agents, user_detail, delete_agent
 from .response.stream import completion_response
 
 logger = logging.getLogger(__name__)
@@ -19,8 +19,13 @@ def ollama_version():
 
 @app.delete("/api/delete")
 async def ollama_delete(request: Request):
-    data = await request.body()
+    data = await request.json()
     logger.debug(data)
+    model_name = data["name"]
+    if model_name.startswith("agent/"):
+        model_id = model_name.split(":")[-1]
+        r = await delete_agent(model_id)
+
     return ""
 
 
@@ -130,15 +135,14 @@ def show_model_details():
 @app.get("/api/tags")
 async def list_straico_models():
     models = await list_model()
+    agents_request = list_agents()
     if models is None:
         return JSONResponse(content={"models": []})
 
     if "chat" in models:
         models = models["chat"]
 
-    return JSONResponse(
-        content={
-            "models": [
+    response_models = [
                 {
                     "name": m["name"],
                     # Open Web UI does not work without explicit tag
@@ -160,6 +164,35 @@ async def list_straico_models():
                 }
                 for m in models
             ]
+    agents = await agents_request
+    if agents is None or len(agents) ==0:
+        agent_models = []
+    else:
+        agent_models = [
+                {
+                    "name": m["name"],
+                    # Open Web UI does not work without explicit tag
+                    "model": (
+                       f"agent/{m['name']}:{m['_id']}"
+                    ),
+                    "modified_at": m["updatedAt"],
+                    "size": MODEL_SIZE,
+                    "digest": m[
+                        "_id"
+                    ],
+                    "details": {
+                        "format": "gguf",
+                        "family": "llama",
+                        "families": None,
+                        "parameter_size": "",
+                        "quantization_level": "Q4_0",
+                    },
+                }
+                for m in agents
+            ]
+    return JSONResponse(
+        content={
+            "models": response_models+agent_models
         }
     )
 

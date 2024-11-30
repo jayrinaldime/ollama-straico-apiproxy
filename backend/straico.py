@@ -151,6 +151,16 @@ async def list_model():
         return await client.models(v=1)
 
 
+async def list_agents():
+    async with aio_straico_client(timeout=TIMEOUT) as client:
+        return await client.agents()
+
+async def delete_agent(agent_id):
+    async with aio_straico_client(timeout=TIMEOUT) as client:
+        agent = await client.agent_object(agent_id)
+        r = await agent.delete()
+        return r
+
 async def user_detail():
     async with aio_straico_client(timeout=TIMEOUT) as client:
         return await client.user()

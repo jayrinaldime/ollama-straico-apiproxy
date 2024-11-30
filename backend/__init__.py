@@ -11,6 +11,6 @@ if STRAICO_API_KEY.strip().upper() == "TEST":
 
     logger.info("Using Test Backend")
 else:
-    from .straico import prompt_completion, list_model, user_detail, image_generation
+    from .straico import prompt_completion, list_model, list_agents, delete_agent,user_detail, image_generation
 
     logger.info("Using Straico Backend")
