@@ -34,7 +34,7 @@
     </style>
 </head>
 <body>
-    <h1>{{ title }}</h1>
+
     <div class="user-info">
         <div>
             <strong>Name:</strong> {{ user.first_name }} {{ user.last_name }}
@@ -46,6 +46,7 @@
             <strong>Plan:</strong> {{ user.plan }}
         </div>
     </div>
+    <h1>{{ title }}</h1>
     <p class="description">{{ description }}</p>
     <ul>
         {% for link in links %}
