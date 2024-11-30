@@ -1,6 +1,6 @@
 fastapi
 uvicorn
-aio-straico==0.0.7
+aio-straico>=0.1.0
 sentencepiece
 einops
 sentence-transformers
