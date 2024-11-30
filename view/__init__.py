@@ -59,6 +59,67 @@ async def rag_list(request: Request):
         "rag_docs": rag_docs
     })
 
+@app.post("/api/rag/create")
+async def create_rag_endpoint(
+    name: str = Form(...),
+    description: str = Form(...),
+    chunking_method: str = Form('fixed_size'),
+    chunk_size: int = Form(1000),
+    chunk_overlap: int = Form(50),
+    breakpoint_threshold_type: str = Form(None),
+    buffer_size: int = Form(500),
+    file_to_uploads: List[UploadFile] = File(...)
+):
+    # Create a temporary directory to store uploaded files
+    with tempfile.TemporaryDirectory() as temp_dir:
+        try:
+            # Validate files first
+            await validate_uploaded_files(file_to_uploads)
+            
+            # Save files to temporary directory
+            file_paths = []
+            for uploaded_file in file_to_uploads:
+                # Generate a safe filename
+                safe_filename = secure_filename(uploaded_file.filename)
+                file_path = Path(temp_dir) / safe_filename
+                
+                # Write file contents
+                with file_path.open('wb') as buffer:
+                    buffer.write(await uploaded_file.read())
+                file_paths.append(file_path)
+            
+            # Prepare original filenames for tracking
+            original_filenames = ', '.join(f.filename for f in file_to_uploads)
+            
+            # Call RAG creation method
+            rag_result = await create_rag(
+                name=name,
+                description=description,
+                original_filename=original_filenames,
+                file_to_uploads=file_paths,
+                chunking_method=chunking_method,
+                chunk_size=chunk_size,
+                chunk_overlap=chunk_overlap,
+                breakpoint_threshold_type=breakpoint_threshold_type,
+                buffer_size=buffer_size
+            )
+            
+            return JSONResponse(
+                content={
+                    "message": "RAG created successfully", 
+                    "rag_id": rag_result,
+                    "files": original_filenames
+                }
+            )
+        
+        except HTTPException as he:
+            # Re-raise HTTP exceptions
+            raise he
+        except Exception as e:
+            # Log unexpected errors
+            logger.error(f"Unexpected error in RAG creation: {e}")
+            raise HTTPException(status_code=500, detail="Internal server error during RAG creation")
+
 @app.delete("/api/rag/delete/{rag_id}")
 async def delete_rag_endpoint(rag_id: str):
     try:
