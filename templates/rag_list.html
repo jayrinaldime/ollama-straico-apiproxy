@@ -6,7 +6,7 @@
     <style>
         body { 
             font-family: Arial, sans-serif; 
-            max-width: 800px; 
+            max-width: 1000px; 
             margin: 0 auto; 
             padding: 20px; 
             line-height: 1.6; 
@@ -25,6 +25,27 @@
         th {
             background-color: #f4f4f4;
         }
+        .rag-row {
+            cursor: pointer;
+        }
+        .rag-details {
+            display: none;
+            background-color: #f9f9f9;
+        }
+        .rag-details.show {
+            display: table-row;
+        }
+        .delete-btn {
+            background-color: #ff4d4d;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            cursor: pointer;
+            border-radius: 3px;
+        }
+        .delete-btn:hover {
+            background-color: #ff3333;
+        }
     </style>
 </head>
 <body>
@@ -32,23 +53,60 @@
     <table>
         <thead>
             <tr>
-                <th>Document Name</th>
-                <th>Type</th>
-                <th>Size</th>
-                <th>Upload Date</th>
+                <th>Name</th>
+                <th>Description</th>
+                <th>Actions</th>
             </tr>
         </thead>
         <tbody>
             {% for doc in rag_docs %}
-            <tr>
+            <tr class="rag-row" onclick="toggleDetails(this)">
                 <td>{{ doc.name }}</td>
-                <td>{{ doc.type }}</td>
-                <td>{{ doc.size }}</td>
-                <td>{{ doc.upload_date }}</td>
+                <td>{{ doc.description[:100] }}...</td>
+                <td>
+                    <button class="delete-btn" onclick="deleteRag('{{ doc._id }}', event)">Delete</button>
+                </td>
+            </tr>
+            <tr class="rag-details">
+                <td colspan="3">
+                    <strong>Full Details:</strong>
+                    <p>Chunk Size: {{ doc.chunk_size }}</p>
+                    <p>Chunk Overlap: {{ doc.chunk_overlap }}</p>
+                    <p>Buffer Size: {{ doc.buffer_size }}</p>
+                    <p>Chunking Method: {{ doc.chunking_method }}</p>
+                    <p>Original Filename: {{ doc.original_filename }}</p>
+                    <p>RAG URL: <a href="{{ doc.rag_url }}" target="_blank">View RAG</a></p>
+                </td>
             </tr>
             {% endfor %}
         </tbody>
     </table>
+
+    <script>
+        function toggleDetails(row) {
+            if (event.target.classList.contains('delete-btn')) return;
+            const detailsRow = row.nextElementSibling;
+            detailsRow.classList.toggle('show');
+        }
+
+        function deleteRag(ragId, event) {
+            event.stopPropagation();
+            if (confirm('Are you sure you want to delete this RAG?')) {
+                fetch(`/api/rag/delete/${ragId}`, { method: 'DELETE' })
+                    .then(response => {
+                        if (response.ok) {
+                            window.location.reload();
+                        } else {
+                            alert('Failed to delete RAG');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('An error occurred while deleting the RAG');
+                    });
+            }
+        }
+    </script>
     <p><a href="/">Back to Home</a></p>
 </body>
 </html>
