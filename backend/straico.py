@@ -169,7 +169,7 @@ async def delete_rag(rag_id: str):
     try:
         async with aio_straico_client(timeout=TIMEOUT) as client:
             # Assuming the method to delete a RAG is `client.delete_rag(rag_id)`
-            result = await client.delete_rag(rag_id)
+            result = await client.rag_delete(rag_id)
             return result
     except Exception as e:
         logger.error(f"Failed to delete RAG: {e}")

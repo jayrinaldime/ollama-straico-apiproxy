@@ -1,9 +1,9 @@
-from fastapi import FastAPI, Request
-from fastapi.responses import HTMLResponse
+from fastapi import FastAPI, Request, HTTPException
+from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.templating import Jinja2Templates
 
 from app import app
-from backend import user_detail, list_rags
+from backend import user_detail, list_rags, delete_rag
 from backend.straico_platform import list_rag_documents  # Add this import
 # Add template configuration
 templates = Jinja2Templates(directory="templates")
