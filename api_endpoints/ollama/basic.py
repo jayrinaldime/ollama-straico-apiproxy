@@ -134,8 +134,8 @@ def show_model_details():
 
 @app.get("/api/tags")
 async def list_straico_models():
-    models = await list_model()
     agents_request = list_agents()
+    models = await list_model()
     if models is None:
         return JSONResponse(content={"models": []})
 
