@@ -1,0 +1,19 @@
+[{"__v": 0,
+  "_id": "674abdb55962c57393ecd428",
+  "createdAt": "2024-11-30T07:24:37.358Z",
+  "custom_prompt": "You are helpful **Python** coding assistant for the "
+                   "library aio-straico. Always answer using the context "
+                   "provided. Please do not answer if no information is "
+                   "available for the user question.",
+  "default_llm": "cohere/command-r-08-2024",
+  "description": "An Agent that understand the code for aio-straico library",
+  "interaction_count": 0,
+  "last_interaction": null,
+  "name": "AIO Straico Python Agent",
+  "rag": "674a95ecf30912c026ccb04c",
+  "status": "active",
+  "tags": ["Python", "aio-straico"],
+  "updatedAt": "2024-11-30T07:24:38.364Z",
+  "user_id": "123456",
+  "uuidv4": "4040de50-deef-4b41-94d6-b1190a20596e",
+  "visibility": "private"}]
