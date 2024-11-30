@@ -161,6 +161,10 @@ async def list_model():
         return await client.models(v=1)
 
 
+async def list_rags():
+    async with aio_straico_client(timeout=TIMEOUT) as client:
+        return await client.rags()
+
 async def list_agents():
     async with aio_straico_client(timeout=TIMEOUT) as client:
         return await client.agents()

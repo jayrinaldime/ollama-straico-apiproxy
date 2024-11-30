@@ -2,9 +2,8 @@ from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 
-
 from app import app
-from backend import user_detail
+from backend import user_detail, list_rags
 from backend.straico_platform import list_rag_documents  # Add this import
 # Add template configuration
 templates = Jinja2Templates(directory="templates")
@@ -29,7 +28,7 @@ async def root(request: Request):
 
 @app.get("/rag-list", response_class=HTMLResponse)
 async def rag_list(request: Request):
-    rag_docs = await list_rag_documents()
+    rag_docs = await list_rags()
     return templates.TemplateResponse("rag_list.html", {
         "request": request,
         "rag_docs": rag_docs

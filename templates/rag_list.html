@@ -69,13 +69,14 @@
             </tr>
             <tr class="rag-details">
                 <td colspan="3">
-                    <strong>Full Details:</strong>
+                    <strong>Details:</strong>
+                    <p>Files: {{ doc.original_filename }}</p>
+                    <p>Breakpoint Threshold Type: {{ doc.breakpoint_threshold_type }}</p>
+                    <p>Chunking Method: {{ doc.chunking_method }}</p>
                     <p>Chunk Size: {{ doc.chunk_size }}</p>
                     <p>Chunk Overlap: {{ doc.chunk_overlap }}</p>
                     <p>Buffer Size: {{ doc.buffer_size }}</p>
-                    <p>Chunking Method: {{ doc.chunking_method }}</p>
-                    <p>Original Filename: {{ doc.original_filename }}</p>
-                    <p>RAG URL: <a href="{{ doc.rag_url }}" target="_blank">View RAG</a></p>
+                    <p>Created Data: {{doc.createdAt}}</p>
                 </td>
             </tr>
             {% endfor %}

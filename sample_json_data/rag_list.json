@@ -1,4 +1,4 @@
-{"__v": 0,
+[{"__v": 0,
  "_id": "6748105ef30912c026cc8f6f",
  "breakpoint_threshold_type": "percentile",
  "buffer_size": 100,
@@ -12,4 +12,4 @@
                       "v0_rag.py",
  "rag_url": "https://prompt-rack.s3.amazonaws.com/api/rag/123456/11d90b49-d23e-4656-ac7c-3016bab445db/index.faiss",
  "updatedAt": "2024-11-28T06:40:30.386Z",
- "user_id": "123456"}
+ "user_id": "123456"}]
