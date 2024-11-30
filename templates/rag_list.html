@@ -166,10 +166,40 @@
             <span class="close">&times;</span>
             <h2>Add New RAG</h2>
             <form id="add-rag-form">
-                <!-- Placeholder form fields - to be completed later -->
                 <input type="text" name="name" placeholder="RAG Name" required>
                 <textarea name="description" placeholder="Description" required></textarea>
-                <!-- More fields will be added later -->
+    
+                <label>Chunking Method:</label>
+                <select name="chunking_method" id="chunking_method">
+                    <option value="fixed_size">Fixed Size</option>
+                    <option value="recursive">Recursive</option>
+                    <option value="markdown">Markdown</option>
+                    <option value="python">Python</option>
+                    <option value="semantic">Semantic</option>
+                </select>
+
+                <!-- Conditional Chunking Fields -->
+                <div id="chunk-size-overlap" style="display:block;">
+                    <input type="number" name="chunk_size" placeholder="Chunk Size (default 1000)" value="1000">
+                    <input type="number" name="chunk_overlap" placeholder="Chunk Overlap (default 50)" value="50">
+                </div>
+
+                <div id="breakpoint-threshold" style="display:none;">
+                    <label>Breakpoint Threshold Type:</label>
+                    <select name="breakpoint_threshold_type">
+                        <option value="percentile">Percentile</option>
+                        <option value="interquartile">Interquartile</option>
+                        <option value="standard_deviation">Standard Deviation</option>
+                        <option value="gradient">Gradient</option>
+                    </select>
+                    <input type="number" name="buffer_size" placeholder="Buffer Size (default 500)" value="500">
+                </div>
+
+                <label>Upload Files (max 4, .pdf, .docx, .csv, .txt, .xlsx, .py):</label>
+                <input type="file" name="file_to_uploads" multiple 
+                       accept=".pdf,.docx,.csv,.txt,.xlsx,.py" 
+                       onchange="validateFiles(this)">
+
                 <button type="submit">Add RAG</button>
             </form>
         </div>
@@ -207,6 +237,46 @@
             alert('RAG addition will be implemented');
             addRagModal.style.display = "none";
         }
+
+        function validateFiles(input) {
+            const allowedTypes = ['pdf', 'docx', 'csv', 'txt', 'xlsx', 'py'];
+            const maxFiles = 4;
+
+            if (input.files.length > maxFiles) {
+                alert(`Please select no more than ${maxFiles} files.`);
+                input.value = '';
+                return false;
+            }
+
+            for (let file of input.files) {
+                const fileExtension = file.name.split('.').pop().toLowerCase();
+                if (!allowedTypes.includes(fileExtension)) {
+                    alert(`Invalid file type: ${file.name}. Allowed types are: ${allowedTypes.join(', ')}`);
+                    input.value = '';
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        document.getElementById('chunking_method').addEventListener('change', function() {
+            const chunkSizeOverlay = document.getElementById('chunk-size-overlap');
+            const breakpointThreshold = document.getElementById('breakpoint-threshold');
+
+            switch(this.value) {
+                case 'semantic':
+                    chunkSizeOverlay.style.display = 'none';
+                    breakpointThreshold.style.display = 'block';
+                    break;
+                case 'fixed_size':
+                case 'recursive':
+                case 'markdown':
+                case 'python':
+                    chunkSizeOverlay.style.display = 'block';
+                    breakpointThreshold.style.display = 'none';
+                    break;
+            }
+        });
     </script>
     <p><a href="/">Back to Home</a></p>
 </body>
