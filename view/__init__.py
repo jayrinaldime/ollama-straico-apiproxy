@@ -14,6 +14,12 @@ async def root(request: Request):
         "request": request,
         "title": "Straico Proxy API Services",
         "description": "Welcome to the Straico API platform. Explore our available services and endpoints.",
+        "user": {
+            "first_name": "Jay",
+            "last_name": "Rinaldi", 
+            "coins": 772594.06, 
+            "plan": "Diamond Pack"
+        },
         "links": [
             {"name": "API Documentation", "url": "/docs"},
             {"name": "Swagger UI", "url": "/redoc"},
@@ -21,5 +27,4 @@ async def root(request: Request):
             {"name": "LM Studio / OpenAI Compatible Model List", "url": "/v1/models"},
             {"name": "User Details", "url": "/api/user"},
         ],
-
     })
