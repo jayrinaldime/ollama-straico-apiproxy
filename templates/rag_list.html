@@ -69,14 +69,36 @@
             </tr>
             <tr class="rag-details">
                 <td colspan="3">
-                    <strong>Details:</strong>
-                    <p>Files: {{ doc.original_filename }}</p>
-                    <p>Breakpoint Threshold Type: {{ doc.breakpoint_threshold_type }}</p>
-                    <p>Chunking Method: {{ doc.chunking_method }}</p>
-                    <p>Chunk Size: {{ doc.chunk_size }}</p>
-                    <p>Chunk Overlap: {{ doc.chunk_overlap }}</p>
-                    <p>Buffer Size: {{ doc.buffer_size }}</p>
-                    <p>Created Data: {{doc.createdAt}}</p>
+                    <table style="width: 100%;">
+                        <tr>
+                            <td style="text-align: right; width: 30%; font-weight: bold;">Files:</td>
+                            <td>{{ doc.original_filename }}</td>
+                        </tr>
+                        <tr>
+                            <td style="text-align: right; font-weight: bold;">Breakpoint Threshold Type:</td>
+                            <td>{{ doc.breakpoint_threshold_type }}</td>
+                        </tr>
+                        <tr>
+                            <td style="text-align: right; font-weight: bold;">Chunking Method:</td>
+                            <td>{{ doc.chunking_method }}</td>
+                        </tr>
+                        <tr>
+                            <td style="text-align: right; font-weight: bold;">Chunk Size:</td>
+                            <td>{{ doc.chunk_size }}</td>
+                        </tr>
+                        <tr>
+                            <td style="text-align: right; font-weight: bold;">Chunk Overlap:</td>
+                            <td>{{ doc.chunk_overlap }}</td>
+                        </tr>
+                        <tr>
+                            <td style="text-align: right; font-weight: bold;">Buffer Size:</td>
+                            <td>{{ doc.buffer_size }}</td>
+                        </tr>
+                        <tr>
+                            <td style="text-align: right; font-weight: bold;">Created Date:</td>
+                            <td>{{ doc.createdAt }}</td>
+                        </tr>
+                    </table>
                 </td>
             </tr>
             {% endfor %}
