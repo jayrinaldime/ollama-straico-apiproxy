@@ -34,4 +34,15 @@ async def rag_list(request: Request):
         "rag_docs": rag_docs
     })
 
+@app.delete("/api/rag/delete/{rag_id}")
+async def delete_rag_endpoint(rag_id: str):
+    try:
+        result = await delete_rag(rag_id)
+        return JSONResponse(
+            content={"message": "RAG deleted successfully", "result": result}, 
+            status_code=200
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 
