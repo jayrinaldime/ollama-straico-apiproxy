@@ -2,3 +2,4 @@ fastapi
 uvicorn
 aio-straico>=0.1.0
 python-multipart
+jinja2

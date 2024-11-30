@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ title }}</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            max-width: 800px; 
+            margin: 0 auto; 
+            padding: 20px; 
+            line-height: 1.6; 
+        }
+        h1 { color: #333; }
+        .description { color: #666; }
+    </style>
+</head>
+<body>
+    <h1>{{ title }}</h1>
+    <p class="description">{{ description }}</p>
+    <ul>
+        {% for link in links %}
+        <li><a href="{{ link.url }}">{{ link.name }}</a></li>
+        {% endfor %}
+    </ul>
+</body>
+</html>
