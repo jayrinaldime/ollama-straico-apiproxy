@@ -7,7 +7,7 @@ from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.templating import Jinja2Templates
 
 from app import app
-from backend import user_detail, list_rags, delete_rag, create_rag, list_agents, get_model_mapping
+from backend import user_detail, list_rags, delete_rag, create_rag, list_agents, delete_agent, get_model_mapping
 # Add template configuration
 templates = Jinja2Templates(directory="templates")
 
@@ -141,3 +141,14 @@ async def agent_list(request: Request):
         "request": request,
         "agents": agents
     })
+
+@app.delete("/api/agent/delete/{agent_id}")
+async def delete_agent_endpoint(agent_id: str):
+    try:
+        result = await delete_agent(agent_id)
+        return JSONResponse(
+            content={"message": "Agent deleted successfully", "result": result},
+            status_code=200
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
