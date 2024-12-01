@@ -7,8 +7,7 @@ from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.templating import Jinja2Templates
 
 from app import app
-from backend import user_detail, list_rags, delete_rag, create_rag
-from backend.straico_platform import list_rag_documents  # Add this import
+from backend import user_detail, list_rags, delete_rag, create_rag, list_agents, get_model_mapping
 # Add template configuration
 templates = Jinja2Templates(directory="templates")
 
@@ -17,6 +16,7 @@ MAX_FILE_SIZE = 10 * 1024 * 1024  # 10 MB
 ALLOWED_EXTENSIONS = {'.pdf', '.docx', '.csv', '.txt', '.xlsx', '.py'}
 MAX_FILES = 4
 
+from asyncio import gather
 def secure_filename(filename):
     """
     Generate a secure filename by removing potentially dangerous characters
@@ -49,6 +49,7 @@ async def root(request: Request):
             {"name": "LM Studio / OpenAI Compatible Model List", "url": "/v1/models"},
             {"name": "User Details", "url": "/api/user"},
             {"name": "RAG Management", "url": "/rag-list"},
+            {"name": "Agent Management", "url": "/agent-list"},
         ],
     })
 
@@ -127,3 +128,16 @@ async def delete_rag_endpoint(rag_id: str):
         )
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/agent-list", response_class=HTMLResponse)
+async def agent_list(request: Request):
+    agents,  models = await gather(list_agents(), get_model_mapping())
+    model_mapping = dict([(m["model"], m) for m in models])
+    for agent in agents:
+        default_llm = agent["default_llm"]
+        agent["model_name"] = model_mapping[default_llm]["name"]
+    return templates.TemplateResponse("agent_list.html", {
+        "request": request,
+        "agents": agents
+    })
