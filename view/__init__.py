@@ -18,6 +18,7 @@ from backend import (
     get_model_mapping,
     update_agent,
 )
+from data.agent_data import chat_settings_write
 
 # Add template configuration
 templates = Jinja2Templates(directory="templates")
@@ -235,44 +236,36 @@ async def update_agent_endpoint(
         content={"message": "Agent updated successfully", "agent_id": agent_id}
     )
 
-@app.post("/api/agent/chat-settings/{agent_id}")
+@app.post("/api/agent/chat_settings/{agent_id}")
 async def update_agent_chat_settings_endpoint(
     agent_id: str,
     search_type: str = Form(...),
-    k: int = Form(None),
-    fetch_k: int = Form(None),
-    lambda_mult: float = Form(None),
-    score_threshold: float = Form(None),
+    k: str = Form(None),
+    fetch_k: str = Form(None),
+    lambda_mult: str = Form(None),
+    score_threshold: str = Form(None),
 ):
-    chat_settings = {
-        "search_type": search_type,
-        "k": k,
-        "fetch_k": fetch_k,
-        "lambda_mult": lambda_mult,
-        "score_threshold": score_threshold,
-    }
-
-    # Filter out None values
-    chat_settings = {key: value for key, value in chat_settings.items() if value is not None}
-
-    # Validate chat settings
     valid_search_types = {"similarity", "mmr", "similarity_score_threshold"}
-    if chat_settings.get("search_type") not in valid_search_types:
-        raise HTTPException(status_code=400, detail=f"Invalid search type {chat_settings.get('search_type')}")
+    if search_type not in valid_search_types:
+        raise HTTPException(status_code=400, detail=f"Invalid search type {search_type}")
 
-    # Ensure required fields are present
-    if chat_settings["search_type"] == "similarity" and chat_settings.get("k") is None:
-        raise HTTPException(status_code=400, detail="Number of documents (k) is required for similarity search.")
-    elif chat_settings["search_type"] == "mmr" and (chat_settings.get("fetch_k") is None or chat_settings.get("lambda_mult") is None):
-        raise HTTPException(status_code=400, detail="Fetch K and Lambda Multiplier are required for MMR search.")
-    elif chat_settings["search_type"] == "similarity_score_threshold" and chat_settings.get("score_threshold") is None:
-        raise HTTPException(status_code=400, detail="Score Threshold is required for similarity score threshold search.")
+    chat_settings = {"search_type": search_type}
+    if k is not None and len(k) != 0:
+        chat_settings["k"] = k
 
-    try:
-        result = await update_agent_chat_settings(agent_id, chat_settings)
-        return JSONResponse(
-            content={"message": "Chat settings updated successfully", "result": result},
-            status_code=200,
-        )
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+    if fetch_k is not None and len(fetch_k) != 0:
+        chat_settings["fetch_k"] = k
+
+    if lambda_mult is not None and len(lambda_mult) != 0:
+        chat_settings["lambda_mult"] = k
+
+    if score_threshold is not None and len(score_threshold) != 0:
+        chat_settings["score_threshold"] = k
+
+    chat_settings_write(agent_id, chat_settings)
+
+    return JSONResponse(
+        content={"message": "Chat settings updated successfully", "result": "Saved"},
+        status_code=200,
+    )
+

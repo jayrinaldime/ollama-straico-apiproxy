@@ -425,22 +425,15 @@
                     <h2>Agent Chat Settings</h2>
                     <form id="chat-settings-form">
                         <input type="hidden" name="agent_id" value="${agentId}">
-                    
-                        <label>Temperature:</label>
-                        <input type="number" name="temperature" min="0" max="2" step="0.1" placeholder="0.7">
-                    
-                        <label>Max Tokens:</label>
-                        <input type="number" name="max_tokens" min="1" placeholder="1000">
-                    
+
                         <label>Search Type:</label>
                         <select name="search_type" id="search-type">
-                            <option value="">Select Search Type</option>
                             <option value="similarity">Similarity</option>
                             <option value="mmr">MMR (Maximal Marginal Relevance)</option>
                             <option value="similarity_score_threshold">Similarity Score Threshold</option>
                         </select>
                     
-                        <div id="k-container" style="display:none;">
+                        <div id="k-container" >
                             <label>K (Number of Documents):</label>
                             <input type="number" name="k" min="1" placeholder="Number of documents to return">
                         </div>
