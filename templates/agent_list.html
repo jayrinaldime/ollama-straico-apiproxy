@@ -126,17 +126,18 @@
                 <td>{{ doc.name }}</td>
                 <td>{{ doc.description[:100] }}...</td>
                 <td>
+                    <button class="update-btn" onclick="updateAgent('{{ doc._id }}', event)">Details</button>
                     <button class="setting-btn" onclick="agentChatSetting('{{ doc._id }}', event)">Chat Settings</button>
-                    <button class="update-btn" onclick="updateAgent('{{ doc._id }}', event)">Update</button>
                     <button class="delete-btn" onclick="deleteAgent('{{ doc._id }}', event)">Delete</button>
                 </td>
             </tr>
             <tr class="agent-details">
                 <td colspan="3">
+                    <h3>Details</h3>
                     <table style="width: 100%;">
                         <tr>
                             <td style="text-align: right; width: 30%; font-weight: bold;">Name:</td>
-                            <td>{{ doc.name }}</td>
+                            <td >{{ doc.name }}</td>
                         </tr>
                         <tr>
                             <td style="text-align: right; width: 30%; font-weight: bold;">Description:</td>
@@ -166,6 +167,32 @@
                             <td style="text-align: right; font-weight: bold;">Updated Date:</td>
                             <td>{{ doc.updatedAt }}</td>
                         </tr>
+                    </table>
+                    <h3>Chat Settings</h3>
+                    <table style="width: 100%;">
+                        <tr>
+                            <td style="text-align: right; width: 30%; font-weight: bold;">Search Type:</td>
+                            <td>{{ doc.chat.search_type_name }}</td>
+                        </tr>
+                        <tr>
+                            <td style="text-align: right; font-weight: bold;">K:</td>
+                            <td>{{ doc.chat.k }}</td>
+                        </tr>
+
+                        <tr>
+                            <td style="text-align: right; font-weight: bold;">Fetch K:</td>
+                            <td>{{ doc.chat.fetch_k }}</td>
+                        </tr>
+                        <tr>
+                            <td style="text-align: right; font-weight: bold;">Lambda Mult (MMR Diversity):</td>
+                            <td>{{ doc.chat.lambda_mult }}</td>
+                        </tr>
+
+                         <tr>
+                            <td style="text-align: right; font-weight: bold;">Score Threshold:</td>
+                            <td>{{ doc.chat.score_threshold }}</td>
+                        </tr>
+
                     </table>
                 </td>
             </tr>

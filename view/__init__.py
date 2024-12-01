@@ -18,7 +18,7 @@ from backend import (
     get_model_mapping,
     update_agent,
 )
-from data.agent_data import chat_settings_write
+from data.agent_data import chat_settings_write, chat_settings_read
 
 # Add template configuration
 templates = Jinja2Templates(directory="templates")
@@ -61,7 +61,6 @@ async def root(request: Request):
             "links": [
                 {"name": "API Documentation", "url": "/docs"},
                 {"name": "Swagger UI", "url": "/redoc"},
-
                 {"name": "Ollama Model List", "url": "/api/tags"},
                 {
                     "name": "LM Studio / OpenAI Compatible Model List",
@@ -98,9 +97,6 @@ async def create_rag_endpoint(
     # Create a temporary directory to store uploaded files
     with tempfile.TemporaryDirectory() as temp_dir:
         try:
-            # Validate files first
-            # await validate_uploaded_files(file_to_uploads)
-
             # Save files to temporary directory
             file_paths = []
             for uploaded_file in file_to_uploads:
@@ -157,13 +153,26 @@ async def agent_list(request: Request):
     agents, models, rags = await gather(list_agents(), get_model_mapping(), list_rags())
     model_mapping = dict([(m["model"], m) for m in models])
     rag_mapping = dict([(r["_id"], r) for r in rags])
+    search_type_mapping = {
+        "similarity": "Similarity",
+        "mmr": "MMR (Maximal Marginal Relevance)",
+        "similarity_score_threshold": "Similarity Score Threshold",
+    }
     for agent in agents:
+
         default_llm = agent["default_llm"]
         agent["model_name"] = model_mapping[default_llm]["name"]
         agent["tags"] = ", ".join(agent["tags"])
+
         rag_id = agent["rag"]
         if rag_id in rag_mapping:
             agent["rag"] = rag_mapping.get(rag_id)
+
+        agent_id = agent["_id"]
+        chat_settings = chat_settings_read(agent_id)
+        agent["chat"] = chat_settings
+        search_type = chat_settings.get("search_type" or "similarity")
+        agent["chat"]["search_type_name"] = search_type_mapping.get(search_type)
 
     return templates.TemplateResponse(
         "agent_list.html",
@@ -236,6 +245,7 @@ async def update_agent_endpoint(
         content={"message": "Agent updated successfully", "agent_id": agent_id}
     )
 
+
 @app.post("/api/agent/chat_settings/{agent_id}")
 async def update_agent_chat_settings_endpoint(
     agent_id: str,
@@ -247,20 +257,22 @@ async def update_agent_chat_settings_endpoint(
 ):
     valid_search_types = {"similarity", "mmr", "similarity_score_threshold"}
     if search_type not in valid_search_types:
-        raise HTTPException(status_code=400, detail=f"Invalid search type {search_type}")
+        raise HTTPException(
+            status_code=400, detail=f"Invalid search type {search_type}"
+        )
 
     chat_settings = {"search_type": search_type}
     if k is not None and len(k) != 0:
-        chat_settings["k"] = k
+        chat_settings["k"] = int(k)
 
     if fetch_k is not None and len(fetch_k) != 0:
-        chat_settings["fetch_k"] = k
+        chat_settings["fetch_k"] = int(fetch_k)
 
     if lambda_mult is not None and len(lambda_mult) != 0:
-        chat_settings["lambda_mult"] = k
+        chat_settings["lambda_mult"] = float(lambda_mult)
 
     if score_threshold is not None and len(score_threshold) != 0:
-        chat_settings["score_threshold"] = k
+        chat_settings["score_threshold"] = float(score_threshold)
 
     chat_settings_write(agent_id, chat_settings)
 
@@ -268,4 +280,3 @@ async def update_agent_chat_settings_endpoint(
         content={"message": "Chat settings updated successfully", "result": "Saved"},
         status_code=200,
     )
-

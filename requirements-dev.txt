@@ -1,6 +1,5 @@
 requests
 flask
-pytest
-pytest-asyncio
+aio-straico>=0.1.1
 ollama
 python-multipart

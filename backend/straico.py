@@ -12,7 +12,7 @@ from aio_straico.api.v0 import ImageSize
 from .straico_platform import autoerase_chat, autoerase_upload_image
 from .straico_platform import models as platform_models
 from datetime import timezone, datetime
-
+from data.agent_data import chat_settings_read
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
@@ -83,7 +83,9 @@ async def model_listing():
 
 async def agent_promp_completion(agent_id, msg):
     async with aio_straico_client(timeout=TIMEOUT) as client:
-        response = await client.agent_prompt_completion(agent_id, msg)
+        settings = chat_settings_read(agent_id)
+
+        response = await client.agent_prompt_completion(agent_id, msg, **settings)
         return response["answer"]
 
 
@@ -272,6 +274,8 @@ async def image_generation(model: str, n: int, prompt: str, size: ImageSize):
             variations=n,
         )
         return images
+
+
 async def update_agent_chat_settings(agent_id, chat_settings):
     async with aio_straico_client(timeout=TIMEOUT) as client:
         # Validate chat settings
@@ -280,15 +284,27 @@ async def update_agent_chat_settings(agent_id, chat_settings):
             raise Exception(f"Invalid search type {chat_settings.get('search_type')}")
 
         # Ensure required fields are present
-        if chat_settings["search_type"] == "similarity" and chat_settings.get("k") is None:
-            raise Exception("Number of documents (k) is required for similarity search.")
-        elif chat_settings["search_type"] == "mmr" and (chat_settings.get("fetch_k") is None or chat_settings.get("lambda_mult") is None):
-            raise Exception("Fetch K and Lambda Multiplier are required for MMR search.")
-        elif chat_settings["search_type"] == "similarity_score_threshold" and chat_settings.get("score_threshold") is None:
-            raise Exception("Score Threshold is required for similarity score threshold search.")
+        if (
+            chat_settings["search_type"] == "similarity"
+            and chat_settings.get("k") is None
+        ):
+            raise Exception(
+                "Number of documents (k) is required for similarity search."
+            )
+        elif chat_settings["search_type"] == "mmr" and (
+            chat_settings.get("fetch_k") is None
+            or chat_settings.get("lambda_mult") is None
+        ):
+            raise Exception(
+                "Fetch K and Lambda Multiplier are required for MMR search."
+            )
+        elif (
+            chat_settings["search_type"] == "similarity_score_threshold"
+            and chat_settings.get("score_threshold") is None
+        ):
+            raise Exception(
+                "Score Threshold is required for similarity score threshold search."
+            )
 
-        result = await client.agent_update(
-            agent_id,
-            chat_settings=chat_settings
-        )
+        result = await client.agent_update(agent_id, chat_settings=chat_settings)
         return result
