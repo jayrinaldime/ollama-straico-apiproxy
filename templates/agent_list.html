@@ -411,6 +411,130 @@
                     });
             }
         }
+
+        function agentChatSetting(agentId, event) {
+            event.stopPropagation();
+
+            // Create chat settings modal
+            const chatSettingsModal = document.createElement('div');
+            chatSettingsModal.id = 'chat-settings-modal';
+            chatSettingsModal.className = 'modal';
+            chatSettingsModal.innerHTML = `
+                <div class="modal-content">
+                    <span class="close" onclick="this.closest('.modal').remove()">&times;</span>
+                    <h2>Agent Chat Settings</h2>
+                    <form id="chat-settings-form">
+                        <input type="hidden" name="agent_id" value="${agentId}">
+                    
+                        <label>Temperature:</label>
+                        <input type="number" name="temperature" min="0" max="2" step="0.1" placeholder="0.7">
+                    
+                        <label>Max Tokens:</label>
+                        <input type="number" name="max_tokens" min="1" placeholder="1000">
+                    
+                        <label>Search Type:</label>
+                        <select name="search_type" id="search-type">
+                            <option value="">Select Search Type</option>
+                            <option value="similarity">Similarity</option>
+                            <option value="mmr">MMR (Maximal Marginal Relevance)</option>
+                            <option value="similarity_score_threshold">Similarity Score Threshold</option>
+                        </select>
+                    
+                        <div id="k-container" style="display:none;">
+                            <label>K (Number of Documents):</label>
+                            <input type="number" name="k" min="1" placeholder="Number of documents to return">
+                        </div>
+                    
+                        <div id="fetch-k-container" style="display:none;">
+                            <label>Fetch K:</label>
+                            <input type="number" name="fetch_k" min="1" placeholder="Documents to pass to MMR algorithm">
+                        
+                            <label>Lambda Mult (MMR Diversity):</label>
+                            <input type="number" name="lambda_mult" min="0" max="1" step="0.1" placeholder="0.5">
+                        </div>
+                    
+                        <div id="score-threshold-container" style="display:none;">
+                            <label>Score Threshold:</label>
+                            <input type="number" name="score_threshold" min="0" max="1" step="0.1" placeholder="Minimum relevance threshold">
+                        </div>
+                    
+                        <button type="submit">Save Chat Settings</button>
+                    </form>
+                </div>
+            `;
+
+            // Add modal to body
+            document.body.appendChild(chatSettingsModal);
+            chatSettingsModal.style.display = 'block';
+
+            // Dynamic field display based on search type
+            const searchTypeSelect = chatSettingsModal.querySelector('#search-type');
+            const kContainer = chatSettingsModal.querySelector('#k-container');
+            const fetchKContainer = chatSettingsModal.querySelector('#fetch-k-container');
+            const scoreThresholdContainer = chatSettingsModal.querySelector('#score-threshold-container');
+
+            searchTypeSelect.addEventListener('change', function() {
+                kContainer.style.display = 'none';
+                fetchKContainer.style.display = 'none';
+                scoreThresholdContainer.style.display = 'none';
+
+                switch(this.value) {
+                    case 'similarity':
+                        kContainer.style.display = 'block';
+                        break;
+                    case 'mmr':
+                        fetchKContainer.style.display = 'block';
+                        break;
+                    case 'similarity_score_threshold':
+                        scoreThresholdContainer.style.display = 'block';
+                        break;
+                }
+            });
+
+            // Close modal when clicking outside
+            chatSettingsModal.addEventListener('click', function(event) {
+                if (event.target === chatSettingsModal) {
+                    chatSettingsModal.remove();
+                }
+            });
+
+            // Form submission
+            const chatSettingsForm = chatSettingsModal.querySelector('#chat-settings-form');
+            chatSettingsForm.onsubmit = async function(event) {
+                event.preventDefault();
+
+                const form = event.target;
+                const formData = new FormData(form);
+                const agentId = formData.get('agent_id');
+                const submitButton = form.querySelector('button[type="submit"]');
+
+                submitButton.disabled = true;
+                submitButton.textContent = 'Saving Settings...';
+
+                try {
+                    const response = await fetch(`/api/agent/chat_settings/${agentId}`, {
+                        method: 'POST',
+                        body: formData
+                    });
+
+                    const responseData = await response.json();
+
+                    if (!response.ok) {
+                        throw new Error(responseData.detail || 'Failed to update Chat Settings');
+                    }
+
+                    alert(`Chat Settings updated successfully!\nAgent ID: ${agentId}`);
+                    chatSettingsModal.remove();
+                    window.location.reload();
+                } catch (error) {
+                    console.error('Error:', error);
+                    alert(error.message);
+                } finally {
+                    submitButton.disabled = false;
+                    submitButton.textContent = 'Save Chat Settings';
+                }
+            };
+        }
     </script>
     <p><a href="/">Back to Home</a></p>
 </body>
