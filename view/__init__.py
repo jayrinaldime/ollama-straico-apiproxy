@@ -159,7 +159,6 @@ async def agent_list(request: Request):
         "similarity_score_threshold": "Similarity Score Threshold",
     }
     for agent in agents:
-
         default_llm = agent["default_llm"]
         agent["model_name"] = model_mapping[default_llm]["name"]
         agent["tags"] = ", ".join(agent["tags"])
@@ -167,6 +166,8 @@ async def agent_list(request: Request):
         rag_id = agent.get("rag")
         if rag_id in rag_mapping:
             agent["rag"] = rag_mapping.get(rag_id)
+        else:
+            agent["rag"] = ""
 
         agent_id = agent["_id"]
         chat_settings = chat_settings_read(agent_id)
