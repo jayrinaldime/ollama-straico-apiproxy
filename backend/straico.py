@@ -80,10 +80,12 @@ async def model_listing():
         model_id_mapping[model_name] = _id
     return model_id_mapping
 
+
 async def agent_promp_completion(agent_id, msg):
     async with aio_straico_client(timeout=TIMEOUT) as client:
         response = await client.agent_prompt_completion(agent_id, msg)
         return response["answer"]
+
 
 async def prompt_completion(
     msg: str,
@@ -99,10 +101,10 @@ async def prompt_completion(
     is_model_found = model in model_values
 
     if not is_model_found:
-        if model.startswith("agent/"): # lmstudio agent request
+        if model.startswith("agent/"):  # lmstudio agent request
             model = model.split(":")[-1]
             return await agent_promp_completion(model, msg)
-        elif model.startswith("Agent: "): # Ollama agent request
+        elif model.startswith("Agent: "):  # Ollama agent request
             model = model.split("(")[-1][:-1]
             return await agent_promp_completion(model, msg)
         elif model.endswith(":latest"):
@@ -139,7 +141,9 @@ async def prompt_completion(
             local_image_path = []
             for index, image in enumerate(images):
                 utc_now = datetime.now(timezone.utc)
-                str_now = utc_now.strftime("%Y-%m-%dT%H:%M:%S.%f")[:-3] + f"{index:03}Z.png"
+                str_now = (
+                    utc_now.strftime("%Y-%m-%dT%H:%M:%S.%f")[:-3] + f"{index:03}Z.png"
+                )
                 pathfile = Path(tmpdirname) / str_now
                 with pathfile.open("wb") as fp:
                     data = base64.urlsafe_b64decode(
@@ -167,6 +171,7 @@ async def list_rags():
     async with aio_straico_client(timeout=TIMEOUT) as client:
         return await client.rags()
 
+
 async def delete_rag(rag_id: str):
     try:
         async with aio_straico_client(timeout=TIMEOUT) as client:
@@ -179,38 +184,42 @@ async def delete_rag(rag_id: str):
 
 
 async def create_rag(
-        name: str,
-        description: str,
-        file_to_uploads: List[Path],
-        chunking_method: str = 'fixed_size',
-        chunk_size: int = 1000,
-        chunk_overlap: int = 50,
-        breakpoint_threshold_type: str = None,
-        buffer_size: int = 500
+    name: str,
+    description: str,
+    file_to_uploads: List[Path],
+    chunking_method: str = "fixed_size",
+    chunk_size: int = 1000,
+    chunk_overlap: int = 50,
+    breakpoint_threshold_type: str = None,
+    buffer_size: int = 500,
 ):
     try:
         async with aio_straico_client(timeout=TIMEOUT) as client:
             # Prepare RAG creation parameters
             kwargs = {
-               'breakpoint_threshold_type': breakpoint_threshold_type,
-                'buffer_size': buffer_size,
-                'chunking_method': chunking_method,
-                'chunk_size': chunk_size,
-                'chunk_overlap': chunk_overlap
+                "breakpoint_threshold_type": breakpoint_threshold_type,
+                "buffer_size": buffer_size,
+                "chunking_method": chunking_method,
+                "chunk_size": chunk_size,
+                "chunk_overlap": chunk_overlap,
             }
 
-                # Call RAG creation method
-            result = await client.create_rag(name, description, *file_to_uploads, **kwargs)
+            # Call RAG creation method
+            result = await client.create_rag(
+                name, description, *file_to_uploads, **kwargs
+            )
 
-            return result.get('_id')  # Return the created RAG's ID
+            return result.get("_id")  # Return the created RAG's ID
 
     except Exception as e:
         logger.error(f"Failed to create RAG: {e}")
         raise
 
+
 async def list_agents():
     async with aio_straico_client(timeout=TIMEOUT) as client:
         return await client.agents()
+
 
 async def delete_agent(agent_id):
     async with aio_straico_client(timeout=TIMEOUT) as client:
@@ -218,42 +227,25 @@ async def delete_agent(agent_id):
         r = await agent.delete()
         return r
 
-async def create_agent(
-            name,
-            description,
-            custom_prompt,
-            model,
-            rag_id,
-            tags
-        ):
+
+async def create_agent(name, description, custom_prompt, model, rag_id, tags):
     async with aio_straico_client(timeout=TIMEOUT) as client:
         rags = {}
         if rag_id is not None and len(rag_id.strip()) > 0:
             rags["rag"] = rag_id
         result = await client.create_agent(
-        name,
-        description,
-        model,
-        custom_prompt,
-        tags, **rags
+            name, description, model, custom_prompt, tags, **rags
         )
 
-        return result.get('_id')  # Return the created RAG's ID
+        return result.get("_id")  # Return the created RAG's ID
 
-async def update_agent(
-    agent_id,
-    name,
-    description,
-    custom_prompt,
-    model,
-    rag_id,
-    tags
-):
+
+async def update_agent(agent_id, name, description, custom_prompt, model, rag_id, tags):
     async with aio_straico_client(timeout=TIMEOUT) as client:
         rags = {}
         if rag_id is not None and len(rag_id.strip()) > 0:
             rags["rag"] = rag_id
-        
+
         result = await client.agent_update(
             agent_id,
             name=name,
@@ -261,9 +253,10 @@ async def update_agent(
             model=model,
             system_prompt=custom_prompt,
             tags=tags,
-            **rags
+            **rags,
         )
         return result
+
 
 async def user_detail():
     async with aio_straico_client(timeout=TIMEOUT) as client:

@@ -6,11 +6,7 @@ except:
     pass
 from os import environ
 
-from app import (
-    app,
-    logging,
-    log_level
-)
+from app import app, logging, log_level
 from api_endpoints import lm_studio, ollama
 import view
 

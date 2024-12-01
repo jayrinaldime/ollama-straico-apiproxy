@@ -33,9 +33,7 @@ async def lm_image_generation(request: Request):
     elif x < y:
         size = ImageSize.portrait
 
-    images = await image_generation(
-        model=model, n=n, prompt=prompt, size=size
-    )
+    images = await image_generation(model=model, n=n, prompt=prompt, size=size)
 
     image_urls = [{"url": image_url} for image_url in images["images"]]
     print(image_urls)

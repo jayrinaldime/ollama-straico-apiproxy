@@ -19,7 +19,9 @@ async def autoerase_upload_image(*image_paths):
             size = image_path.stat().st_size
 
             img_url = await _upload(image_path)
-            upload_stat = await _file_upload(img_url["url"], image_path.name, size, "image")
+            upload_stat = await _file_upload(
+                img_url["url"], image_path.name, size, "image"
+            )
 
             url = upload_stat["file"]["url"]
             word_count = upload_stat["file"]["words"]
@@ -35,9 +37,7 @@ async def autoerase_upload_image(*image_paths):
 @asynccontextmanager
 async def autoerase_chat(model_id, model_cost, img_url, text_prompt):
     try:
-        chat_response = await _chat(
-            model_id, model_cost, text_prompt, img_url
-        )
+        chat_response = await _chat(model_id, model_cost, text_prompt, img_url)
         yield chat_response
 
     finally:
@@ -177,10 +177,7 @@ async def _chat(model_id, model_cost, text_prompt, image_url):
     word_count = _word_count(text_prompt)
     image_word = sum(img["words"] for img in image_url)
     prompt_cost = word_count + image_word
-    image_msg = [{
-            "type": "image_url",
-            "image_url": image
-        } for image in image_url]
+    image_msg = [{"type": "image_url", "image_url": image} for image in image_url]
     image_msg.append({"type": "text", "text": text_prompt})
 
     cost = int(model_cost * prompt_cost * 100) / 100
@@ -205,7 +202,7 @@ async def _chat(model_id, model_cost, text_prompt, image_url):
                 "currentPrompt": None,
                 "capabilities": [],
                 "source": "web",
-                "version": "v2.2.0"
+                "version": "v2.2.0",
             },
             timeout=300,
         )
@@ -224,6 +221,7 @@ async def _delete_chat(chat_hash):
         if response.json():
             return response.json()
 
+
 async def list_rag_documents():
     # Using the sample JSON data structure from the previous example
     return [
@@ -236,6 +234,6 @@ async def list_rag_documents():
             "original_filename": "models.py, models_to_enum.py, transcript_utils.py, v0_rag.py",
             "chunk_size": 1000,
             "chunk_overlap": 50,
-            "buffer_size": 100
+            "buffer_size": 100,
         }
     ]

@@ -3,6 +3,7 @@ from app import app, logging
 from backend.straico import list_model, list_agents
 
 from asyncio import gather
+
 logger = logging.getLogger(__name__)
 
 
@@ -18,12 +19,13 @@ async def list_straico_models():
         for model in models
     ]
 
+
 async def list_agents_as_models():
     agents = await list_agents()
     if agents is not None and len(agents) > 0:
         return [
             {
-                "id":  f"agent/{m['name'].strip()}:{m['_id']}",  #m['name'],
+                "id": f"agent/{m['name'].strip()}:{m['_id']}",  # m['name'],
                 "object": "model",
                 "owned_by": "Straico",
                 "permission": [{}],

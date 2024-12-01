@@ -142,57 +142,47 @@ async def list_straico_models():
         models = models["chat"]
 
     response_models = [
-                {
-                    "name": m["name"],
-                    # Open Web UI does not work without explicit tag
-                    "model": (
-                        m["model"] if ":" in m["model"] else m["model"] + ":latest"
-                    ),
-                    "modified_at": "2023-11-04T14:56:49.277302595-07:00",
-                    "size": MODEL_SIZE,
-                    "digest": m[
-                        "model"
-                    ],  # "9f438cb9cd581fc025612d27f7c1a6669ff83a8bb0ed86c94fcf4c5440555697",
-                    "details": {
-                        "format": "gguf",
-                        "family": "llama",
-                        "families": None,
-                        "parameter_size": "",
-                        "quantization_level": "Q4_0",
-                    },
-                }
-                for m in models
-            ]
+        {
+            "name": m["name"],
+            # Open Web UI does not work without explicit tag
+            "model": (m["model"] if ":" in m["model"] else m["model"] + ":latest"),
+            "modified_at": "2023-11-04T14:56:49.277302595-07:00",
+            "size": MODEL_SIZE,
+            "digest": m[
+                "model"
+            ],  # "9f438cb9cd581fc025612d27f7c1a6669ff83a8bb0ed86c94fcf4c5440555697",
+            "details": {
+                "format": "gguf",
+                "family": "llama",
+                "families": None,
+                "parameter_size": "",
+                "quantization_level": "Q4_0",
+            },
+        }
+        for m in models
+    ]
     agents = await list_agents()
     if agents is not None or len(agents) > 0:
         response_models += [
-                {
-                    "name": f"Agent: {m["name"].strip()} ({m['_id']})",
-                    # Open Web UI does not work without explicit tag
-                    "model": (
-                       f"agent/{m['name'].strip()}:{m['_id']}"
-                    ),
-                    "modified_at": m["updatedAt"].split(".")[0]+".277302595-07:00",
-                    "size": MODEL_SIZE,
-                    "digest": m[
-                        "_id"
-                    ],
-                    "details": {
-                        "format": "gguf",
-                        "family": "llama",
-                        "families": None,
-                        "parameter_size": "",
-                        "quantization_level": "Q4_0",
-                    },
-                }
-                for m in agents
-            ]
+            {
+                "name": f"Agent: {m["name"].strip()} ({m['_id']})",
+                # Open Web UI does not work without explicit tag
+                "model": (f"agent/{m['name'].strip()}:{m['_id']}"),
+                "modified_at": m["updatedAt"].split(".")[0] + ".277302595-07:00",
+                "size": MODEL_SIZE,
+                "digest": m["_id"],
+                "details": {
+                    "format": "gguf",
+                    "family": "llama",
+                    "families": None,
+                    "parameter_size": "",
+                    "quantization_level": "Q4_0",
+                },
+            }
+            for m in agents
+        ]
 
-    return JSONResponse(
-        content={
-            "models": response_models
-        }
-    )
+    return JSONResponse(content={"models": response_models})
 
 
 @app.get("/api/user")
