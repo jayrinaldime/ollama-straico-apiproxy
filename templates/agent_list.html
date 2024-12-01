@@ -181,6 +181,7 @@
             <form id="add-agent-form">
                 <label>Name:</label>
                 <input type="text" name="name" placeholder="Agent Name" required>
+                
                 <label>Description:</label>
                 <textarea name="description" placeholder="Description" required></textarea>
 
@@ -280,11 +281,12 @@
 
             // Extract existing agent details
             const name = details.querySelector('tr:nth-child(1) td:nth-child(2)').textContent;
-            const description = details.querySelector('tr:nth-child(2) td:nth-child(2)').textContent;
+            const description = details.querySelector('tr:nth-child(2) > td:nth-child(2)').textContent;
             const systemPrompt = details.querySelector('tr:nth-child(3) td:nth-child(2)').textContent;
-            const model = details.querySelector('tr:nth-child(4) td:nth-child(2)').textContent;
-            const tags = details.querySelector('tr:nth-child(5) td:nth-child(2)').textContent;
-
+            const model = details.querySelector('tr:nth-child(4) td:nth-child(2)').textContent;                               
+            const rag = details.querySelector('tr:nth-child(5) td:nth-child(2)').textContent;  
+            const tags = details.querySelector('tr:nth-child(6) td:nth-child(2)').textContent;
+           
             // Create update modal (similar to add modal, but pre-filled)
             const updateModal = document.createElement('div');
             updateModal.id = 'update-agent-modal';
