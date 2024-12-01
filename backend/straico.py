@@ -272,3 +272,10 @@ async def image_generation(model: str, n: int, prompt: str, size: ImageSize):
             variations=n,
         )
         return images
+async def update_agent_chat_settings(agent_id, chat_settings):
+    async with aio_straico_client(timeout=TIMEOUT) as client:
+        result = await client.agent_update(
+            agent_id,
+            chat_settings=chat_settings
+        )
+        return result
