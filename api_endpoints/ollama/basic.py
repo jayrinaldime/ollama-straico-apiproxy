@@ -189,3 +189,9 @@ async def list_straico_models():
 async def user():
     models = await user_detail()
     return JSONResponse(content=models)
+
+
+@app.get("/api/model_list")
+async def straico_models():
+    models = await list_model()
+    return JSONResponse(content=models)

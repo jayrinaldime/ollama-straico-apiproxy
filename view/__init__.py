@@ -60,12 +60,14 @@ async def root(request: Request):
             "links": [
                 {"name": "API Documentation", "url": "/docs"},
                 {"name": "Swagger UI", "url": "/redoc"},
+
                 {"name": "Ollama Model List", "url": "/api/tags"},
                 {
                     "name": "LM Studio / OpenAI Compatible Model List",
                     "url": "/v1/models",
                 },
                 {"name": "User Details", "url": "/api/user"},
+                {"name": "Straico Model List", "url": "/api/model_list"},
                 {"name": "RAG Management", "url": "/rag-list"},
                 {"name": "Agent Management", "url": "/agent-list"},
             ],
