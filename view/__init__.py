@@ -158,7 +158,9 @@ async def agent_list(request: Request):
         default_llm = agent["default_llm"]
         agent["model_name"] = model_mapping[default_llm]["name"]
         agent["tags"] = ", ".join(agent["tags"])
-        agent["rag"] = rag_mapping[agent["rag"]]
+        rag_id = agent["rag"]
+        if rag_id in rag_mapping:
+            agent["rag"] = rag_mapping.get(rag_id)
 
     return templates.TemplateResponse(
         "agent_list.html",
