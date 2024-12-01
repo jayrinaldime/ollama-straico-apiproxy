@@ -255,6 +255,19 @@ async def update_agent_chat_settings_endpoint(
     # Filter out None values
     chat_settings = {key: value for key, value in chat_settings.items() if value is not None}
 
+    # Validate chat settings
+    valid_search_types = {"similarity", "mmr", "similarity_score_threshold"}
+    if chat_settings.get("search_type") not in valid_search_types:
+        raise HTTPException(status_code=400, detail=f"Invalid search type {chat_settings.get('search_type')}")
+
+    # Ensure required fields are present
+    if chat_settings["search_type"] == "similarity" and chat_settings.get("k") is None:
+        raise HTTPException(status_code=400, detail="Number of documents (k) is required for similarity search.")
+    elif chat_settings["search_type"] == "mmr" and (chat_settings.get("fetch_k") is None or chat_settings.get("lambda_mult") is None):
+        raise HTTPException(status_code=400, detail="Fetch K and Lambda Multiplier are required for MMR search.")
+    elif chat_settings["search_type"] == "similarity_score_threshold" and chat_settings.get("score_threshold") is None:
+        raise HTTPException(status_code=400, detail="Score Threshold is required for similarity score threshold search.")
+
     try:
         result = await update_agent_chat_settings(agent_id, chat_settings)
         return JSONResponse(
