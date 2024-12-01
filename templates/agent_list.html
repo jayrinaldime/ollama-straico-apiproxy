@@ -332,6 +332,16 @@
                 }
             }
 
+            // Set selected RAG - use more robust selection
+            const ragSelect = updateModal.querySelector('select[name="rag"]');
+            const ragOptions = ragSelect.options;
+            for (let i = 0; i < ragOptions.length; i++) {
+                if (ragOptions[i].text.trim() === rag.trim()) {
+                    ragOptions[i].selected = true;
+                    break;
+                }
+            }
+
             // Add click event to close modal when clicking outside
             updateModal.addEventListener('click', function(event) {
                 if (event.target === updateModal) {
