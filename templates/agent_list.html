@@ -126,6 +126,7 @@
                 <td>{{ doc.name }}</td>
                 <td>{{ doc.description[:100] }}...</td>
                 <td>
+                    <button class="setting-btn" onclick="agentChatSetting('{{ doc._id }}', event)">Chat Settings</button>
                     <button class="update-btn" onclick="updateAgent('{{ doc._id }}', event)">Update</button>
                     <button class="delete-btn" onclick="deleteAgent('{{ doc._id }}', event)">Delete</button>
                 </td>
