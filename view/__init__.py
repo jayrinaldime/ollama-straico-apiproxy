@@ -134,9 +134,13 @@ async def delete_rag_endpoint(rag_id: str):
 async def agent_list(request: Request):
     agents, models, rags = await gather(list_agents(), get_model_mapping(), list_rags())
     model_mapping = dict([(m["model"], m) for m in models])
+    rag_mapping = dict([(r["_id"], r) for r in rags])
     for agent in agents:
         default_llm = agent["default_llm"]
         agent["model_name"] = model_mapping[default_llm]["name"]
+        agent["tags"] = ", ".join(agent["tags"])
+        agent["rag"] = rag_mapping[agent["rag"]]
+
     return templates.TemplateResponse("agent_list.html", {
         "request": request,
         "agents": agents,

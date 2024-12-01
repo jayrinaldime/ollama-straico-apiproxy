@@ -254,12 +254,12 @@ async def update_agent(
         if rag_id is not None and len(rag_id.strip()) > 0:
             rags["rag"] = rag_id
         
-        result = await client.update_agent(
+        result = await client.agent_update(
             agent_id,
             name=name,
             description=description,
             model=model,
-            custom_prompt=custom_prompt,
+            system_prompt=custom_prompt,
             tags=tags,
             **rags
         )
