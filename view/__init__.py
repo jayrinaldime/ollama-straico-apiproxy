@@ -132,14 +132,16 @@ async def delete_rag_endpoint(rag_id: str):
 
 @app.get("/agent-list", response_class=HTMLResponse)
 async def agent_list(request: Request):
-    agents,  models = await gather(list_agents(), get_model_mapping())
+    agents, models, rags = await gather(list_agents(), get_model_mapping(), list_rags())
     model_mapping = dict([(m["model"], m) for m in models])
     for agent in agents:
         default_llm = agent["default_llm"]
         agent["model_name"] = model_mapping[default_llm]["name"]
     return templates.TemplateResponse("agent_list.html", {
         "request": request,
-        "agents": agents
+        "agents": agents,
+        "models": models,
+        "rags": rags
     })
 
 @app.delete("/api/agent/delete/{agent_id}")

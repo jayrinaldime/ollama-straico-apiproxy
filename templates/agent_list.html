@@ -179,10 +179,31 @@
                 <label>Description:</label>
                 <textarea name="description" placeholder="Description" required></textarea>
 
+                <label>Model:</label>
+                <select name="model" id="model">
+                    {% for model in models %}
+                    <option value="{{ model.model }}">{{ model.name }}</option>
+                    {% endfor %}
+                </select>
+
+                <label>RAG:</label>
+                <select name="rag" id="rag">
+                    <option value="">None</option>
+                    {% for rag in rags %}
+                    <option value="{{ rag._id }}">{{ rag.name }}</option>
+                    {% endfor %}
+                </select>
+
+                <label>System Prompt:</label>
+                <textarea name="custom_prompt" placeholder="System Prompt" required></textarea>
+
+                <label>Tags:</label>
+                <input type="text" name="tags" placeholder="Tags (comma separated)" required>
+
                 <label>Upload Files (max 4, .pdf, .docx, .csv, .txt, .xlsx, .py):</label>
-<!--                <input type="file" name="file_to_uploads" multiple-->
-<!--                       accept=".pdf,.docx,.csv,.txt,.xlsx,.py"-->
-<!--                       onchange="validateFiles(this)">-->
+                <input type="file" name="file_to_uploads" multiple
+                       accept=".pdf,.docx,.csv,.txt,.xlsx,.py"
+                       onchange="validateFiles(this)">
                 <div id="uploaded-files-list"></div>
 
                 <label>Chunking Method:</label>
