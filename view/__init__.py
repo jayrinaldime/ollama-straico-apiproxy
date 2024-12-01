@@ -164,7 +164,7 @@ async def agent_list(request: Request):
         agent["model_name"] = model_mapping[default_llm]["name"]
         agent["tags"] = ", ".join(agent["tags"])
 
-        rag_id = agent["rag"]
+        rag_id = agent.get("rag")
         if rag_id in rag_mapping:
             agent["rag"] = rag_mapping.get(rag_id)
 
