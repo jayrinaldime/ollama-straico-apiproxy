@@ -1,5 +1,7 @@
 import base64
 from os import environ
+from typing import List
+
 from app import logging
 from const import VERSION, PROJECT_NAME
 import platform
@@ -175,18 +177,36 @@ async def delete_rag(rag_id: str):
         logger.error(f"Failed to delete RAG: {e}")
         raise
 
+
 async def create_rag(
-                name,
-                description,
-                original_filename,
-                file_to_uploads,
-                chunking_method,
-                chunk_size,
-                chunk_overlap,
-                breakpoint_threshold_type,
-                buffer_size
-            ):
-    pass
+        name: str,
+        description: str,
+        file_to_uploads: List[Path],
+        chunking_method: str = 'fixed_size',
+        chunk_size: int = 1000,
+        chunk_overlap: int = 50,
+        breakpoint_threshold_type: str = None,
+        buffer_size: int = 500
+):
+    try:
+        async with aio_straico_client(timeout=TIMEOUT) as client:
+            # Prepare RAG creation parameters
+            kwargs = {
+               'breakpoint_threshold_type': breakpoint_threshold_type,
+                'buffer_size': buffer_size,
+                'chunking_method': chunking_method,
+                'chunk_size': chunk_size,
+                'chunk_overlap': chunk_overlap
+            }
+
+                # Call RAG creation method
+            result = await client.create_rag(name, description, *file_to_uploads, **kwargs)
+
+            return result.get('_id')  # Return the created RAG's ID
+
+    except Exception as e:
+        logger.error(f"Failed to create RAG: {e}")
+        raise
 
 async def list_agents():
     async with aio_straico_client(timeout=TIMEOUT) as client:

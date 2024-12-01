@@ -247,13 +247,44 @@
             }
         }
 
-        // Form submission (placeholder - to be implemented later)
-        document.getElementById('add-rag-form').onsubmit = function(event) {
+        document.getElementById('add-rag-form').onsubmit = async function(event) {
             event.preventDefault();
-            // Placeholder for form submission logic
-            alert('RAG addition will be implemented');
-            addRagModal.style.display = "none";
-        }
+
+            const form = event.target;
+            const formData = new FormData(form);
+            const submitButton = form.querySelector('button[type="submit"]');
+
+            // Disable submit button and show loading state
+            submitButton.disabled = true;
+            submitButton.textContent = 'Creating RAG...';
+
+            try {
+             const response = await fetch('/api/rag/create', {
+                 method: 'POST',
+                 body: formData
+             });
+
+             const responseData = await response.json();
+
+             if (!response.ok) {
+                 throw new Error(responseData.detail || 'Failed to create RAG');
+             }
+
+             // Success handling
+             alert(`RAG created successfully!\nRAG ID: ${responseData.rag_id}`);
+
+             // Close modal and refresh page
+             document.getElementById('add-rag-modal').style.display = 'none';
+             window.location.reload();
+            } catch (error) {
+             console.error('Error:', error);
+             alert(error.message);
+            } finally {
+             // Re-enable submit button
+             submitButton.disabled = false;
+             submitButton.textContent = 'Add RAG';
+            }
+        };
 
         function validateFiles(input) {
             const allowedTypes = ['pdf', 'docx', 'csv', 'txt', 'xlsx', 'py'];

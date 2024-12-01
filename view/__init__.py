@@ -22,9 +22,6 @@ def secure_filename(filename):
     Generate a secure filename by removing potentially dangerous characters
     and ensuring a safe filename
     """
-    # Remove directory path if present
-    filename = os.path.basename(filename)
-    
     # Remove non-ascii characters and replace with '_'
     filename = "".join(
         c if c.isalnum() or c in ('-', '_', '.') else '_' 
@@ -33,7 +30,7 @@ def secure_filename(filename):
     
     # Ensure filename is not empty
     if not filename:
-        filename = 'unnamed_file'
+        filename = 'unnamed_file.txt'
     
     return filename
 
@@ -91,15 +88,12 @@ async def create_rag_endpoint(
                 with file_path.open('wb') as buffer:
                     buffer.write(await uploaded_file.read())
                 file_paths.append(file_path)
-            
-            # Prepare original filenames for tracking
-            original_filenames = ', '.join(f.filename for f in file_to_uploads)
-            
+
+
             # Call RAG creation method
             rag_result = await create_rag(
                 name=name,
                 description=description,
-                original_filename=original_filenames,
                 file_to_uploads=file_paths,
                 chunking_method=chunking_method,
                 chunk_size=chunk_size,
@@ -111,8 +105,7 @@ async def create_rag_endpoint(
             return JSONResponse(
                 content={
                     "message": "RAG created successfully", 
-                    "rag_id": rag_result,
-                    "files": original_filenames
+                    "rag_id": rag_result
                 }
             )
         
@@ -121,7 +114,7 @@ async def create_rag_endpoint(
             raise he
         except Exception as e:
             # Log unexpected errors
-            logger.error(f"Unexpected error in RAG creation: {e}")
+            #logger.error(f"Unexpected error in RAG creation: {e}")
             raise HTTPException(status_code=500, detail="Internal server error during RAG creation")
 
 @app.delete("/api/rag/delete/{rag_id}")
