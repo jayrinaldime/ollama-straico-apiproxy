@@ -218,6 +218,28 @@ async def delete_agent(agent_id):
         r = await agent.delete()
         return r
 
+async def create_agent(
+            name,
+            description,
+            custom_prompt,
+            model,
+            rag_id,
+            tags
+        ):
+    async with aio_straico_client(timeout=TIMEOUT) as client:
+        rags = {}
+        if rag_id is not None and len(rag_id.strip())> 0:
+            rags["rag"] = rag_id
+        result = await client.create_agent(
+        name,
+        description,
+        model,
+        custom_prompt,
+        tags, **rags
+        )
+
+        return result.get('_id')  # Return the created RAG's ID
+
 async def user_detail():
     async with aio_straico_client(timeout=TIMEOUT) as client:
         return await client.user()

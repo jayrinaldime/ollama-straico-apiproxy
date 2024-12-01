@@ -179,6 +179,9 @@
                 <label>Description:</label>
                 <textarea name="description" placeholder="Description" required></textarea>
 
+                <label>System Prompt:</label>
+                <textarea name="custom_prompt" placeholder="System Prompt" required></textarea>
+
                 <label>Model:</label>
                 <select name="model" id="model">
                     {% for model in models %}
@@ -194,50 +197,8 @@
                     {% endfor %}
                 </select>
 
-                <label>System Prompt:</label>
-                <textarea name="custom_prompt" placeholder="System Prompt" required></textarea>
-
                 <label>Tags:</label>
                 <input type="text" name="tags" placeholder="Tags (comma separated)" required>
-
-                <label>Upload Files (max 4, .pdf, .docx, .csv, .txt, .xlsx, .py):</label>
-                <input type="file" name="file_to_uploads" multiple
-                       accept=".pdf,.docx,.csv,.txt,.xlsx,.py"
-                       onchange="validateFiles(this)">
-                <div id="uploaded-files-list"></div>
-
-                <label>Chunking Method:</label>
-                <select name="chunking_method" id="chunking_method">
-                    <option value="fixed_size">Fixed Size</option>
-                    <option value="recursive">Recursive</option>
-                    <option value="markdown">Markdown</option>
-                    <option value="python">Python</option>
-                    <option value="semantic">Semantic</option>
-                </select>
-
-                <!-- Conditional Chunking Fields -->
-                <div id="chunk-size-overlap" style="display:block;">
-                    <label>Chunk Size:</label>
-                    <input type="number" name="chunk_size" placeholder="Chunk Size (default 1000)" value="1000">
-                    <br/>
-                    <label>Chunk Overlap:</label>
-                    <input type="number" name="chunk_overlap" placeholder="Chunk Overlap (default 50)" value="50">
-                </div>
-
-                <div id="breakpoint-threshold" style="display:none;">
-                    <label>Breakpoint Threshold Type:</label>
-                    <select name="breakpoint_threshold_type">
-                        <option value="percentile">Percentile</option>
-                        <option value="interquartile">Interquartile</option>
-                        <option value="standard_deviation">Standard Deviation</option>
-                        <option value="gradient">Gradient</option>
-                    </select>
-                    <br/>
-                    <label>Buffer Size:</label>
-                    <input type="number" name="buffer_size" placeholder="Buffer Size (default 500)" value="500">
-                </div>
-
-
 
                 <button type="submit">Add Agent</button>
             </form>
@@ -306,24 +267,6 @@
             }
         };
 
-        document.getElementById('chunking_method').addEventListener('change', function() {
-            const chunkSizeOverlay = document.getElementById('chunk-size-overlap');
-            const breakpointThreshold = document.getElementById('breakpoint-threshold');
-
-            switch(this.value) {
-                case 'semantic':
-                    chunkSizeOverlay.style.display = 'none';
-                    breakpointThreshold.style.display = 'block';
-                    break;
-                case 'fixed_size':
-                case 'recursive':
-                case 'markdown':
-                case 'python':
-                    chunkSizeOverlay.style.display = 'block';
-                    breakpointThreshold.style.display = 'none';
-                    break;
-            }
-        });
 
         function toggleDetails(row) {
             if (event.target.classList.contains('delete-btn')) return;

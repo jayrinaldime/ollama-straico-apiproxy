@@ -7,7 +7,7 @@ from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.templating import Jinja2Templates
 
 from app import app
-from backend import user_detail, list_rags, delete_rag, create_rag, list_agents, delete_agent, get_model_mapping
+from backend import user_detail, list_rags, delete_rag, create_rag, list_agents, delete_agent, create_agent, get_model_mapping
 # Add template configuration
 templates = Jinja2Templates(directory="templates")
 
@@ -154,3 +154,32 @@ async def delete_agent_endpoint(agent_id: str):
         )
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/api/agent/create")
+async def create_rag_endpoint(
+        name: str = Form(...),
+        description: str = Form(...),
+        custom_prompt: str = Form(...),
+        model: str = Form(...),
+        rag: str = Form(...),
+        tags: str = Form(...)
+):
+        # Call Agent creation method
+        tags = [tag.strip() for tag in tags.strip().split(",") if len(tag.strip())>0 ]
+
+        agent_result = await create_agent(
+            name=name,
+            description=description,
+            custom_prompt=custom_prompt,
+            model=model,
+            rag_id=rag,
+            tags=tags
+        )
+
+        return JSONResponse(
+            content={
+                "message": "Agent created successfully",
+                "agent_id": agent_result
+            }
+        )
