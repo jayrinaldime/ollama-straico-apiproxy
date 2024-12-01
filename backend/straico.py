@@ -274,6 +274,19 @@ async def image_generation(model: str, n: int, prompt: str, size: ImageSize):
         return images
 async def update_agent_chat_settings(agent_id, chat_settings):
     async with aio_straico_client(timeout=TIMEOUT) as client:
+        # Validate chat settings
+        valid_search_types = {"similarity", "mmr", "similarity_score_threshold"}
+        if chat_settings.get("search_type") not in valid_search_types:
+            raise Exception(f"Invalid search type {chat_settings.get('search_type')}")
+
+        # Ensure required fields are present
+        if chat_settings["search_type"] == "similarity" and chat_settings.get("k") is None:
+            raise Exception("Number of documents (k) is required for similarity search.")
+        elif chat_settings["search_type"] == "mmr" and (chat_settings.get("fetch_k") is None or chat_settings.get("lambda_mult") is None):
+            raise Exception("Fetch K and Lambda Multiplier are required for MMR search.")
+        elif chat_settings["search_type"] == "similarity_score_threshold" and chat_settings.get("score_threshold") is None:
+            raise Exception("Score Threshold is required for similarity score threshold search.")
+
         result = await client.agent_update(
             agent_id,
             chat_settings=chat_settings

@@ -234,3 +234,32 @@ async def update_agent_endpoint(
     return JSONResponse(
         content={"message": "Agent updated successfully", "agent_id": agent_id}
     )
+
+@app.post("/api/agent/chat-settings/{agent_id}")
+async def update_agent_chat_settings_endpoint(
+    agent_id: str,
+    search_type: str = Form(...),
+    k: int = Form(None),
+    fetch_k: int = Form(None),
+    lambda_mult: float = Form(None),
+    score_threshold: float = Form(None),
+):
+    chat_settings = {
+        "search_type": search_type,
+        "k": k,
+        "fetch_k": fetch_k,
+        "lambda_mult": lambda_mult,
+        "score_threshold": score_threshold,
+    }
+
+    # Filter out None values
+    chat_settings = {key: value for key, value in chat_settings.items() if value is not None}
+
+    try:
+        result = await update_agent_chat_settings(agent_id, chat_settings)
+        return JSONResponse(
+            content={"message": "Chat settings updated successfully", "result": result},
+            status_code=200,
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
