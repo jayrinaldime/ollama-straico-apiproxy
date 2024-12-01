@@ -106,7 +106,7 @@
     </style>
 </head>
 <body>
-    <h1>RAG Document List</h1>
+    <h1>RAG Management</h1>
     
     <!-- Add RAG Button -->
     <button id="add-rag-btn">Add RAG</button>
@@ -132,6 +132,14 @@
             <tr class="rag-details">
                 <td colspan="3">
                     <table style="width: 100%;">
+                        <tr>
+                            <td style="text-align: right; width: 30%; font-weight: bold;">Name:</td>
+                            <td>{{ doc.name }}</td>
+                        </tr>
+                        <tr>
+                            <td style="text-align: right; width: 30%; font-weight: bold;">Description:</td>
+                            <td>{{ doc.description }}</td>
+                        </tr>
                         <tr>
                             <td style="text-align: right; width: 30%; font-weight: bold;">Files:</td>
                             <td>{{ doc.original_filename }}</td>

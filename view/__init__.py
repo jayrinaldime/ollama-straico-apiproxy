@@ -48,7 +48,7 @@ async def root(request: Request):
             {"name": "Ollama Model List", "url": "/api/tags"},
             {"name": "LM Studio / OpenAI Compatible Model List", "url": "/v1/models"},
             {"name": "User Details", "url": "/api/user"},
-            {"name": "RAG List", "url": "/rag-list"},
+            {"name": "RAG Management", "url": "/rag-list"},
         ],
     })
 
