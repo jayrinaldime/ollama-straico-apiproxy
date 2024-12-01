@@ -166,7 +166,7 @@ async def create_rag_endpoint(
         tags: str = Form(...)
 ):
         # Call Agent creation method
-        tags = [tag.strip() for tag in tags.strip().split(",") if len(tag.strip())>0 ]
+        tags = [tag.strip() for tag in tags.strip().split(",") if len(tag.strip()) > 0 ]
 
         agent_result = await create_agent(
             name=name,
@@ -183,3 +183,33 @@ async def create_rag_endpoint(
                 "agent_id": agent_result
             }
         )
+
+@app.post("/api/agent/update/{agent_id}")
+async def update_agent_endpoint(
+    agent_id: str,
+    name: str = Form(...),
+    description: str = Form(...),
+    custom_prompt: str = Form(...),
+    model: str = Form(...),
+    rag: str = Form(...),
+    tags: str = Form(...)
+):
+    # Call Agent update method
+    tags = [tag.strip() for tag in tags.strip().split(",") if len(tag.strip()) > 0]
+
+    agent_result = await update_agent(
+        agent_id=agent_id,
+        name=name,
+        description=description,
+        custom_prompt=custom_prompt,
+        model=model,
+        rag_id=rag,
+        tags=tags
+    )
+
+    return JSONResponse(
+        content={
+            "message": "Agent updated successfully",
+            "agent_id": agent_id
+        }
+    )

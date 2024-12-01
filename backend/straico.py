@@ -228,7 +228,7 @@ async def create_agent(
         ):
     async with aio_straico_client(timeout=TIMEOUT) as client:
         rags = {}
-        if rag_id is not None and len(rag_id.strip())> 0:
+        if rag_id is not None and len(rag_id.strip()) > 0:
             rags["rag"] = rag_id
         result = await client.create_agent(
         name,
@@ -239,6 +239,31 @@ async def create_agent(
         )
 
         return result.get('_id')  # Return the created RAG's ID
+
+async def update_agent(
+    agent_id,
+    name,
+    description,
+    custom_prompt,
+    model,
+    rag_id,
+    tags
+):
+    async with aio_straico_client(timeout=TIMEOUT) as client:
+        rags = {}
+        if rag_id is not None and len(rag_id.strip()) > 0:
+            rags["rag"] = rag_id
+        
+        result = await client.update_agent(
+            agent_id,
+            name=name,
+            description=description,
+            model=model,
+            custom_prompt=custom_prompt,
+            tags=tags,
+            **rags
+        )
+        return result
 
 async def user_detail():
     async with aio_straico_client(timeout=TIMEOUT) as client:

@@ -267,6 +267,101 @@
             }
         };
 
+        function updateAgent(agentId, event) {
+            event.stopPropagation();
+            const row = event.target.closest('.agent-row');
+            const detailsRow = row.nextElementSibling;
+            const details = detailsRow.querySelector('table');
+
+            // Extract existing agent details
+            const name = details.querySelector('tr:nth-child(1) td:nth-child(2)').textContent;
+            const description = details.querySelector('tr:nth-child(2) td:nth-child(2)').textContent;
+            const systemPrompt = details.querySelector('tr:nth-child(3) td:nth-child(2)').textContent;
+            const model = details.querySelector('tr:nth-child(4) td:nth-child(2)').textContent;
+            const tags = details.querySelector('tr:nth-child(5) td:nth-child(2)').textContent;
+
+            // Create update modal (similar to add modal, but pre-filled)
+            const updateModal = document.createElement('div');
+            updateModal.id = 'update-agent-modal';
+            updateModal.className = 'modal';
+            updateModal.innerHTML = `
+                <div class="modal-content">
+                    <span class="close">&times;</span>
+                    <h2>Update Agent</h2>
+                    <form id="update-agent-form">
+                        <input type="hidden" name="agent_id" value="${agentId}">
+                        <label>Name:</label>
+                        <input type="text" name="name" value="${name}" required>
+                        <label>Description:</label>
+                        <textarea name="description" required>${description}</textarea>
+                        <label>System Prompt:</label>
+                        <textarea name="custom_prompt" required>${systemPrompt}</textarea>
+                        <label>Model:</label>
+                        <select name="model" id="model">
+                            ${document.getElementById('model').innerHTML}
+                        </select>
+                        <label>RAG:</label>
+                        <select name="rag" id="rag">
+                            ${document.getElementById('rag').innerHTML}
+                        </select>
+                        <label>Tags:</label>
+                        <input type="text" name="tags" value="${tags}" required>
+                        <button type="submit">Update Agent</button>
+                    </form>
+                </div>
+            `;
+
+            // Add modal to body
+            document.body.appendChild(updateModal);
+            updateModal.style.display = 'block';
+
+            // Set selected model and rag
+            updateModal.querySelector(`select[name="model"] option[value="${model}"]`).selected = true;
+
+            // Close modal functionality
+            const closeBtn = updateModal.querySelector('.close');
+            closeBtn.onclick = function() {
+                updateModal.remove();
+            }
+
+            // Form submission
+            const updateForm = updateModal.querySelector('#update-agent-form');
+            updateForm.onsubmit = async function(event) {
+                event.preventDefault();
+
+                const form = event.target;
+                const formData = new FormData(form);
+                const agentId = formData.get('agent_id');
+                const submitButton = form.querySelector('button[type="submit"]');
+
+                submitButton.disabled = true;
+                submitButton.textContent = 'Updating Agent...';
+
+                try {
+                    const response = await fetch(`/api/agent/update/${agentId}`, {
+                        method: 'POST',
+                        body: formData
+                    });
+
+                    const responseData = await response.json();
+
+                    if (!response.ok) {
+                        throw new Error(responseData.detail || 'Failed to update Agent');
+                    }
+
+                    alert(`Agent updated successfully!\nAgent ID: ${agentId}`);
+                    updateModal.remove();
+                    window.location.reload();
+                } catch (error) {
+                    console.error('Error:', error);
+                    alert(error.message);
+                } finally {
+                    submitButton.disabled = false;
+                    submitButton.textContent = 'Update Agent';
+                }
+            };
+        }
+
 
         function toggleDetails(row) {
             if (event.target.classList.contains('delete-btn')) return;
