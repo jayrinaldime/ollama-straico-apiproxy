@@ -7,7 +7,7 @@ from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.templating import Jinja2Templates
 
 from app import app
-from backend import user_detail, list_rags, delete_rag, create_rag, list_agents, delete_agent, create_agent, get_model_mapping
+from backend import user_detail, list_rags, delete_rag, create_rag, list_agents, delete_agent, create_agent, get_model_mapping, update_agent
 # Add template configuration
 templates = Jinja2Templates(directory="templates")
 
