@@ -286,7 +286,7 @@
             updateModal.className = 'modal';
             updateModal.innerHTML = `
                 <div class="modal-content">
-                    <span class="close">&times;</span>
+                    <span class="close" onclick="this.closest('.modal').remove()">&times;</span>
                     <h2>Update Agent</h2>
                     <form id="update-agent-form">
                         <input type="hidden" name="agent_id" value="${agentId}">
@@ -315,14 +315,22 @@
             document.body.appendChild(updateModal);
             updateModal.style.display = 'block';
 
-            // Set selected model and rag
-            updateModal.querySelector(`select[name="model"] option[value="${model}"]`).selected = true;
-
-            // Close modal functionality
-            const closeBtn = updateModal.querySelector('.close');
-            closeBtn.onclick = function() {
-                updateModal.remove();
+            // Set selected model and rag - use more robust selection
+            const modelSelect = updateModal.querySelector('select[name="model"]');
+            const modelOptions = modelSelect.options;
+            for (let i = 0; i < modelOptions.length; i++) {
+                if (modelOptions[i].text.trim() === model.trim()) {
+                    modelOptions[i].selected = true;
+                    break;
+                }
             }
+
+            // Add click event to close modal when clicking outside
+            updateModal.addEventListener('click', function(event) {
+                if (event.target === updateModal) {
+                    updateModal.remove();
+                }
+            });
 
             // Form submission
             const updateForm = updateModal.querySelector('#update-agent-form');
