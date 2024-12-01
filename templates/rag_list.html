@@ -332,6 +332,30 @@
                     break;
             }
         });
+
+        function toggleDetails(row) {
+            if (event.target.classList.contains('delete-btn')) return;
+            const detailsRow = row.nextElementSibling;
+            detailsRow.classList.toggle('show');
+        }
+
+        function deleteRag(ragId, event) {
+            event.stopPropagation();
+            if (confirm('Are you sure you want to delete this RAG?')) {
+                fetch(`/api/rag/delete/${ragId}`, { method: 'DELETE' })
+                    .then(response => {
+                        if (response.ok) {
+                            window.location.reload();
+                        } else {
+                            alert('Failed to delete RAG');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('An error occurred while deleting the RAG');
+                    });
+            }
+        }
     </script>
     <p><a href="/">Back to Home</a></p>
 </body>
