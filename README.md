@@ -93,3 +93,8 @@ This project is licensed under the [MIT License](LICENSE).
 
 - [Ollama](https://github.com/ollama/ollama)
 - [Straico](https://www.straico.com/)
+
+
+## Referal Link to digitalocean 
+
+[![DigitalOcean Referral Badge](https://web-platforms.sfo2.cdn.digitaloceanspaces.com/WWW/Badge%201.svg)](https://www.digitalocean.com/?refcode=a2a1e461053d&utm_campaign=Referral_Invite&utm_medium=Referral_Program&utm_source=badge)
