@@ -2,7 +2,7 @@ import json
 from fastapi import Request
 from fastapi.responses import JSONResponse, StreamingResponse
 from app import app, logging
-from backend.straico import prompt_completion
+from backend import prompt_completion
 from .response.stream.completion_response import streamed_response
 from .response.basic.completion_response import response as basic_response
 from random import randint
