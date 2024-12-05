@@ -120,7 +120,18 @@ async def prompt_completion(
                 is_model_found = model in model_values
 
         if not is_model_found:
-            raise Exception(f"Unknown Model {model}")
+            model_alias = "ALIAS_" + model.upper().strip().replace("-", "_").replace(
+                "/", "_"
+            ).replace("  ", " ").replace(" ", "_").replace("__", "_")
+            new_model = environ.get(model_alias)
+            logger.debug(
+                f"Unknown model {model}. Looking for alias model {model_alias}."
+            )
+            if new_model is not None:
+                model = new_model.strip()
+            else:
+                raise Exception(f"Unknown Model {model}")
+
     if not PLATFORM_ENABLED or images is None or len(images) == 0:
         post_request_data = {"model": model, "message": msg}
         logger.debug(f"Request Post Data: {post_request_data}")
