@@ -3,7 +3,7 @@ import json
 from app import app, logging
 from fastapi import Request
 from fastapi.responses import JSONResponse, StreamingResponse
-from backend import list_model, list_agents, user_detail, delete_agent
+from backend import list_model, list_agents, user_detail, delete_agent, list_agents
 from .response.stream import completion_response
 
 logger = logging.getLogger(__name__)

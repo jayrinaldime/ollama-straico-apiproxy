@@ -1,6 +1,6 @@
 from fastapi.responses import JSONResponse
 from app import app, logging
-from backend.straico import list_model, list_agents
+from backend import list_model, list_agents
 
 from asyncio import gather
 
@@ -8,7 +8,8 @@ logger = logging.getLogger(__name__)
 
 
 async def list_straico_models():
-    models = (await list_model())["chat"]
+    models = await list_model()
+    models = models["chat"]
     return [
         {
             "id": model["model"],

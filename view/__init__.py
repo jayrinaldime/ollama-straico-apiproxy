@@ -160,7 +160,9 @@ async def agent_list(request: Request):
     }
     for agent in agents:
         default_llm = agent["default_llm"]
-        agent["model_name"] = model_mapping[default_llm]["name"]
+        agent["model_name"] = model_mapping.get(default_llm, {"name": "Unknown"})[
+            "name"
+        ]
         agent["tags"] = ", ".join(agent["tags"])
 
         rag_id = agent.get("rag")
