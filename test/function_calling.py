@@ -220,7 +220,7 @@ if __name__ == "__main__1":
     asyncio.run(itermodels())
 
 if __name__ == "__main__":
-    asyncio.run(run("perplexity/llama-3-sonar-small-32k-online"))
+    asyncio.run(run("openai/gpt-4o-mini"))
 
 if __name__ == "__main__1":
     asyncio.run(streaming_run("openai/gpt-4o-mini:latest"))

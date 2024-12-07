@@ -59,14 +59,30 @@ async def ollamachat(request: Request):
     model = msg["model"]
     tools = msg.get("tools")
     messages = msg["messages"]
-
+    format = msg.get("format")
+    expected_json_response = False
     settings = {}
     if "options" in msg:
         options = msg["options"]
         settings["temperature"] = options.get("temperature")
         settings["max_tokens"] = options.get("max_tokens")
 
-    if tools and len(tools) != 0:
+    if format is not None and isinstance(format, dict):
+        expected_json_response = True
+        parent_format = [
+            {
+                "role": "system",
+                "content": f"""
+Please **only** output plain JSON with the following format:
+{json.dumps(format)}        
+""".strip(),
+            }
+        ]
+        messages = parent_format + messages
+
+
+    elif tools and len(tools) != 0:
+        expected_json_response = True
         parent_tool = [
             {
                 "role": "system",
@@ -92,6 +108,7 @@ Please only output plain json.
         ]
         messages = parent_tool + messages
 
+
     if "stream" in msg:
         streaming = msg.get("stream")
     else:
@@ -100,7 +117,7 @@ Please only output plain json.
     logger.debug(msg)
     logger.debug(model)
     images = None
-    if type(messages) == list and len(messages) >= 1 and type(messages[0]) == dict:
+    if isinstance(messages, list) and len(messages) >= 1 and type(messages[0]) == dict:
         images = []
         new_messages = []
         for message in messages:
@@ -131,8 +148,7 @@ Please only output plain json.
     response_type = type(response)
 
     original_response = response
-    if tools is not None and len(tools) != 0:
-
+    if expected_json_response:
         if response_type == str:
             response = response.strip()
             if response.startswith("```json") and response.endswith("```"):
@@ -146,10 +162,10 @@ Please only output plain json.
                     response = json.loads(response)
                 except:
                     pass
-        if type(response) == list and len(response) > 0:
+        if isinstance(response, list) and len(response) > 0:
             response = response[0]
 
-        if type(response) == dict and "tool_calls" in response:
+        if isinstance(response, dict) and "tool_calls" in response:
             return JSONResponse(
                 content={
                     "model": model,
@@ -185,8 +201,7 @@ Please only output plain json.
             except:
                 pass
 
-            if (
-                type(original_response) == dict
+            if ( isinstance(original_response, dict)
                 and "role" in original_response
                 and original_response["role"] == "assistant"
                 and "content" in original_response
