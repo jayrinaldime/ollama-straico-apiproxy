@@ -73,8 +73,19 @@ async def ollamachat(request: Request):
             {
                 "role": "system",
                 "content": f"""
-Please **only** output plain JSON with the following format:
-{json.dumps(format)}        
+# OUTPUT: 
+- Be sure that all outputs are JSON-compatible. 
+- Output ONLY the JSON. 
+- Do not include any preface or any other comments. 
+- Do NOT use markup. 
+- The output MUST be plain JSON with no other formatting or markup. 
+- Include every part of the JSON FORMAT, even if a response is missing. 
+- The Output MUST begin with {{ and the Output MUST end with }}
+
+# JSON FORMAT:
+``` json
+{json.dumps(format, indent=True, ensure_ascii=False)}       
+``` 
 """.strip(),
             }
         ]
