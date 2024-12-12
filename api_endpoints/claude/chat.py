@@ -10,6 +10,7 @@ from .response.stream.message_response import streamed_response
 # from .response.basic.completion_response import response as basic_response
 # from random import randint
 # import re
+import uuid
 
 logger = logging.getLogger(__name__)
 
@@ -40,9 +41,10 @@ async def message_completion(request: Request):
     response_text = await prompt_completion(request_msg, None, model, **settings)
     print(response_text)
     if not streaming:
+        request_id = "msg_" + str(uuid.uuid4())
         response_object = {
             "content": [{"text": response_text, "type": "text"}],
-            "id": "msg_013Zva2CMHLNnXjNJJKqJ2EF",
+            "id": request_id,
             "model": model,
             "role": "assistant",
             "stop_reason": "end_turn",
