@@ -3,6 +3,8 @@ from fastapi import Request
 from fastapi.responses import JSONResponse, StreamingResponse
 from app import app, logging
 from backend import prompt_completion
+
+from .response.stream.message_response import streamed_response
 #from .response.stream.completion_response import streamed_response
 #from .response.basic.completion_response import response as basic_response
 #from random import randint
@@ -20,6 +22,7 @@ async def message_completion(request: Request):
 
     model = post_json_data["model"]
     messages = post_json_data["messages"]
+    streaming = post_json_data.get("stream", False)
     if len(messages)==1:
         messages = messages[0]["content"]
 
@@ -36,23 +39,28 @@ async def message_completion(request: Request):
         request_msg = json.dumps(messages, indent=True, ensure_ascii=False)
 
     response_text = await prompt_completion(request_msg, None, model, **settings)
-
-    response_object = {
-  "content": [
-    {
-      "text": response_text,
-      "type": "text"
+    print(response_text)
+    if not streaming:
+        response_object = {
+      "content": [
+        {
+          "text": response_text,
+          "type": "text"
+        }
+      ],
+      "id": "msg_013Zva2CMHLNnXjNJJKqJ2EF",
+      "model": model,
+      "role": "assistant",
+      "stop_reason": "end_turn",
+      "stop_sequence": None,
+      "type": "message",
+      "usage": {
+        "input_tokens": 2095,
+        "output_tokens": 503
+      }
     }
-  ],
-  "id": "msg_013Zva2CMHLNnXjNJJKqJ2EF",
-  "model": model,
-  "role": "assistant",
-  "stop_reason": "end_turn",
-  "stop_sequence": None,
-  "type": "message",
-  "usage": {
-    "input_tokens": 2095,
-    "output_tokens": 503
-  }
-}
-    return JSONResponse(content=response_object)
+        return JSONResponse(content=response_object)
+    else:
+        return StreamingResponse(
+            streamed_response(response_text, model), media_type="text/event-stream"
+        )
