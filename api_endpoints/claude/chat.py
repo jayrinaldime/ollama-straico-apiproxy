@@ -5,12 +5,14 @@ from app import app, logging
 from backend import prompt_completion
 
 from .response.stream.message_response import streamed_response
-#from .response.stream.completion_response import streamed_response
-#from .response.basic.completion_response import response as basic_response
-#from random import randint
-#import re
+
+# from .response.stream.completion_response import streamed_response
+# from .response.basic.completion_response import response as basic_response
+# from random import randint
+# import re
 
 logger = logging.getLogger(__name__)
+
 
 @app.post("/v1/messages")
 async def message_completion(request: Request):
@@ -23,15 +25,12 @@ async def message_completion(request: Request):
     model = post_json_data["model"]
     messages = post_json_data["messages"]
     streaming = post_json_data.get("stream", False)
-    if len(messages)==1:
+    if len(messages) == 1:
         messages = messages[0]["content"]
 
-
     settings = {}
-    if "options" in post_json_data:
-        options = post_json_data["options"]
-        settings["temperature"] = options.get("temperature")
-        settings["max_tokens"] = options.get("max_tokens")
+    settings["temperature"] = post_json_data.get("temperature")
+    settings["max_tokens"] = post_json_data.get("max_tokens")
 
     if isinstance(messages, str):
         request_msg = messages
@@ -42,23 +41,15 @@ async def message_completion(request: Request):
     print(response_text)
     if not streaming:
         response_object = {
-      "content": [
-        {
-          "text": response_text,
-          "type": "text"
+            "content": [{"text": response_text, "type": "text"}],
+            "id": "msg_013Zva2CMHLNnXjNJJKqJ2EF",
+            "model": model,
+            "role": "assistant",
+            "stop_reason": "end_turn",
+            "stop_sequence": None,
+            "type": "message",
+            "usage": {"input_tokens": 2095, "output_tokens": 503},
         }
-      ],
-      "id": "msg_013Zva2CMHLNnXjNJJKqJ2EF",
-      "model": model,
-      "role": "assistant",
-      "stop_reason": "end_turn",
-      "stop_sequence": None,
-      "type": "message",
-      "usage": {
-        "input_tokens": 2095,
-        "output_tokens": 503
-      }
-    }
         return JSONResponse(content=response_object)
     else:
         return StreamingResponse(
