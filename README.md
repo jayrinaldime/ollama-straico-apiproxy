@@ -19,7 +19,16 @@ Please follow the [Setup Guide](https://github.com/jayrinaldime/ollama-straico-a
 
 ## Usage
 
-Once the container is running, you can use any Ollama-compatible application by pointing it to `http://localhost:11434` (or the appropriate host and port if you've modified the configuration).
+Once the container is running, you can use any Ollama, LMStudio/OpenAI and Anthropic Claude-compatible application by pointing it to the proxy base url. By default the port is 11434 unless modified in the docker-compose.yml file. 
+
+## Base URL for each provider
+
+1. Ollama 
+   - http://127.0.0.1:11434
+1. LMStudio/OpenAI 
+   - http://127.0.0.1:11434/v1
+1. Anthropic Claude
+   - http://127.0.0.1:11434
 
 ## API Endpoints
 
