@@ -21,8 +21,8 @@ async def message_completion(request: Request):
         post_json_data = await request.json()
     except:
         post_json_data = json.loads((await request.body()).decode())
-    print(post_json_data)
 
+    logger.debug(post_json_data)
     model = post_json_data["model"]
     messages = post_json_data["messages"]
     streaming = post_json_data.get("stream", False)
@@ -38,8 +38,9 @@ async def message_completion(request: Request):
     else:
         request_msg = json.dumps(messages, indent=True, ensure_ascii=False)
 
+    logger.debug(f"Request: {request_msg}")
     response_text = await prompt_completion(request_msg, None, model, **settings)
-    print(response_text)
+    logger.debug(f"Response: {response_text}")
     if not streaming:
         request_id = "msg_" + str(uuid.uuid4())
         response_object = {
