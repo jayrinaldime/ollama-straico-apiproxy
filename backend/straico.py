@@ -124,12 +124,13 @@ async def prompt_completion(
                 "/", "_"
             ).replace("  ", " ").replace(" ", "_").replace("__", "_")
             new_model = environ.get(model_alias)
-            logger.debug(
-                f"Unknown model {model}. Looking for alias model {model_alias}."
-            )
+
             if new_model is not None:
                 model = new_model.strip()
             else:
+                logger.debug(
+                    f"Unknown model {model}. Looking for alias model {model_alias}."
+                )
                 raise Exception(f"Unknown Model {model}")
 
     if not PLATFORM_ENABLED or images is None or len(images) == 0:

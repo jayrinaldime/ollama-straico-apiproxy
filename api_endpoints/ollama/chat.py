@@ -91,7 +91,6 @@ async def ollamachat(request: Request):
         ]
         messages = parent_format + messages
 
-
     elif tools and len(tools) != 0:
         expected_json_response = True
         parent_tool = [
@@ -118,7 +117,6 @@ Please only output plain json.
             }
         ]
         messages = parent_tool + messages
-
 
     if "stream" in msg:
         streaming = msg.get("stream")
@@ -212,7 +210,8 @@ Please only output plain json.
             except:
                 pass
 
-            if ( isinstance(original_response, dict)
+            if (
+                isinstance(original_response, dict)
                 and "role" in original_response
                 and original_response["role"] == "assistant"
                 and "content" in original_response
