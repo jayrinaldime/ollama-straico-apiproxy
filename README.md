@@ -6,11 +6,12 @@
 
 ## Project Description
 
-OllamaStraicoAPIProxy implements the same Ollama API endpoints but redirects the requests to the Straico API Server. 
-This allows you to use any application that supports Ollama while leveraging Straico's available cloud LLM models instead of running a local LLM.
+StraicoAPIProxy implements the same API endpoints but redirects the requests to the Straico API Server. 
+We now support Ollama, LMStudio/OpenAI and Anthropic Claude API Endpoints.
+
+This allows you to use any application that supports Ollama, LMStudio/OpenAI and Anthropic Claude while leveraging Straico's available cloud LLM models instead of running a local LLM.
 
 **Disclaimer:** This is not an official Ollama or Straico product.
-
 
 ## Setup 
 
@@ -28,13 +29,20 @@ List and describe the main API endpoints here.
    1. /api/generate
    1. /api/chat
    1. /api/tags
-
+   1. /api/embeddings
 ### LM Studio
    1. /v1/chat/completions 
       * alias: /chat/completions
    1. /v1/completions
    1. /v1/models 
-
+   1. /v1/embeddings
+### OpenAI
+   1. /v1/chat/completions 
+   1. /v1/audio/speech
+   1. /v1/images/generations
+### Anthopic Claude
+   1. /v1/messages
+      
 ## Known Working Integrations
 
 OllamaStraicoAPIProxy has been tested and confirmed to work with the following applications and integrations:
@@ -73,13 +81,24 @@ OllamaStraicoAPIProxy has been tested and confirmed to work with the following a
    - Description: Allows using Ollama with Flowise
    - Sample Configuration: [docker-compose.yaml](https://gist.github.com/jayrinaldime/f17c8eec1fe75573d06147ffb7199535)
 
+1. **Aider Chat** 
+  - Website: [https://aider.chat/](https://aider.chat/)
+  - Description: Pair Programming / Coding Assistant. 
+
+1. **Cline** 
+  - Website: [https://github.com/cline/cline](https://github.com/cline/cline)
+  - Description: Pair Programming / Coding Assistant. 
+
+1. **Enconvo** 
+  - Website: [https://www.enconvo.com/](https://www.enconvo.com/)
+  - Description: Desktop app
+
 Please note that while these integrations have been tested, you may need to adjust settings or configurations to point to your OllamaStraicoAPIProxy instance instead of a local Ollama installation.
 
 ## To-Do List 
 
-1. Test LM Studio API Endpoints
-1. Ensure integration with:
-   - [aider.chat](https://aider.chat/)
+1. Add Tests
+2. Add Documentation 
    
 ## Contributing
 
