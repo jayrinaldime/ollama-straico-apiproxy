@@ -82,16 +82,16 @@ OllamaStraicoAPIProxy has been tested and confirmed to work with the following a
    - Sample Configuration: [docker-compose.yaml](https://gist.github.com/jayrinaldime/f17c8eec1fe75573d06147ffb7199535)
 
 1. **Aider Chat** 
-  - Website: [https://aider.chat/](https://aider.chat/)
-  - Description: Pair Programming / Coding Assistant. 
+   - Website: [https://aider.chat/](https://aider.chat/)
+   - Description: Pair Programming / Coding Assistant. 
 
 1. **Cline** 
-  - Website: [https://github.com/cline/cline](https://github.com/cline/cline)
-  - Description: Pair Programming / Coding Assistant. 
+   - Website: [https://github.com/cline/cline](https://github.com/cline/cline)
+   - Description: Pair Programming / Coding Assistant. 
 
 1. **Enconvo** 
-  - Website: [https://www.enconvo.com/](https://www.enconvo.com/)
-  - Description: Desktop app
+   - Website: [https://www.enconvo.com/](https://www.enconvo.com/)
+   - Description: Desktop app
 
 Please note that while these integrations have been tested, you may need to adjust settings or configurations to point to your OllamaStraicoAPIProxy instance instead of a local Ollama installation.
 
