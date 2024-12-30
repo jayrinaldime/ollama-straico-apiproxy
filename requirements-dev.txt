@@ -1,6 +1,8 @@
-requests
-flask
+fastapi
+uvicorn
 aio-straico>=0.1.5
 langfuse
 ollama
 python-multipart
+jinja2
+

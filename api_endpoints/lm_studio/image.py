@@ -6,12 +6,13 @@ from fastapi.responses import JSONResponse
 from app import app, logging
 from backend.straico import image_generation
 from aio_straico.api.v0 import ImageSize
-
+from aio_straico.utils.tracing import observe
 
 logger = logging.getLogger(__name__)
 
 
 @app.post("/v1/images/generations")
+@observe
 async def lm_image_generation(request: Request):
     try:
         post_json_data = await request.json()

@@ -6,6 +6,7 @@ from backend import prompt_completion
 from .response.stream.completion_response import streamed_response
 from .response.basic.completion_response import response as basic_response
 from random import randint
+from aio_straico.utils.tracing import observe
 import re
 
 logger = logging.getLogger(__name__)
@@ -31,6 +32,7 @@ def _get_msg_image(content):
 
 @app.post("/chat/completions")
 @app.post("/v1/chat/completions")
+@observe
 async def chat_completions(request: Request):
     try:
         post_json_data = await request.json()
@@ -239,6 +241,7 @@ Please only output plain json when using tools.
 
 
 @app.post("/v1/completions")
+@observe
 async def completions(request: Request):
     try:
         post_json_data = await request.json()

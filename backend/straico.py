@@ -7,6 +7,7 @@ from const import VERSION, PROJECT_NAME
 import platform
 from datetime import datetime, timedelta
 from aio_straico import aio_straico_client
+from aio_straico.utils.tracing import observe
 from aio_straico.api.v0 import ImageSize
 
 from .straico_platform import autoerase_chat, autoerase_upload_image
@@ -89,6 +90,7 @@ async def agent_promp_completion(agent_id, msg):
         return response["answer"]
 
 
+@observe
 async def prompt_completion(
     msg: str,
     images=None,

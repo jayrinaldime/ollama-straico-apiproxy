@@ -6,11 +6,13 @@ from backend import prompt_completion
 
 logger = logging.getLogger(__name__)
 MODEL_SIZE = 7365960935
+from aio_straico.utils.tracing import observe
 
 from .response.stream.completion_response import generate_ollama_stream, response_stream
 
 
 @app.post("/api/generate")
+@observe
 async def ollamagenerate(request: Request):
     try:
         msg = await request.json()
@@ -50,6 +52,7 @@ async def ollamagenerate(request: Request):
 
 
 @app.post("/api/chat")
+@observe
 async def ollamachat(request: Request):
     try:
         msg = await request.json()

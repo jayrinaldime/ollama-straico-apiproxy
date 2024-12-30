@@ -3,7 +3,7 @@ from fastapi import Request
 from fastapi.responses import JSONResponse, StreamingResponse
 from app import app, logging
 from backend import prompt_completion
-
+from aio_straico.utils.tracing import observe
 from .response.stream.message_response import streamed_response
 
 # from .response.stream.completion_response import streamed_response
@@ -16,6 +16,7 @@ logger = logging.getLogger(__name__)
 
 
 @app.post("/v1/messages")
+@observe
 async def message_completion(request: Request):
     try:
         post_json_data = await request.json()
