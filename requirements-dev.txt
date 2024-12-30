@@ -3,6 +3,7 @@ uvicorn
 aio-straico>=0.1.5
 langfuse
 ollama
+openai
 python-multipart
 jinja2
 
