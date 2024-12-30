@@ -6,7 +6,7 @@ from backend import prompt_completion
 from .response.stream.completion_response import streamed_response
 from .response.basic.completion_response import response as basic_response
 from random import randint
-from aio_straico.utils.tracing import observe
+from aio_straico.utils.tracing import observe, tracing_context
 import re
 
 logger = logging.getLogger(__name__)
@@ -38,7 +38,7 @@ async def chat_completions(request: Request):
         post_json_data = await request.json()
     except:
         post_json_data = json.loads((await request.body()).decode())
-
+    tracing_context.update_current_observation(input=dict(post_json_data))
     model = post_json_data.get("model") or "openai/gpt-3.5-turbo-0125"
     msg = post_json_data["messages"]
     tools = post_json_data.get("tools")
@@ -88,8 +88,6 @@ Please only output plain json when using tools.
     else:
         streaming = post_json_data.get("stream", False)
 
-    logger.debug(msg)
-    logger.debug(model)
     if (
         type(msg) == list
         and len(msg) == 1
@@ -247,9 +245,10 @@ async def completions(request: Request):
         post_json_data = await request.json()
     except:
         post_json_data = json.loads((await request.body()).decode())
+
+    tracing_context.update_current_observation(input=dict(post_json_data))
     msg = post_json_data["prompt"]
     model = post_json_data.get("model") or "openai/gpt-3.5-turbo-0125"
-    logger.debug(msg)
     response = await prompt_completion(msg, model=model)
 
     return StreamingResponse(
