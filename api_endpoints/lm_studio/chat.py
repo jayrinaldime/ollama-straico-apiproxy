@@ -42,6 +42,7 @@ async def chat_completions(request: Request):
     model = post_json_data.get("model") or "openai/gpt-3.5-turbo-0125"
     msg = post_json_data["messages"]
     tools = post_json_data.get("tools")
+    structured_output = post_json_data.get("response_format")
 
     settings = {
         "temperature": post_json_data.get("temperature"),
@@ -58,7 +59,29 @@ async def chat_completions(request: Request):
                     "content": "Please interpret the answer in behave of the user.",
                 }
             )
+    if structured_output is not None and len(structured_output)!=0:
+        streaming = False
+        parent_tool = [
+            {
+                "role": "system",
+                "content": f"""
+## OUTPUT FORMAT: 
+- Be sure that all outputs are JSON-compatible. 
+- Output in JSON format and ensure that the JSON Schema is followed. 
+- Do not include any preface or any other comments. 
+- Do NOT use markup. 
+- The output MUST be plain JSON with no other formatting or markup. 
+- Include every part of the JSON FORMAT, even if a response is missing. 
+- The Output MUST begin with {{ and the Output MUST end with }}
 
+### JSON Schema:
+``` json
+{json.dumps(structured_output["json_schema"], indent=True, ensure_ascii=False)}       
+``` 
+""".strip()
+            }
+        ]
+        msg = parent_tool + msg
     if tools is not None and len(tools) != 0:
         streaming = False
         parent_tool = [

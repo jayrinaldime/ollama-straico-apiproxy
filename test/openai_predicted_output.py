@@ -41,8 +41,8 @@ completion = client.chat.completions.create(
 
 
 print(completion.choices[0].message.content)
-import pprint
-pprint.pprint(completion.model_dump())
+#import pprint
+#pprint.pprint(completion.model_dump())
 """{'choices': [{'finish_reason': 'stop',
               'index': 0,
               'logprobs': None,
