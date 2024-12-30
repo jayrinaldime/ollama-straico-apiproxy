@@ -5,7 +5,7 @@ api_key = "skkkkkk"
 
 # Set a custom base URL (optional)
 
-client = openai.Client(base_url="http://127.0.0.1:3214", api_key=api_key)
+client = openai.Client(base_url="http://127.0.0.1:3214/v1", api_key=api_key)
 # Define the conversation
 messages = [
     {"role": "system", "content": "You are a helpful assistant."},

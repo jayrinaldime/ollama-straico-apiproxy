@@ -6,18 +6,19 @@ from fastapi.responses import JSONResponse
 from app import app, logging
 from backend.straico import image_generation
 from aio_straico.api.v0 import ImageSize
-
+from aio_straico.utils.tracing import observe, tracing_context
 
 logger = logging.getLogger(__name__)
 
 
 @app.post("/v1/images/generations")
+@observe
 async def lm_image_generation(request: Request):
     try:
         post_json_data = await request.json()
     except:
         post_json_data = json.loads((await request.body()).decode())
-    logger.debug(post_json_data)
+    tracing_context.update_current_observation(input=dict(post_json_data))
 
     # model = post_json_data.get("model")
     # if model != "openai/dall-e-3":

@@ -1,71 +1,60 @@
-import openai
-from datetime import datetime
-import json
+from openai import OpenAI, Client
+# Set your OpenAI API key
+api_key = "skkkkkk"
 
-# Simulate the order_id and delivery_date
-order_id = "order_12345"
-delivery_date = datetime.now()
+# Set a custom base URL (optional)
 
-# Simulate the tool call response
-response = {
-    "choices": [
-        {
-            "message": {
-                "role": "assistant",
-                "tool_calls": [
-                    {
-                        "id": "call_62136354",
-                        "type": "function",
-                        "function": {
-                            "arguments": "{'order_id': 'order_12345'}",
-                            "name": "get_delivery_date",
-                        },
-                    }
-                ],
-            }
-        }
-    ]
-}
+client = Client()
+# Define the conversation
 
-# Create a message containing the result of the function call
-function_call_result_message = {
-    "role": "tool",
-    "content": json.dumps(
-        {
-            "order_id": order_id,
-            "delivery_date": delivery_date.strftime("%Y-%m-%d %H:%M:%S"),
-        }
-    ),
-    "tool_call_id": response["choices"][0]["message"]["tool_calls"][0]["id"],
-}
+tools = [
+  {
+      "type": "function",
+      "function": {
+          "name": "get_weather",
+          "parameters": {
+              "type": "object",
+              "properties": {
+                  "location": {"type": "string"}
+              },
+          },
+      },
+  }
+]
 
-# Prepare the chat completion call payload
-completion_payload = {
-    "model": "gpt-4o",
-    "messages": [
-        {
-            "role": "system",
-            "content": "You are a helpful customer support assistant. Use the supplied tools to assist the user.",
-        },
-        {
-            "role": "user",
-            "content": "Hi, can you tell me the delivery date for my order?",
-        },
-        {
-            "role": "assistant",
-            "content": "Hi there! I can help with that. Can you please provide your order ID?",
-        },
-        {"role": "user", "content": "i think it is order_12345"},
-        response["choices"][0]["message"],
-        function_call_result_message,
-    ],
-}
-
-# Call the OpenAI API's chat completions endpoint to send the tool call result back to the model
-response = openai.chat.completions.create(
-    model=completion_payload["model"], messages=completion_payload["messages"]
+completion = client.chat.completions.create(
+  model="gpt-4o",
+  messages=[{"role": "user", "content": "What's the weather like in Paris today?"}],
+  tools=tools,
 )
-print(response.json())
-
-# Print the response from the API. In this case it will typically contain a message such as "The delivery date for your order #12345 is xyz. Is there anything else I can help you with?"
-print(response)
+import pprint
+pprint.pprint(completion.model_dump())
+"""
+{'choices': [{'finish_reason': 'tool_calls',
+              'index': 0,
+              'logprobs': None,
+              'message': {'audio': None,
+                          'content': None,
+                          'function_call': None,
+                          'refusal': None,
+                          'role': 'assistant',
+                          'tool_calls': [{'function': {'arguments': '{"location":"Paris"}',
+                                                       'name': 'get_weather'},
+                                          'id': 'call_FdTNBSeC9RIzk2xOOgx9C0Ty',
+                                          'type': 'function'}]}}],
+ 'created': 1735577518,
+ 'id': 'chatcmpl-AkDHicpR1N8hsMO5HbdNyTMdtOZ5w',
+ 'model': 'gpt-4o-2024-08-06',
+ 'object': 'chat.completion',
+ 'service_tier': None,
+ 'system_fingerprint': 'fp_5f20662549',
+ 'usage': {'completion_tokens': 15,
+           'completion_tokens_details': {'accepted_prediction_tokens': 0,
+                                         'audio_tokens': 0,
+                                         'reasoning_tokens': 0,
+                                         'rejected_prediction_tokens': 0},
+           'prompt_tokens': 45,
+           'prompt_tokens_details': {'audio_tokens': 0, 'cached_tokens': 0},
+           'total_tokens': 60}}
+"""
+print(completion.choices[0].message.tool_calls)

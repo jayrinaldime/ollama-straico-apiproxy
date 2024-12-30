@@ -3,7 +3,7 @@ from fastapi import Request
 from fastapi.responses import JSONResponse, StreamingResponse
 from app import app, logging
 from backend import prompt_completion
-
+from aio_straico.utils.tracing import observe, tracing_context
 from .response.stream.message_response import streamed_response
 
 # from .response.stream.completion_response import streamed_response
@@ -16,13 +16,13 @@ logger = logging.getLogger(__name__)
 
 
 @app.post("/v1/messages")
+@observe
 async def message_completion(request: Request):
     try:
         post_json_data = await request.json()
     except:
         post_json_data = json.loads((await request.body()).decode())
-
-    logger.debug(post_json_data)
+    tracing_context.update_current_observation(input=dict(post_json_data))
     model = post_json_data["model"]
     messages = post_json_data["messages"]
     streaming = post_json_data.get("stream", False)
@@ -38,9 +38,7 @@ async def message_completion(request: Request):
     else:
         request_msg = json.dumps(messages, indent=True, ensure_ascii=False)
 
-    logger.debug(f"Request: {request_msg}")
     response_text = await prompt_completion(request_msg, None, model, **settings)
-    logger.debug(f"Response: {response_text}")
     if not streaming:
         request_id = "msg_" + str(uuid.uuid4())
         response_object = {

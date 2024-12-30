@@ -6,20 +6,23 @@ from backend import prompt_completion
 
 logger = logging.getLogger(__name__)
 MODEL_SIZE = 7365960935
+from aio_straico.utils.tracing import observe, tracing_context
 
 from .response.stream.completion_response import generate_ollama_stream, response_stream
 
 
 @app.post("/api/generate")
+@observe
 async def ollamagenerate(request: Request):
     try:
         msg = await request.json()
     except:
         msg = json.loads((await request.body()).decode())
 
-    logger.debug(msg)
     request_msg = msg["prompt"]
     model = msg.get("model")
+
+    tracing_context.update_current_observation(input=dict(msg))
 
     settings = {}
     if "options" in msg:
@@ -50,6 +53,7 @@ async def ollamagenerate(request: Request):
 
 
 @app.post("/api/chat")
+@observe
 async def ollamachat(request: Request):
     try:
         msg = await request.json()
@@ -66,6 +70,8 @@ async def ollamachat(request: Request):
         options = msg["options"]
         settings["temperature"] = options.get("temperature")
         settings["max_tokens"] = options.get("max_tokens")
+
+    tracing_context.update_current_observation(input=dict(msg))
 
     if format is not None and isinstance(format, dict):
         expected_json_response = True
@@ -123,8 +129,6 @@ Please only output plain json.
     else:
         streaming = True
 
-    logger.debug(msg)
-    logger.debug(model)
     images = None
     if isinstance(messages, list) and len(messages) >= 1 and type(messages[0]) == dict:
         images = []

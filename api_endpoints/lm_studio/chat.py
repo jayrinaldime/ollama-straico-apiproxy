@@ -6,6 +6,7 @@ from backend import prompt_completion
 from .response.stream.completion_response import streamed_response
 from .response.basic.completion_response import response as basic_response
 from random import randint
+from aio_straico.utils.tracing import observe, tracing_context
 import re
 
 logger = logging.getLogger(__name__)
@@ -31,15 +32,17 @@ def _get_msg_image(content):
 
 @app.post("/chat/completions")
 @app.post("/v1/chat/completions")
+@observe
 async def chat_completions(request: Request):
     try:
         post_json_data = await request.json()
     except:
         post_json_data = json.loads((await request.body()).decode())
-
+    tracing_context.update_current_observation(input=dict(post_json_data))
     model = post_json_data.get("model") or "openai/gpt-3.5-turbo-0125"
     msg = post_json_data["messages"]
     tools = post_json_data.get("tools")
+    structured_output = post_json_data.get("response_format")
 
     settings = {
         "temperature": post_json_data.get("temperature"),
@@ -56,7 +59,29 @@ async def chat_completions(request: Request):
                     "content": "Please interpret the answer in behave of the user.",
                 }
             )
+    if structured_output is not None and len(structured_output)!=0:
+        streaming = False
+        parent_tool = [
+            {
+                "role": "system",
+                "content": f"""
+## OUTPUT FORMAT: 
+- Be sure that all outputs are JSON-compatible. 
+- Output in JSON format and ensure that the JSON Schema is followed. 
+- Do not include any preface or any other comments. 
+- Do NOT use markup. 
+- The output MUST be plain JSON with no other formatting or markup. 
+- Include every part of the JSON FORMAT, even if a response is missing. 
+- The Output MUST begin with {{ and the Output MUST end with }}
 
+### JSON Schema:
+``` json
+{json.dumps(structured_output["json_schema"], indent=True, ensure_ascii=False)}       
+``` 
+""".strip()
+            }
+        ]
+        msg = parent_tool + msg
     if tools is not None and len(tools) != 0:
         streaming = False
         parent_tool = [
@@ -86,8 +111,6 @@ Please only output plain json when using tools.
     else:
         streaming = post_json_data.get("stream", False)
 
-    logger.debug(msg)
-    logger.debug(model)
     if (
         type(msg) == list
         and len(msg) == 1
@@ -239,14 +262,16 @@ Please only output plain json when using tools.
 
 
 @app.post("/v1/completions")
+@observe
 async def completions(request: Request):
     try:
         post_json_data = await request.json()
     except:
         post_json_data = json.loads((await request.body()).decode())
+
+    tracing_context.update_current_observation(input=dict(post_json_data))
     msg = post_json_data["prompt"]
     model = post_json_data.get("model") or "openai/gpt-3.5-turbo-0125"
-    logger.debug(msg)
     response = await prompt_completion(msg, model=model)
 
     return StreamingResponse(
