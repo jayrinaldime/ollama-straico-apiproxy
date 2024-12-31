@@ -12,7 +12,7 @@ from .response.stream.completion_response import generate_ollama_stream, respons
 
 
 @app.post("/api/generate")
-@observe
+#@observe
 async def ollamagenerate(request: Request):
     try:
         msg = await request.json()
@@ -53,7 +53,7 @@ async def ollamagenerate(request: Request):
 
 
 @app.post("/api/chat")
-@observe
+#@observe
 async def ollamachat(request: Request):
     try:
         msg = await request.json()

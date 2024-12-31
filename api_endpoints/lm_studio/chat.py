@@ -32,7 +32,7 @@ def _get_msg_image(content):
 
 @app.post("/chat/completions")
 @app.post("/v1/chat/completions")
-@observe
+#@observe
 async def chat_completions(request: Request):
     try:
         post_json_data = await request.json()
@@ -262,7 +262,7 @@ Please only output plain json when using tools.
 
 
 @app.post("/v1/completions")
-@observe
+#@observe
 async def completions(request: Request):
     try:
         post_json_data = await request.json()
