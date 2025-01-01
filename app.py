@@ -12,7 +12,7 @@ logging.basicConfig(
     datefmt="%Y-%m-%d %H:%M:%S",
 )
 logger = logging.getLogger(__name__)
-_MB = 1024**2 
+_MB = 1024**2
 MAX_REQUEST_SIZE_IN_MB = int(os.environ.get("MAX_REQUEST_SIZE_IN_MB", "25")) * _MB
 app = FastAPI(max_request_body_size=MAX_REQUEST_SIZE_IN_MB)
 

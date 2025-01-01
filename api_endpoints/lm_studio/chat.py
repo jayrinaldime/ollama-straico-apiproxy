@@ -59,7 +59,7 @@ async def chat_completions(request: Request):
                     "content": "Please interpret the answer in behave of the user.",
                 }
             )
-    if structured_output is not None and len(structured_output)!=0:
+    if structured_output is not None and len(structured_output) != 0:
         streaming = False
         parent_tool = [
             {
@@ -78,7 +78,7 @@ async def chat_completions(request: Request):
 ``` json
 {json.dumps(structured_output["json_schema"], indent=True, ensure_ascii=False)}       
 ``` 
-""".strip()
+""".strip(),
             }
         ]
         msg = parent_tool + msg

@@ -1,4 +1,5 @@
 from openai import OpenAI, Client
+
 # Set your OpenAI API key
 api_key = "skkkkkk"
 
@@ -8,26 +9,25 @@ client = Client()
 # Define the conversation
 
 tools = [
-  {
-      "type": "function",
-      "function": {
-          "name": "get_weather",
-          "parameters": {
-              "type": "object",
-              "properties": {
-                  "location": {"type": "string"}
-              },
-          },
-      },
-  }
+    {
+        "type": "function",
+        "function": {
+            "name": "get_weather",
+            "parameters": {
+                "type": "object",
+                "properties": {"location": {"type": "string"}},
+            },
+        },
+    }
 ]
 
 completion = client.chat.completions.create(
-  model="gpt-4o",
-  messages=[{"role": "user", "content": "What's the weather like in Paris today?"}],
-  tools=tools,
+    model="gpt-4o",
+    messages=[{"role": "user", "content": "What's the weather like in Paris today?"}],
+    tools=tools,
 )
 import pprint
+
 pprint.pprint(completion.model_dump())
 """
 {'choices': [{'finish_reason': 'tool_calls',
