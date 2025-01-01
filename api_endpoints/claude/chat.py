@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 
 
 @app.post("/v1/messages")
-#@observe
+@observe
 async def message_completion(request: Request):
     try:
         post_json_data = await request.json()

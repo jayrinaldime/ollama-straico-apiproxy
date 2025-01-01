@@ -262,7 +262,7 @@ Please only output plain json when using tools.
 
 
 @app.post("/v1/completions")
-#@observe
+@observe
 async def completions(request: Request):
     try:
         post_json_data = await request.json()

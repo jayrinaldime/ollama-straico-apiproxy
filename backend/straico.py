@@ -90,7 +90,7 @@ async def agent_promp_completion(agent_id, msg):
         return response["answer"]
 
 
-#@observe
+@observe
 async def prompt_completion(
     msg: str,
     images=None,

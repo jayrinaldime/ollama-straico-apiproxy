@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 
 
 @app.post("/v1/images/generations")
-#@observe
+@observe
 async def lm_image_generation(request: Request):
     try:
         post_json_data = await request.json()
