@@ -82,7 +82,7 @@ async def chat_completions(request: Request):
             }
         ]
         msg = parent_tool + msg
-    if tools is not None and len(tools) != 0:
+    elif tools is not None and len(tools) != 0:
         streaming = False
         parent_tool = [
             {
