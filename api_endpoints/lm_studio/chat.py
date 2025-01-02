@@ -129,7 +129,7 @@ Please only output plain json when using tools.
             )
     else:
         response = await prompt_completion(
-            json.dumps(msg, indent=True), model=model, **settings
+            json.dumps(msg, indent=True, ensure_ascii=False), model=model, **settings
         )
 
     response_type = type(response)
@@ -250,7 +250,7 @@ Please only output plain json when using tools.
                 original_response = original_response["content"]
 
     if type(original_response) in [dict, list]:
-        original_response = json.dumps(original_response)
+        original_response = json.dumps(original_response, ensure_ascii=False)
 
     if streaming:
         # generate_json_data

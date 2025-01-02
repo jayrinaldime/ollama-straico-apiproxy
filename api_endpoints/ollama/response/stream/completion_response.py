@@ -6,7 +6,7 @@ logger = logging.getLogger(__name__)
 
 
 def json_stream_json_dump(obj):
-    return json.dumps(obj) + "\n"
+    return json.dumps(obj, ensure_ascii=False) + "\n"
 
 
 async def response_stream(model, response, is_tool=False):

@@ -9,7 +9,7 @@ logger = logging.getLogger(__name__)
 
 def stream_data_response(event_type, msg):
     line1 = f"event: {event_type}\n"
-    line2 = "data: " + json.dumps(msg, ensure_ascii=True) + "\n\n"
+    line2 = "data: " + json.dumps(msg, ensure_ascii=False) + "\n\n"
 
     return line1 + line2
 
