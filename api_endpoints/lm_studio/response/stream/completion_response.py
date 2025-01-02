@@ -6,7 +6,7 @@ logger = logging.getLogger(__name__)
 
 
 def stream_data_response(msg):
-    return "data: " + json.dumps(msg) + "\n\n"
+    return "data: " + json.dumps(msg, ensure_ascii=False) + "\n\n"
 
 
 def end_response(rid, model):

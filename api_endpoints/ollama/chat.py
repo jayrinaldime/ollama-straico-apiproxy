@@ -223,7 +223,7 @@ Please only output plain json.
                 original_response = original_response["content"]
 
     if type(original_response) in [dict, list]:
-        original_response = json.dumps(original_response)
+        original_response = json.dumps(original_response, ensure_ascii=False)
 
     if streaming:
         return StreamingResponse(
