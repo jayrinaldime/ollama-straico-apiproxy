@@ -3,6 +3,7 @@ from fastapi import Request
 from fastapi.responses import JSONResponse, StreamingResponse
 from app import app, logging
 from backend import prompt_completion
+from backend.request import LMStudioRequest
 from .response.stream.completion_response import streamed_response
 from .response.basic.completion_response import response as basic_response
 from random import randint
@@ -43,6 +44,7 @@ async def chat_completions(request: Request):
     msg = post_json_data["messages"]
     tools = post_json_data.get("tools")
     structured_output = post_json_data.get("response_format")
+    request_body = LMStudioRequest(msg, tools=tools, structured_output=structured_output)
 
     settings = {
         "temperature": post_json_data.get("temperature"),
@@ -59,6 +61,7 @@ async def chat_completions(request: Request):
                     "content": "Please interpret the answer in behave of the user.",
                 }
             )
+
     if structured_output is not None and len(structured_output) != 0:
         streaming = False
         parent_tool = [
@@ -119,17 +122,21 @@ Please only output plain json when using tools.
     ):
         if type(msg[0]["content"]) == str:
             response = await prompt_completion(
-                msg[0]["content"], model=model, **settings
+                request_body.xml_format(),
+                #msg[0]["content"],
+                model=model, **settings
             )
         else:
             images = _get_msg_image(msg[0]["content"])
-            msg = _get_msg_text(msg[0]["content"])
+            #msg = _get_msg_text(msg[0]["content"])
             response = await prompt_completion(
-                msg, images=images, model=model, **settings
+                request_body.xml_format(), images=images, model=model, **settings
             )
     else:
         response = await prompt_completion(
-            json.dumps(msg, indent=True), model=model, **settings
+            #json.dumps(msg, indent=True),
+            request_body.xml_format(),
+            model=model, **settings
         )
 
     response_type = type(response)
