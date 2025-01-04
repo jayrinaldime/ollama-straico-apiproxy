@@ -1,3 +1,4 @@
+from contextlib import asynccontextmanager
 from fastapi import FastAPI
 import logging
 import os
@@ -14,7 +15,18 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 _MB = 1024**2
 MAX_REQUEST_SIZE_IN_MB = int(os.environ.get("MAX_REQUEST_SIZE_IN_MB", "25")) * _MB
-app = FastAPI(max_request_body_size=MAX_REQUEST_SIZE_IN_MB)
+
+from mcpservermanager import initialize_mcp_servers, close_mcp_servers
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Initialize the singleton instance
+    await initialize_mcp_servers()
+    yield
+    await close_mcp_servers()
+    # Clean up resources (optional)
+
+app = FastAPI(lifespan=lifespan, max_request_body_size=MAX_REQUEST_SIZE_IN_MB)
 
 # Add CORS middleware
 app.add_middleware(
