@@ -1,9 +1,0 @@
-fastapi
-uvicorn
-aio-straico>=0.1.6
-langfuse
-ollama
-openai
-python-multipart
-jinja2
-

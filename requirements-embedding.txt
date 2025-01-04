@@ -6,3 +6,4 @@ sentencepiece
 einops
 sentence-transformers
 python-multipart
+mcp>=1.2.0

@@ -7,3 +7,4 @@ einops
 sentence-transformers
 openai-whisper
 python-multipart
+mcp>=1.2.0

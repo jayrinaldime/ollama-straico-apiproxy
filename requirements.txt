@@ -4,3 +4,4 @@ aio-straico>=0.1.6
 langfuse
 python-multipart
 jinja2
+mcp>=1.2.0
