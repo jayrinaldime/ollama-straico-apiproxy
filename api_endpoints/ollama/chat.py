@@ -199,6 +199,7 @@ Please only output plain json.
                 }
             )
 
+    response_type = type(response)
     if len(messages) > 1 and response_type == str:
         response = response.strip()
         if response.startswith("```json") and response.endswith("```"):
@@ -224,6 +225,9 @@ Please only output plain json.
 
     if type(original_response) in [dict, list]:
         original_response = json.dumps(original_response, ensure_ascii=False)
+
+    elif type(response) in [dict, list]:
+        original_response = json.dumps(response, ensure_ascii=False)
 
     if streaming:
         return StreamingResponse(
