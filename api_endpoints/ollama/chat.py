@@ -178,7 +178,20 @@ Please only output plain json.
         if isinstance(response, list) and len(response) > 0:
             response = response[0]
 
-        if isinstance(response, dict) and "tool_calls" in response:
+        if isinstance(response, dict):
+            if "tool_calls" not in response:
+                import pprint
+
+
+                response = {"tool_calls":
+                                    [ {  "function":{
+                                            "name": "AgentOutput",
+                                            "arguments": response
+                                            }
+                            }]
+                }
+                pprint.pprint(response)
+
             return JSONResponse(
                 content={
                     "model": model,
@@ -228,7 +241,7 @@ Please only output plain json.
 
     elif type(response) in [dict, list]:
         original_response = json.dumps(response, ensure_ascii=False)
-        
+
     if streaming:
         return StreamingResponse(
             response_stream(model, original_response, is_tool=False),
