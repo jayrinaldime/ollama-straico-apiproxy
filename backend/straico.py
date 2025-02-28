@@ -76,6 +76,8 @@ async def model_listing():
     for model in models:
         name = model["name"]
         model_name = model["model"]
+        if model["pricing"]["coins"] == 0:
+            continue
         _id = model["_id"], model["pricing"]["coins"]
         model_id_mapping[name] = _id
         model_id_mapping[model_name] = _id
