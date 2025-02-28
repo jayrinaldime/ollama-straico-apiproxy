@@ -151,8 +151,15 @@ async def prompt_completion(
             return response["completion"]["choices"][-1]["message"]["content"]
     else:
         platform_model_map = await get_platform_model_mapping()
-        if model.startswith("openai/"):
-            model = model[7:]
+        if model not in platform_model_map:
+            split_index = model.find("/")
+            new_model_name = model[split_index+1:]
+            if new_model_name in platform_model_map:
+                model = new_model_name
+            else:
+                logger.error(f"Model not found Platform [{model}, {new_model_name}]")
+                raise Exception("Model not found in Platform")
+
         model_id, model_cost = platform_model_map[model]
 
         with TemporaryDirectory() as tmpdirname:
