@@ -109,7 +109,7 @@ Assuming the function is
 ```
 {"tools":[{"type":"function","function":{"name":"get_current_weather","description":"Get the current weather for a location","parameters":{"type":"object","properties":{"location":{"type":"string","description":"The location to get the weather for, e.g. San Francisco, CA"},"format":{"type":"string","description":"The format to return the weather in, e.g. 'celsius' or 'fahrenheit'","enum":["celsius","fahrenheit"]}},"required":["location","format"]}}}]}
 ```
-When you do use a function your output should like
+When you do use a function your output should be like
 ``` 
 {"tool_calls":[{"function":{"name":"get_current_weather","arguments":{"format":"celsius","location":"Paris, FR"}}}]}
 ``` 
@@ -178,7 +178,19 @@ Please only output plain json.
         if isinstance(response, list) and len(response) > 0:
             response = response[0]
 
-        if isinstance(response, dict) and "tool_calls" in response:
+        if isinstance(response, dict) and len(tools) > 0:
+            if "tool_calls" not in response:
+                logger.warning(f"tool_calling response has incorrect format {response}")
+                first_function_name = tools[0]["function"]["name"]
+                response = {"tool_calls":
+                                    [ {  "function":{
+                                            "name": first_function_name,
+                                            "arguments": response
+                                            }
+                            }]
+                }
+
+
             return JSONResponse(
                 content={
                     "model": model,
@@ -228,7 +240,7 @@ Please only output plain json.
 
     elif type(response) in [dict, list]:
         original_response = json.dumps(response, ensure_ascii=False)
-        
+
     if streaming:
         return StreamingResponse(
             response_stream(model, original_response, is_tool=False),

@@ -4,8 +4,7 @@ from openai import OpenAI, Client
 
 # Set a custom base URL (optional)
 
-client = Client()
-
+client = Client(base_url="http://127.0.0.1:3214/v1", api_key="api_key")
 
 class CalendarEvent(BaseModel):
     name: str
