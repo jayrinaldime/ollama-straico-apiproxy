@@ -94,12 +94,14 @@ Assuming the tools is
 ```
 {"tools":[{"type":"function","function":{"name":"get_current_weather","description":"Get the current weather in a given location","parameters":{"type":"object","properties":{"location":{"type":"string","description":"The city and state, e.g. San Francisco, CA"},"unit":{"type":"string","enum":["celsius","fahrenheit"]}},"required":["location"]}}}]}
 ```
-When you do use a tool your output should like
+When you do use a tool your output should be like
 ``` 
 {"tool_calls":[{"type":"function","function":{"name":"get_current_weather","arguments":"{\n\"location\": \"Boston, MA\"\n}"}}]}
 ``` 
 You must answer by exactly following the provided instructions. Do not add any additional comments or explanations.
 Do not add "Here is..." or anything like that.
+Follow the data type format listed in the argument. 
+Always set the function name! 
 
 Act like a script, you are given an optional input and the instructions to perform, you answer with the output of the requested task.
 
@@ -149,43 +151,56 @@ Please only output plain json when using tools.
                     response = json.loads(response)
                 except:
                     pass
-        if type(response) == list and len(response) > 0:
+        if isinstance(response, list) and len(response) > 0:
             response = response[0]
 
-        if type(response) == dict and "tool_calls" in response:
-            if len(response["tool_calls"]) == 0:
-                response = ""
-                original_response = ""
-            else:
-                for f in response["tool_calls"]:
-                    i = randint(10000000, 999999999)
-                    f["id"] = f"call_{i:}"
-                print("Tool:", response["tool_calls"])
-                return JSONResponse(
-                    content={
-                        "id": "chatcmpl-abc123",
-                        "object": "chat.completion",
-                        "created": 1699896916,
-                        "model": model,
-                        "choices": [
-                            {
-                                "index": 0,
-                                "message": {
-                                    "role": "assistant",
-                                    "tool_calls": response["tool_calls"],
-                                },
-                                "logprobs": None,
-                                "finish_reason": "tool_calls",
-                            }
-                        ],
-                        "usage": {
-                            "prompt_tokens": 82,
-                            "completion_tokens": 17,
-                            "total_tokens": 99,
-                            "completion_tokens_details": {"reasoning_tokens": 0},
-                        },
-                    }
-                )
+        if isinstance(response, dict) and len(tools) > 0:
+            if "tool_calls" not in response:
+                logger.warning(f"tool_calling response has incorrect format {response}")
+                first_function_name = tools[0]["function"]["name"]
+                response = {"tool_calls":
+                                    [ { 'type': 'function',
+                                        "function":{
+                                            "name": first_function_name,
+                                            "arguments": json.dumps(response)
+                                            }
+                            }]
+                }
+
+            if "tool_calls" in response:
+                if len(response["tool_calls"]) == 0:
+                    response = ""
+                    original_response = ""
+                else:
+                    for f in response["tool_calls"]:
+                        i = randint(10000000, 999999999)
+                        f["id"] = f"call_{i:}"
+                    print("Tool:", response["tool_calls"])
+                    return JSONResponse(
+                        content={
+                            "id": "chatcmpl-abc123",
+                            "object": "chat.completion",
+                            "created": 1699896916,
+                            "model": model,
+                            "choices": [
+                                {
+                                    "index": 0,
+                                    "message": {
+                                        "role": "assistant",
+                                        "tool_calls": response["tool_calls"],
+                                    },
+                                    "logprobs": None,
+                                    "finish_reason": "tool_calls",
+                                }
+                            ],
+                            "usage": {
+                                "prompt_tokens": 82,
+                                "completion_tokens": 17,
+                                "total_tokens": 99,
+                                "completion_tokens_details": {"reasoning_tokens": 0},
+                            },
+                        }
+                    )
         if type(response) == str and "tool_calls" in response:
             pattern = r"\{\s*\"tool_calls\":\s*\["
             match = re.search(pattern, response, re.DOTALL)
