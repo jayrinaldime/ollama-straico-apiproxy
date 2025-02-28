@@ -1,3 +1,5 @@
+import asyncio
+
 from httpx import AsyncClient
 from os import environ
 from datetime import timezone, datetime
@@ -11,7 +13,7 @@ PLATFORM_BASE_URL = "https://platform.straico.com/api"
 
 
 @asynccontextmanager
-async def autoerase_upload_image(*image_paths):
+async def autoerase_upload_image(*image_paths, should_erase=True):
     image_urls = []
     image_ids = []
     try:
@@ -30,18 +32,22 @@ async def autoerase_upload_image(*image_paths):
             image_urls.append({"url": url, "words": word_count})
         yield image_urls
     finally:
-        for image_id in image_ids:
-            deleted = await _file_delete(image_id)
+        if should_erase:
+            for image_id in image_ids:
+                deleted = await _file_delete(image_id)
 
 
 @asynccontextmanager
-async def autoerase_chat(model_id, model_cost, img_url, text_prompt):
+async def autoerase_chat(model_id, model_cost, img_url, text_prompt, should_erase=True):
     try:
         chat_response = await _chat(model_id, model_cost, text_prompt, img_url)
         yield chat_response
 
     finally:
-        delete_chat = await _delete_chat(chat_response["hash"])
+        if should_erase:
+            # wait 1 second to delete chat
+            await asyncio.sleep(1)
+            delete_chat = await _delete_chat(chat_response["hash"])
 
 
 async def models():
