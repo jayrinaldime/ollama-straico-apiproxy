@@ -6,6 +6,11 @@ load_dotenv()
 
 import asyncio
 
+
+# pip install browser-use
+# install playwright:
+# playwright install
+
 # Requires Vision / Image Input capability
 #llm_openai = ChatOpenAI(model="openai/gpt-4o-2024-11-20", base_url="http://127.0.0.1:3216/v1", api_key="aawederr")
 llm_ollama = ChatOllama(model="openai/gpt-4o-mini", base_url="http://127.0.0.1:3216")
