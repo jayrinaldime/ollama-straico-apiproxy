@@ -12,22 +12,22 @@ import re
 logger = logging.getLogger(__name__)
 
 
-def _get_msg_text(content):
-    text = []
-    for content_object in content:
-        if content_object["type"] == "text":
-            text.append(content_object["text"])
-    return "\n".join(text)
-
-
-def _get_msg_image(content):
+def extract_images_from_messages(msgs):
     images = []
-    for content_object in content:
-        if content_object["type"] == "image_url":
-            data = content_object["image_url"]["url"]
-            starting_index = data.find(",")
-            images.append(data[starting_index:])
-    return images
+    for msg in msgs:
+        if "content" not in msg or not isinstance(msg["content"], list):
+            continue
+        to_remove_index = []
+        for index, content in enumerate(msg["content"]):
+            if isinstance(content, dict) and content.get("type") == "image_url":
+                data = content["image_url"]["url"]
+                starting_index = data.find(",")
+                images.append(data[starting_index + 1 :])
+                to_remove_index.append(index)
+        to_remove_index.reverse()
+        for remove_index in to_remove_index:
+            del msg["content"][remove_index]
+    return images, msgs
 
 
 @app.post("/chat/completions")
@@ -56,7 +56,7 @@ async def chat_completions(request: Request):
             msg.append(
                 {
                     "role": "system",
-                    "content": "Please interpret the answer in behave of the user.",
+                    "content": "Please interpret the answer on behalf of the user.",
                 }
             )
     if structured_output is not None and len(structured_output) != 0:
@@ -113,21 +113,21 @@ Please only output plain json when using tools.
     else:
         streaming = post_json_data.get("stream", False)
 
-    if (
-        type(msg) == list
-        and len(msg) == 1
-        and type(msg[0]) == dict
-        and "content" in msg[0]
-    ):
-        if type(msg[0]["content"]) == str:
+    # extract images from all msgs
+    if isinstance(msg, list):
+        images, msg = extract_images_from_messages(msg)
+        if images is None or len(images) == 0:
             response = await prompt_completion(
-                msg[0]["content"], model=model, **settings
+                json.dumps(msg, indent=True, ensure_ascii=False),
+                model=model,
+                **settings,
             )
         else:
-            images = _get_msg_image(msg[0]["content"])
-            msg = _get_msg_text(msg[0]["content"])
             response = await prompt_completion(
-                msg, images=images, model=model, **settings
+                json.dumps(msg, indent=True, ensure_ascii=False),
+                images=images,
+                model=model,
+                **settings,
             )
     else:
         response = await prompt_completion(
@@ -158,13 +158,16 @@ Please only output plain json when using tools.
             if "tool_calls" not in response:
                 logger.warning(f"tool_calling response has incorrect format {response}")
                 first_function_name = tools[0]["function"]["name"]
-                response = {"tool_calls":
-                                    [ { 'type': 'function',
-                                        "function":{
-                                            "name": first_function_name,
-                                            "arguments": json.dumps(response)
-                                            }
-                            }]
+                response = {
+                    "tool_calls": [
+                        {
+                            "type": "function",
+                            "function": {
+                                "name": first_function_name,
+                                "arguments": json.dumps(response),
+                            },
+                        }
+                    ]
                 }
 
             if "tool_calls" in response:

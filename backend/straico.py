@@ -153,7 +153,7 @@ async def prompt_completion(
         platform_model_map = await get_platform_model_mapping()
         if model not in platform_model_map:
             split_index = model.find("/")
-            new_model_name = model[split_index+1:]
+            new_model_name = model[split_index + 1 :]
             if new_model_name in platform_model_map:
                 model = new_model_name
             else:

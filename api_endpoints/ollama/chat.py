@@ -182,14 +182,16 @@ Please only output plain json.
             if "tool_calls" not in response:
                 logger.warning(f"tool_calling response has incorrect format {response}")
                 first_function_name = tools[0]["function"]["name"]
-                response = {"tool_calls":
-                                    [ {  "function":{
-                                            "name": first_function_name,
-                                            "arguments": response
-                                            }
-                            }]
+                response = {
+                    "tool_calls": [
+                        {
+                            "function": {
+                                "name": first_function_name,
+                                "arguments": response,
+                            }
+                        }
+                    ]
                 }
-
 
             return JSONResponse(
                 content={
