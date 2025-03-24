@@ -1,18 +1,21 @@
 import json
-
 from fastapi import Request
 from fastapi import UploadFile, Form, File
 from fastapi.responses import StreamingResponse, JSONResponse
 from typing import Optional
-from app import app, logging, PLATFORM_ENABLED
+from app import (
+    app,
+    logging,
+    PLATFORM_ENABLED,
+    TTS_PROVIDER,
+    TTS_PROVIDER_LAZYBIRD,
+    TTS_PROVIDER_STRAICO_PLATFORM,
+)
 from io import BytesIO
-from os import environ
 
 logger = logging.getLogger(__name__)
 
-TTS_PROVIDER = environ.get("TTS_PROVIDER", "STRAICO_PLATFORM")
-
-if TTS_PROVIDER == "LAZYBIRD":
+if TTS_PROVIDER == TTS_PROVIDER_LAZYBIRD:
     logger.info("TTS Provider set to Lazybird")
     from backend.lazybird import tts
 
@@ -34,7 +37,8 @@ if TTS_PROVIDER == "LAZYBIRD":
         return StreamingResponse(stream, media_type="application/octet-stream")
 
 
-if TTS_PROVIDER == "STRAICO_PLATFORM" and PLATFORM_ENABLED:
+if TTS_PROVIDER == TTS_PROVIDER_STRAICO_PLATFORM and PLATFORM_ENABLED:
+    logger.info("TTS, STT Provider set to Straico Platform")
     from backend.straico_platform import tts, download_file, stt
 
     @app.post("/v1/audio/speech")
