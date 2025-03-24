@@ -6,7 +6,7 @@ from fastapi import FastAPI, Request, HTTPException, Form, File, UploadFile
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.templating import Jinja2Templates
 
-from app import app
+from app import app, TTS_PROVIDER, TTS_PROVIDER_LAZYBIRD
 from backend import (
     user_detail,
     list_rags,
@@ -18,6 +18,7 @@ from backend import (
     get_model_mapping,
     update_agent,
 )
+
 from data.agent_data import chat_settings_write, chat_settings_read
 
 # Add template configuration
@@ -51,6 +52,22 @@ def secure_filename(filename):
 @app.get("/", response_class=HTMLResponse)
 async def root(request: Request):
     details = await user_detail()
+    links = [
+        {"name": "API Documentation", "url": "/docs"},
+        {"name": "Swagger UI", "url": "/redoc"},
+        {"name": "Ollama Model List", "url": "/api/tags"},
+        {
+            "name": "LM Studio / OpenAI Compatible Model List",
+            "url": "/v1/models",
+        },
+        {"name": "User Details", "url": "/api/user"},
+        {"name": "Straico Model List", "url": "/api/model_list"},
+        {"name": "RAG Management", "url": "/rag-list"},
+        {"name": "Agent Management", "url": "/agent-list"},
+    ]
+    if TTS_PROVIDER == TTS_PROVIDER_LAZYBIRD:
+        links.append({"name": "Lazybird Voice Model List", "url": "/lazybird-model"})
+
     return templates.TemplateResponse(
         "index.html",
         {
@@ -58,19 +75,7 @@ async def root(request: Request):
             "title": "Straico Proxy API Services",
             "description": "Welcome to the Straico API platform. Explore our available services and endpoints.",
             "user": details,
-            "links": [
-                {"name": "API Documentation", "url": "/docs"},
-                {"name": "Swagger UI", "url": "/redoc"},
-                {"name": "Ollama Model List", "url": "/api/tags"},
-                {
-                    "name": "LM Studio / OpenAI Compatible Model List",
-                    "url": "/v1/models",
-                },
-                {"name": "User Details", "url": "/api/user"},
-                {"name": "Straico Model List", "url": "/api/model_list"},
-                {"name": "RAG Management", "url": "/rag-list"},
-                {"name": "Agent Management", "url": "/agent-list"},
-            ],
+            "links": links,
         },
     )
 
@@ -283,3 +288,12 @@ async def update_agent_chat_settings_endpoint(
         content={"message": "Chat settings updated successfully", "result": "Saved"},
         status_code=200,
     )
+
+
+if TTS_PROVIDER == TTS_PROVIDER_LAZYBIRD:
+    from backend.lazybird import tts_models
+
+    @app.get("/lazybird-model")
+    async def lazybird_list_models():
+        models = await tts_models()
+        return JSONResponse(content=models)
