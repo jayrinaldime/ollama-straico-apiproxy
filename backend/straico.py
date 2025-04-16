@@ -28,6 +28,7 @@ model_last_update_dt = None
 CACHE_MODEL_LIST = int(environ.get("STRAICO_CACHE_MODEL_LIST", "60"))
 TIMEOUT = int(environ.get("STRAICO_TIMEOUT", "600"))
 
+
 async def get_model_mapping():
     global model_last_update_dt, model_result
     if (
@@ -120,8 +121,7 @@ async def prompt_completion(
             for index, image in enumerate(images):
                 utc_now = datetime.now(timezone.utc)
                 str_now = (
-                    utc_now.strftime("%Y-%m-%dT%H:%M:%S.%f")[:-3]
-                    + f"{index:03}Z.png"
+                    utc_now.strftime("%Y-%m-%dT%H:%M:%S.%f")[:-3] + f"{index:03}Z.png"
                 )
                 pathfile = Path(tmpdirname) / str_now
                 with pathfile.open("wb") as fp:
@@ -149,7 +149,9 @@ async def prompt_completion(
         async with aio_straico_client(timeout=TIMEOUT) as client:
             response = await client.prompt_completion(model, msg, **settings)
             logger.debug(f"response body: {response}")
-            return response["completions"][model]["completion"]["choices"][-1]["message"]["content"]
+            return response["completions"][model]["completion"]["choices"][-1][
+                "message"
+            ]["content"]
 
     async with aio_straico_client(timeout=TIMEOUT) as client:
         response = await client.prompt_completion(model, msg, **settings)

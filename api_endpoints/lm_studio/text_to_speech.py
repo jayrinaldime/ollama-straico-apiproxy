@@ -1,4 +1,6 @@
 import json
+import os
+
 from fastapi import Request
 from fastapi import UploadFile, Form, File
 from fastapi.responses import StreamingResponse, JSONResponse
@@ -17,7 +19,21 @@ logger = logging.getLogger(__name__)
 
 if TTS_PROVIDER == TTS_PROVIDER_LAZYBIRD:
     logger.info("TTS Provider set to Lazybird")
-    from backend.lazybird import tts
+    from backend.lazybird import tts, tts_models
+
+    voice_model_result = None
+    voice_model_last_update_dt = None
+    from datetime import timedelta, datetime
+
+    async def get_model_mapping():
+        global voice_model_last_update_dt, voice_model_result
+        if (
+            voice_model_last_update_dt is None
+            or (voice_model_last_update_dt + timedelta(minutes=60)) <= datetime.now()
+        ):
+            voice_model_result = await tts_models()
+            voice_model_last_update_dt = datetime.now()
+        return voice_model_result
 
     @app.post("/v1/audio/speech")
     async def lm_studio_tts(request: Request):
@@ -31,6 +47,16 @@ if TTS_PROVIDER == TTS_PROVIDER_LAZYBIRD:
         input_text = post_json_data["input"]
         voice = post_json_data["voice"]
         speed = post_json_data.get("speed", 1.0)
+        model_list = await tts_models()
+        model_ids = (m["id"] for m in model_list)
+        if voice not in model_ids:
+            model_mapping = dict(((m["displayName"], m["id"]) for m in model_list))
+            if voice not in model_mapping:
+                voice = os.environ.get(
+                    "DEFAULT_LAZYBIRD_VOICE", "msa.en-US.AndrewMultilingual"
+                )
+            else:
+                voice = model_mapping[voice]
 
         speech_content = await tts(input_text, voice, speed=speed)
         stream = BytesIO(speech_content)
