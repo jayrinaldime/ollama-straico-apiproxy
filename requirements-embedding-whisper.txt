@@ -1,6 +1,6 @@
 fastapi
 uvicorn
-aio-straico>=0.1.6
+aio-straico>=0.1.7
 langfuse
 sentencepiece
 einops
