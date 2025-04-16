@@ -114,47 +114,47 @@ async def prompt_completion(
                 )
                 raise Exception(f"Unknown Model {model}")
 
-        image_url = []
-        if len(images) > 0:
-            with TemporaryDirectory() as tmpdirname:
-                for index, image in enumerate(images):
-                    utc_now = datetime.now(timezone.utc)
-                    str_now = (
-                        utc_now.strftime("%Y-%m-%dT%H:%M:%S.%f")[:-3]
-                        + f"{index:03}Z.png"
-                    )
-                    pathfile = Path(tmpdirname) / str_now
-                    with pathfile.open("wb") as fp:
-                        data = base64.urlsafe_b64decode(
-                            image
-                        )  # .standard_b64decode(images[0])
-                        fp.write(data)
-                    async with aio_straico_client(timeout=TIMEOUT) as client:
-                        file_url = await client.upload_file(pathfile)
-                        image_url.append(file_url)
+    image_url = []
+    if images is not None and len(images) > 0:
+        with TemporaryDirectory() as tmpdirname:
+            for index, image in enumerate(images):
+                utc_now = datetime.now(timezone.utc)
+                str_now = (
+                    utc_now.strftime("%Y-%m-%dT%H:%M:%S.%f")[:-3]
+                    + f"{index:03}Z.png"
+                )
+                pathfile = Path(tmpdirname) / str_now
+                with pathfile.open("wb") as fp:
+                    data = base64.urlsafe_b64decode(
+                        image
+                    )  # .standard_b64decode(images[0])
+                    fp.write(data)
+                async with aio_straico_client(timeout=TIMEOUT) as client:
+                    file_url = await client.upload_file(pathfile)
+                    image_url.append(file_url)
 
-        post_request_data = {
-            "model": model,
-            "message": msg,
-        }
-        logger.debug(f"Request Post Data: {post_request_data}")
-        settings = {}
-        if temperature is not None:
-            settings["temperature"] = temperature
-        if max_tokens is not None:
-            settings["max_tokens"] = max_tokens
-        if len(image_url) > 0:
-            settings["images"] = image_url
-            # adding an image will trigger the aio straico to use the v1 api
-            async with aio_straico_client(timeout=TIMEOUT) as client:
-                response = await client.prompt_completion(model, msg, **settings)
-                logger.debug(f"response body: {response}")
-                return response["completions"][model]["completion"]["choices"][-1]["message"]["content"]
-
+    post_request_data = {
+        "model": model,
+        "message": msg,
+    }
+    logger.debug(f"Request Post Data: {post_request_data}")
+    settings = {}
+    if temperature is not None:
+        settings["temperature"] = temperature
+    if max_tokens is not None:
+        settings["max_tokens"] = max_tokens
+    if len(image_url) > 0:
+        settings["images"] = image_url
+        # adding an image will trigger the aio straico to use the v1 api
         async with aio_straico_client(timeout=TIMEOUT) as client:
             response = await client.prompt_completion(model, msg, **settings)
             logger.debug(f"response body: {response}")
-            return response["completion"]["choices"][-1]["message"]["content"]
+            return response["completions"][model]["completion"]["choices"][-1]["message"]["content"]
+
+    async with aio_straico_client(timeout=TIMEOUT) as client:
+        response = await client.prompt_completion(model, msg, **settings)
+        logger.debug(f"response body: {response}")
+        return response["completion"]["choices"][-1]["message"]["content"]
 
 
 async def list_model():
