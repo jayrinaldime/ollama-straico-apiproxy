@@ -22,16 +22,11 @@ logger = logging.getLogger(__name__)
 model_result = None
 model_last_update_dt = None
 
-platform_model_result = None
-platform_model_last_update_dt = None
-
 # CLIENT_USER_AGENT = f"{PROJECT_NAME}/{VERSION} ({platform.system()}; {platform.processor()};) py/{platform.python_version()}"
 # logger.debug(f"Straico Client User Agent = {CLIENT_USER_AGENT}")
 
 CACHE_MODEL_LIST = int(environ.get("STRAICO_CACHE_MODEL_LIST", "60"))
 TIMEOUT = int(environ.get("STRAICO_TIMEOUT", "600"))
-
-from app import PLATFORM_ENABLED
 
 
 async def get_model_mapping():
@@ -53,29 +48,14 @@ async def get_model_mapping():
     return models
 
 
-async def get_platform_model_mapping():
-    global platform_model_last_update_dt, platform_model_result
-    if (
-        platform_model_last_update_dt is None
-        or (platform_model_last_update_dt + timedelta(minutes=CACHE_MODEL_LIST))
-        <= datetime.now()
-    ):
-        platform_model_result = await model_listing()
-        platform_model_last_update_dt = datetime.now()
-
-    models = platform_model_result
-    if models is None:
-        return {}
-
-    return models
-
-
 async def model_listing():
     model_id_mapping = {}
     models = await platform_models()
     for model in models:
         name = model["name"]
         model_name = model["model"]
+        if model["pricing"]["coins"] == 0:
+            continue
         _id = model["_id"], model["pricing"]["coins"]
         model_id_mapping[name] = _id
         model_id_mapping[model_name] = _id
@@ -135,26 +115,9 @@ async def prompt_completion(
                 )
                 raise Exception(f"Unknown Model {model}")
 
-    if not PLATFORM_ENABLED or images is None or len(images) == 0:
-        post_request_data = {"model": model, "message": msg}
-        logger.debug(f"Request Post Data: {post_request_data}")
-        settings = {}
-        if temperature is not None:
-            settings["temperature"] = temperature
-        if max_tokens is not None:
-            settings["max_tokens"] = max_tokens
-        async with aio_straico_client(timeout=TIMEOUT) as client:
-            response = await client.prompt_completion(model, msg, **settings)
-            logger.debug(f"response body: {response}")
-            return response["completion"]["choices"][-1]["message"]["content"]
-    else:
-        platform_model_map = await get_platform_model_mapping()
-        if model.startswith("openai/"):
-            model = model[7:]
-        model_id, model_cost = platform_model_map[model]
-
+    image_url = []
+    if images is not None and len(images) > 0:
         with TemporaryDirectory() as tmpdirname:
-            local_image_path = []
             for index, image in enumerate(images):
                 utc_now = datetime.now(timezone.utc)
                 str_now = (
@@ -166,16 +129,34 @@ async def prompt_completion(
                         image
                     )  # .standard_b64decode(images[0])
                     fp.write(data)
-                local_image_path.append(pathfile)
+                async with aio_straico_client(timeout=TIMEOUT) as client:
+                    file_url = await client.upload_file(pathfile)
+                    image_url.append(file_url)
 
-            async with autoerase_upload_image(*local_image_path) as upload_stat:
-                async with autoerase_chat(
-                    model_id,
-                    model_cost,
-                    upload_stat,
-                    msg,
-                ) as chat_response:
-                    return chat_response["message"]["data"]["content"]
+    post_request_data = {
+        "model": model,
+        "message": msg,
+    }
+    logger.debug(f"Request Post Data: {post_request_data}")
+    settings = {}
+    if temperature is not None:
+        settings["temperature"] = temperature
+    if max_tokens is not None:
+        settings["max_tokens"] = max_tokens
+    if len(image_url) > 0:
+        settings["images"] = image_url
+        # adding an image will trigger the aio straico to use the v1 api
+        async with aio_straico_client(timeout=TIMEOUT) as client:
+            response = await client.prompt_completion(model, msg, **settings)
+            logger.debug(f"response body: {response}")
+            return response["completions"][model]["completion"]["choices"][-1][
+                "message"
+            ]["content"]
+
+    async with aio_straico_client(timeout=TIMEOUT) as client:
+        response = await client.prompt_completion(model, msg, **settings)
+        logger.debug(f"response body: {response}")
+        return response["completion"]["choices"][-1]["message"]["content"]
 
 
 async def list_model():

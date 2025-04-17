@@ -12,22 +12,22 @@ import re
 logger = logging.getLogger(__name__)
 
 
-def _get_msg_text(content):
-    text = []
-    for content_object in content:
-        if content_object["type"] == "text":
-            text.append(content_object["text"])
-    return "\n".join(text)
-
-
-def _get_msg_image(content):
+def extract_images_from_messages(msgs):
     images = []
-    for content_object in content:
-        if content_object["type"] == "image_url":
-            data = content_object["image_url"]["url"]
-            starting_index = data.find(",")
-            images.append(data[starting_index:])
-    return images
+    for msg in msgs:
+        if "content" not in msg or not isinstance(msg["content"], list):
+            continue
+        to_remove_index = []
+        for index, content in enumerate(msg["content"]):
+            if isinstance(content, dict) and content.get("type") == "image_url":
+                data = content["image_url"]["url"]
+                starting_index = data.find(",")
+                images.append(data[starting_index + 1 :])
+                to_remove_index.append(index)
+        to_remove_index.reverse()
+        for remove_index in to_remove_index:
+            del msg["content"][remove_index]
+    return images, msgs
 
 
 @app.post("/chat/completions")
@@ -56,7 +56,7 @@ async def chat_completions(request: Request):
             msg.append(
                 {
                     "role": "system",
-                    "content": "Please interpret the answer in behave of the user.",
+                    "content": "Please interpret the answer on behalf of the user.",
                 }
             )
     if structured_output is not None and len(structured_output) != 0:
@@ -94,12 +94,14 @@ Assuming the tools is
 ```
 {"tools":[{"type":"function","function":{"name":"get_current_weather","description":"Get the current weather in a given location","parameters":{"type":"object","properties":{"location":{"type":"string","description":"The city and state, e.g. San Francisco, CA"},"unit":{"type":"string","enum":["celsius","fahrenheit"]}},"required":["location"]}}}]}
 ```
-When you do use a tool your output should like
+When you do use a tool your output should be like
 ``` 
 {"tool_calls":[{"type":"function","function":{"name":"get_current_weather","arguments":"{\n\"location\": \"Boston, MA\"\n}"}}]}
 ``` 
 You must answer by exactly following the provided instructions. Do not add any additional comments or explanations.
 Do not add "Here is..." or anything like that.
+Follow the data type format listed in the argument. 
+Always set the function name! 
 
 Act like a script, you are given an optional input and the instructions to perform, you answer with the output of the requested task.
 
@@ -111,21 +113,21 @@ Please only output plain json when using tools.
     else:
         streaming = post_json_data.get("stream", False)
 
-    if (
-        type(msg) == list
-        and len(msg) == 1
-        and type(msg[0]) == dict
-        and "content" in msg[0]
-    ):
-        if type(msg[0]["content"]) == str:
+    # extract images from all msgs
+    if isinstance(msg, list):
+        images, msg = extract_images_from_messages(msg)
+        if images is None or len(images) == 0:
             response = await prompt_completion(
-                msg[0]["content"], model=model, **settings
+                json.dumps(msg, indent=True, ensure_ascii=False),
+                model=model,
+                **settings,
             )
         else:
-            images = _get_msg_image(msg[0]["content"])
-            msg = _get_msg_text(msg[0]["content"])
             response = await prompt_completion(
-                msg, images=images, model=model, **settings
+                json.dumps(msg, indent=True, ensure_ascii=False),
+                images=images,
+                model=model,
+                **settings,
             )
     else:
         response = await prompt_completion(
@@ -149,43 +151,59 @@ Please only output plain json when using tools.
                     response = json.loads(response)
                 except:
                     pass
-        if type(response) == list and len(response) > 0:
+        if isinstance(response, list) and len(response) > 0:
             response = response[0]
 
-        if type(response) == dict and "tool_calls" in response:
-            if len(response["tool_calls"]) == 0:
-                response = ""
-                original_response = ""
-            else:
-                for f in response["tool_calls"]:
-                    i = randint(10000000, 999999999)
-                    f["id"] = f"call_{i:}"
-                print("Tool:", response["tool_calls"])
-                return JSONResponse(
-                    content={
-                        "id": "chatcmpl-abc123",
-                        "object": "chat.completion",
-                        "created": 1699896916,
-                        "model": model,
-                        "choices": [
-                            {
-                                "index": 0,
-                                "message": {
-                                    "role": "assistant",
-                                    "tool_calls": response["tool_calls"],
-                                },
-                                "logprobs": None,
-                                "finish_reason": "tool_calls",
-                            }
-                        ],
-                        "usage": {
-                            "prompt_tokens": 82,
-                            "completion_tokens": 17,
-                            "total_tokens": 99,
-                            "completion_tokens_details": {"reasoning_tokens": 0},
-                        },
-                    }
-                )
+        if isinstance(response, dict) and len(tools) > 0:
+            if "tool_calls" not in response:
+                logger.warning(f"tool_calling response has incorrect format {response}")
+                first_function_name = tools[0]["function"]["name"]
+                response = {
+                    "tool_calls": [
+                        {
+                            "type": "function",
+                            "function": {
+                                "name": first_function_name,
+                                "arguments": json.dumps(response),
+                            },
+                        }
+                    ]
+                }
+
+            if "tool_calls" in response:
+                if len(response["tool_calls"]) == 0:
+                    response = ""
+                    original_response = ""
+                else:
+                    for f in response["tool_calls"]:
+                        i = randint(10000000, 999999999)
+                        f["id"] = f"call_{i:}"
+                    print("Tool:", response["tool_calls"])
+                    return JSONResponse(
+                        content={
+                            "id": "chatcmpl-abc123",
+                            "object": "chat.completion",
+                            "created": 1699896916,
+                            "model": model,
+                            "choices": [
+                                {
+                                    "index": 0,
+                                    "message": {
+                                        "role": "assistant",
+                                        "tool_calls": response["tool_calls"],
+                                    },
+                                    "logprobs": None,
+                                    "finish_reason": "tool_calls",
+                                }
+                            ],
+                            "usage": {
+                                "prompt_tokens": 82,
+                                "completion_tokens": 17,
+                                "total_tokens": 99,
+                                "completion_tokens_details": {"reasoning_tokens": 0},
+                            },
+                        }
+                    )
         if type(response) == str and "tool_calls" in response:
             pattern = r"\{\s*\"tool_calls\":\s*\["
             match = re.search(pattern, response, re.DOTALL)

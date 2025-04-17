@@ -13,6 +13,7 @@ logger = logging.getLogger(__name__)
 default_transcription_model = environ.get("DEFAULT_TRANSCRIPTION_MODEL", "base")
 
 from multiprocessing import Process, Queue
+from app import app, TRANSCRIPTION_ENABLED, PLATFORM_ENABLED
 
 
 def process_transcribe(queue, filename, model_name):
@@ -33,18 +34,20 @@ async def process_in_background(queue, filename, model_name):
         await asyncio.sleep(5)
 
 
-@app.post("/v1/audio/transcriptions")
-async def lm_studio_transcriptions(
-    file: UploadFile = File(...), model: Optional[str] = Form(None)
-):
-    contents = await file.read()
-    model_name = default_transcription_model
+if TRANSCRIPTION_ENABLED:
 
-    with tempfile.TemporaryDirectory() as tmpdirname:
-        file = pathlib.Path(tmpdirname) / file.filename
-        with file.open("wb") as writer:
-            writer.write(contents)
+    @app.post("/v1/audio/transcriptions")
+    async def lm_studio_transcriptions(
+        file: UploadFile = File(...), model: Optional[str] = Form(None)
+    ):
+        contents = await file.read()
+        model_name = default_transcription_model
 
-        queue = Queue()
-        text = await process_in_background(queue, str(file), model_name)
-        return JSONResponse(content={"text": text})
+        with tempfile.TemporaryDirectory() as tmpdirname:
+            file = pathlib.Path(tmpdirname) / file.filename
+            with file.open("wb") as writer:
+                writer.write(contents)
+
+            queue = Queue()
+            text = await process_in_background(queue, str(file), model_name)
+            return JSONResponse(content={"text": text})
