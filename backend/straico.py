@@ -48,20 +48,6 @@ async def get_model_mapping():
     return models
 
 
-async def model_listing():
-    model_id_mapping = {}
-    models = await platform_models()
-    for model in models:
-        name = model["name"]
-        model_name = model["model"]
-        if model["pricing"]["coins"] == 0:
-            continue
-        _id = model["_id"], model["pricing"]["coins"]
-        model_id_mapping[name] = _id
-        model_id_mapping[model_name] = _id
-    return model_id_mapping
-
-
 async def agent_promp_completion(agent_id, msg):
     async with aio_straico_client(timeout=TIMEOUT) as client:
         settings = chat_settings_read(agent_id)
