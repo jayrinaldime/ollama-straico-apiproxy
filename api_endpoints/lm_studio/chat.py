@@ -251,7 +251,11 @@ Please only output plain json when using tools.
             original_response = json.loads(response)
         elif response.startswith("```") and response.endswith("```"):
             response = response[3:-3].strip()
-            original_response = json.loads(response)
+            try:
+                original_response = json.loads(response)
+            except:
+                first_space_index = min(response.find("\n"), response.find(" "))
+                original_response = response[first_space_index:-3].strip()
         else:
             try:
                 original_response = json.loads(response)
