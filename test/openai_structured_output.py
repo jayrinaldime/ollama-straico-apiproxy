@@ -14,7 +14,7 @@ class CalendarEvent(BaseModel):
 
 
 completion = client.beta.chat.completions.parse(
-    model="gpt-4o-mini",
+    model="openai/gpt-4o-mini",
     messages=[
         {"role": "system", "content": "Extract the event information."},
         {

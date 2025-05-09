@@ -60,24 +60,16 @@ async def response_stream(model, response, is_tool=False):
     )
 
 
-import logging
-
-
 async def generate_ollama_stream(msg, model):
-    logger.debug(msg)
-    response = await prompt_completion(msg, model=model)
-
-    # for i in range(0, len(response), 5):
     r = json_stream_json_dump(
         {
             "model": model,
             "created_at": "2023-12-12T14:14:43.416799Z",
-            "response": response,  # [i:i + 5],
+            "response": msg,  # [i:i + 5],
             "done": False,
         }
     )
     yield r
-    # time.sleep(0.1)
 
     yield json_stream_json_dump(
         {
