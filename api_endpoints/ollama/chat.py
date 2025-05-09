@@ -3,12 +3,11 @@ from app import app, logging
 from fastapi import Request
 from fastapi.responses import JSONResponse, StreamingResponse
 from backend import prompt_completion
+from aio_straico.utils.tracing import observe, tracing_context
+from .response.stream.completion_response import generate_ollama_stream, response_stream
+from api_endpoints.response_utils import fix_escaped_characters
 
 logger = logging.getLogger(__name__)
-MODEL_SIZE = 7365960935
-from aio_straico.utils.tracing import observe, tracing_context
-
-from .response.stream.completion_response import generate_ollama_stream, response_stream
 
 
 @app.post("/api/generate")
@@ -46,9 +45,10 @@ async def ollamagenerate(request: Request):
                 "eval_duration": 4232710000,
             }
         )
-
+    response = await prompt_completion(request_msg, model=model)
+    response = fix_escaped_characters(response)
     return StreamingResponse(
-        generate_ollama_stream(request_msg, model), media_type="application/x-ndjson"
+        generate_ollama_stream(response, model), media_type="application/x-ndjson"
     )
 
 
@@ -118,7 +118,7 @@ Do not add "Here is..." or anything like that.
 
 Act like a script, you are given an optional input and the instructions to perform, you answer with the output of the requested task.
 
-Please only output plain json.
+You must respond in valid JSON. Don't wrap the response in a markdown code.
                     """.strip(),
             }
         ]
@@ -166,13 +166,17 @@ Please only output plain json.
             response = response.strip()
             if response.startswith("```json") and response.endswith("```"):
                 response = response[7:-3].strip()
-                response = json.loads(response)
+                response = json.loads(fix_escaped_characters(response))
             elif response.startswith("```") and response.endswith("```"):
                 response = response[3:-3].strip()
-                response = json.loads(response)
+                try:
+                    response = json.loads(fix_escaped_characters(response))
+                except:
+                    first_space_index = min(response.find("\n"), response.find(" "))
+                    response = response[first_space_index:-3].strip()
             else:
                 try:
-                    response = json.loads(response)
+                    response = json.loads(fix_escaped_characters(response))
                 except:
                     pass
         if isinstance(response, list) and len(response) > 0:
@@ -243,6 +247,7 @@ Please only output plain json.
     elif type(response) in [dict, list]:
         original_response = json.dumps(response, ensure_ascii=False)
 
+    original_response = fix_escaped_characters(original_response)
     if streaming:
         return StreamingResponse(
             response_stream(model, original_response, is_tool=False),

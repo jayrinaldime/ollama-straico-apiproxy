@@ -7,6 +7,8 @@ from .response.stream.completion_response import streamed_response
 from .response.basic.completion_response import response as basic_response
 from random import randint
 from aio_straico.utils.tracing import observe, tracing_context
+from api_endpoints.response_utils import fix_escaped_characters
+
 import re
 
 logger = logging.getLogger(__name__)
@@ -105,7 +107,7 @@ Always set the function name!
 
 Act like a script, you are given an optional input and the instructions to perform, you answer with the output of the requested task.
 
-Please only output plain json when using tools.
+Please only output valid json when using tools. Don't wrap the output in a markdown code.
             """.strip(),
             }
         ]
@@ -248,18 +250,17 @@ Please only output plain json when using tools.
         response = response.strip()
         if response.startswith("```json") and response.endswith("```"):
             response = response[7:-3].strip()
-            original_response = json.loads(response)
+            original_response = json.loads(fix_escaped_characters(response))
         elif response.startswith("```") and response.endswith("```"):
             response = response[3:-3].strip()
             try:
-                original_response = json.loads(response)
+                original_response = json.loads(fix_escaped_characters(response))
             except:
                 first_space_index = min(response.find("\n"), response.find(" "))
                 original_response = response[first_space_index:-3].strip()
         else:
             try:
-                original_response = json.loads(response)
-
+                original_response = json.loads(fix_escaped_characters(response))
             except:
                 pass
 
@@ -274,6 +275,7 @@ Please only output plain json when using tools.
     if type(original_response) in [dict, list]:
         original_response = json.dumps(original_response, ensure_ascii=False)
 
+    original_response = fix_escaped_characters(original_response)
     if streaming:
         # generate_json_data
         return StreamingResponse(
@@ -295,7 +297,7 @@ async def completions(request: Request):
     msg = post_json_data["prompt"]
     model = post_json_data.get("model") or "openai/gpt-3.5-turbo-0125"
     response = await prompt_completion(msg, model=model)
-
+    response = fix_escaped_characters(response)
     return StreamingResponse(
         streamed_response(response, model), content_type="text/event-stream"
     )
