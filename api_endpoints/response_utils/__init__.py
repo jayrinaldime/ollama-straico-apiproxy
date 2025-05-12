@@ -29,3 +29,5 @@ if __name__ == "__main__":
     print(fix_escaped_characters("This should be a newline |\\n|"))
     print(fix_escaped_characters("This should be a tab |\t|"))
     print(fix_escaped_characters("This should be a tab |\\t|"))
+    print(fix_escaped_characters("This should be a newline |\\n\\n|"))
+    print(fix_escaped_characters("This should be a newline |\n\n|"))

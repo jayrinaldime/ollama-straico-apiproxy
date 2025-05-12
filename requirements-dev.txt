@@ -1,6 +1,6 @@
 fastapi
 uvicorn
-aio-straico>=0.1.7
+aio-straico>=0.2.0
 langfuse
 ollama
 openai

@@ -6,9 +6,10 @@ from app import logging
 from const import VERSION, PROJECT_NAME
 import platform
 from datetime import datetime, timedelta
-from aio_straico import aio_straico_client
+from aio_straico import aio_straico_client, ModelSelector
 from aio_straico.utils.tracing import observe
 from aio_straico.api.v0 import ImageSize
+from aio_straico.api.smartllmselector import _PricingMethod
 
 from .straico_platform import autoerase_chat, autoerase_upload_image
 from .straico_platform import models as platform_models
@@ -65,10 +66,26 @@ async def prompt_completion(
     max_tokens: float = None,
 ) -> str:
     # some  clients add :latest
-    models = await get_model_mapping()
-    model_values = [m["model"] for m in models]
+    if model.startswith("Auto Select: "):
+        m = model.replace("Auto Select: ", "").lower().strip()
+        price = _PricingMethod(m)
+        model = ModelSelector(price)
+        is_model_found = True
+    elif model.startswith("auto_select_model/"):
+        m = (
+            model.replace("auto_select_model/", "")
+            .replace(":latest", "")
+            .lower()
+            .strip()
+        )
+        price = _PricingMethod(m)
+        model = ModelSelector(price)
+        is_model_found = True
+    else:
+        models = await get_model_mapping()
+        model_values = [m["model"] for m in models]
 
-    is_model_found = model in model_values
+        is_model_found = model in model_values
 
     if not is_model_found:
         if model.startswith("agent/"):  # lmstudio agent request
@@ -135,6 +152,9 @@ async def prompt_completion(
         async with aio_straico_client(timeout=TIMEOUT) as client:
             response = await client.prompt_completion(model, msg, **settings)
             logger.debug(f"response body: {response}")
+            if response is None:
+                return
+            model = list(response["completions"].keys())[0]
             return response["completions"][model]["completion"]["choices"][-1][
                 "message"
             ]["content"]
@@ -142,6 +162,8 @@ async def prompt_completion(
     async with aio_straico_client(timeout=TIMEOUT) as client:
         response = await client.prompt_completion(model, msg, **settings)
         logger.debug(f"response body: {response}")
+        if response is None:
+            return
         return response["completion"]["choices"][-1]["message"]["content"]
 
 

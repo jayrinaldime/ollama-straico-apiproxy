@@ -37,6 +37,29 @@ async def list_agents_as_models():
     return []
 
 
+def list_auto_select_models():
+    return [
+        {
+            "id": f"auto_select_model/balance:latest",  # m['name'],
+            "object": "model",
+            "owned_by": "Straico",
+            "permission": [{}],
+        },
+        {
+            "id": f"auto_select_model/budget:latest",  # m['name'],
+            "object": "model",
+            "owned_by": "Straico",
+            "permission": [{}],
+        },
+        {
+            "id": f"auto_select_model/quality:latest",  # m['name'],
+            "object": "model",
+            "owned_by": "Straico",
+            "permission": [{}],
+        },
+    ]
+
+
 @app.get("/api/models")
 @app.get("/v1/api/models")
 @app.get("/v1/models")
@@ -49,5 +72,6 @@ async def lmstudio_list_models():
     """
     models, agents = await gather(list_straico_models(), list_agents_as_models())
     models += agents
+    models += list_auto_select_models()
     response = {"data": models, "object": "list"}
     return JSONResponse(content=response)

@@ -167,6 +167,24 @@ async def show_model_details(request: Request):
     )
 
 
+def ollama_model_details(model_id, model_name, model, modified_at):
+    return {
+        "name": model_name,
+        # Open Web UI does not work without explicit tag
+        "model": model_id,
+        "modified_at": modified_at,
+        "size": MODEL_SIZE,
+        "digest": model,  # "9f438cb9cd581fc025612d27f7c1a6669ff83a8bb0ed86c94fcf4c5440555697",
+        "details": {
+            "format": "gguf",
+            "family": "llama",
+            "families": None,
+            "parameter_size": "",
+            "quantization_level": "Q4_0",
+        },
+    }
+
+
 @app.get("/api/tags")
 async def list_straico_models():
     models = await list_model()
@@ -177,43 +195,44 @@ async def list_straico_models():
         models = models["chat"]
 
     response_models = [
-        {
-            "name": m["name"],
-            # Open Web UI does not work without explicit tag
-            "model": (m["model"] if ":" in m["model"] else m["model"] + ":latest"),
-            "modified_at": "2023-11-04T14:56:49.277302595-07:00",
-            "size": MODEL_SIZE,
-            "digest": m[
-                "model"
-            ],  # "9f438cb9cd581fc025612d27f7c1a6669ff83a8bb0ed86c94fcf4c5440555697",
-            "details": {
-                "format": "gguf",
-                "family": "llama",
-                "families": None,
-                "parameter_size": "",
-                "quantization_level": "Q4_0",
-            },
-        }
+        ollama_model_details(
+            (m["model"] if ":" in m["model"] else m["model"] + ":latest"),
+            m["name"],
+            m["model"],
+            "2023-11-04T14:56:49.277302595-07:00",
+        )
         for m in models
     ]
+    response_models += [
+        ollama_model_details(
+            "auto_select_model/balance:latest",
+            "Auto Select: Balance",
+            "AutoModelSelect/balance",
+            "2023-11-04T14:56:49.277302595-07:00",
+        ),
+        ollama_model_details(
+            "auto_select_model/budget:latest",
+            "Auto Select: Budget",
+            "auto_select_model/budget",
+            "2023-11-04T14:56:49.277302595-07:00",
+        ),
+        ollama_model_details(
+            "auto_select_model/quality:latest",
+            "Auto Select: Quality",
+            "auto_select_model/quality",
+            "2023-11-04T14:56:49.277302595-07:00",
+        ),
+    ]
+
     agents = await list_agents()
     if agents is not None or len(agents) > 0:
         response_models += [
-            {
-                "name": f"Agent: {m["name"].strip()} ({m['_id']})",
-                # Open Web UI does not work without explicit tag
-                "model": (f"agent/{m['name'].strip()}:{m['_id']}"),
-                "modified_at": m["updatedAt"].split(".")[0] + ".277302595-07:00",
-                "size": MODEL_SIZE,
-                "digest": m["_id"],
-                "details": {
-                    "format": "gguf",
-                    "family": "llama",
-                    "families": None,
-                    "parameter_size": "",
-                    "quantization_level": "Q4_0",
-                },
-            }
+            ollama_model_details(
+                f"agent/{m['name'].strip()}:{m['_id']}",
+                f"Agent: {m["name"].strip()} ({m['_id']})",
+                m["_id"],
+                (m["updatedAt"].split(".")[0] + ".277302595-07:00"),
+            )
             for m in agents
         ]
 
