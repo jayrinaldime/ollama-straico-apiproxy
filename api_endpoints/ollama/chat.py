@@ -96,7 +96,9 @@ async def ollamachat(request: Request):
             }
         ]
         messages = parent_format + messages
-
+    elif isinstance(messages, list) and isinstance(messages[-1], dict) and "role" in messages[-1] and messages[-1]["role"] == "tool":
+        # dont add the tool
+        expected_json_response = False
     elif tools and len(tools) != 0:
         expected_json_response = True
         parent_tool = [
@@ -118,7 +120,7 @@ Do not add "Here is..." or anything like that.
 
 Act like a script, you are given an optional input and the instructions to perform, you answer with the output of the requested task.
 
-You must respond in valid JSON. Don't wrap the response in a markdown code.
+You must respond in valid JSON when using a function. Don't wrap the response in a markdown code.
                     """.strip(),
             }
         ]
@@ -166,17 +168,17 @@ You must respond in valid JSON. Don't wrap the response in a markdown code.
             response = response.strip()
             if response.startswith("```json") and response.endswith("```"):
                 response = response[7:-3].strip()
-                response = json.loads(fix_escaped_characters(response))
+                response = json.loads(response)
             elif response.startswith("```") and response.endswith("```"):
                 response = response[3:-3].strip()
                 try:
-                    response = json.loads(fix_escaped_characters(response))
+                    response = json.loads(response)
                 except:
                     first_space_index = min(response.find("\n"), response.find(" "))
                     response = response[first_space_index:-3].strip()
             else:
                 try:
-                    response = json.loads(fix_escaped_characters(response))
+                    response = json.loads(response)
                 except:
                     pass
         if isinstance(response, list) and len(response) > 0:

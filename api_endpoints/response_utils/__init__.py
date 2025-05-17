@@ -20,8 +20,10 @@ def fix_escaped_characters(text_with_errors: str) -> str:
 
     if not __FIX_ESCAPE_TYPOS:
         return text_with_errors
-
-    return codecs.decode(text_with_errors, "unicode_escape")
+    try:
+        return codecs.decode(text_with_errors, "unicode_escape")
+    except:
+        return text_with_errors
 
 
 if __name__ == "__main__":
