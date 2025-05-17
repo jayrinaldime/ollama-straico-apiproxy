@@ -3,13 +3,7 @@ name: Developer Build and Push Docker Images
 on:
   push:
     branches:
-      - 'bug/**'
-      - 'develop'
-
-  pull_request:
-    branches:
-      - 'bug/**'
-      - 'develop'
+      - 'feature/n8n**'
 
 jobs:
   build-and-push:
@@ -43,4 +37,4 @@ jobs:
         platforms: linux/amd64,linux/arm64
         push: true
         tags: |
-          ghcr.io/${{ github.repository }}:dev
+          ghcr.io/${{ github.repository }}:n8n
