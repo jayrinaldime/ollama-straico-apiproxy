@@ -96,9 +96,9 @@ async def ollamachat(request: Request):
             }
         ]
         messages = parent_format + messages
-    elif isinstance(messages, list) and isinstance(messages[-1], dict) and "role" in messages[-1] and messages[-1]["role"] == "tool":
-        # dont add the tool
-        expected_json_response = False
+    # elif isinstance(messages, list) and isinstance(messages[-1], dict) and "role" in messages[-1] and messages[-1]["role"] == "tool":
+    #     # dont add the tool
+    #     expected_json_response = False
     elif tools and len(tools) != 0:
         expected_json_response = True
         parent_tool = [
