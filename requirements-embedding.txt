@@ -6,3 +6,4 @@ sentencepiece
 einops
 sentence-transformers
 python-multipart
+aiocache

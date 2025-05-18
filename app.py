@@ -2,6 +2,8 @@ from fastapi import FastAPI
 import logging
 import os
 from fastapi.middleware.cors import CORSMiddleware
+from aiocache import caches, cached
+from aiocache.serializers import PickleSerializer
 
 log_level = os.environ.get("LOG_LEVEL", "ERROR").upper()
 
@@ -39,3 +41,19 @@ logger.info(f"Platform Enabled: {PLATFORM_ENABLED}")
 TTS_PROVIDER_STRAICO_PLATFORM = "STRAICO_PLATFORM"
 TTS_PROVIDER_LAZYBIRD = "LAZYBIRD"
 TTS_PROVIDER = os.environ.get("TTS_PROVIDER", TTS_PROVIDER_STRAICO_PLATFORM)
+
+# Cache Configuration
+CACHE_TTL = int(os.environ.get("CACHE_TTL", "600"))  # Default to 10 minutes
+logger.info(f"Cache TTL set to: {CACHE_TTL} seconds")
+
+caches.set_config(
+    {
+        "default": {
+            "cache": "aiocache.SimpleMemoryCache",
+            "serializer": {"class": "aiocache.serializers.PickleSerializer"},
+            "ttl": CACHE_TTL,
+        }
+    }
+)
+
+app.cached = cached

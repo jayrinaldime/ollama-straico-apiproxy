@@ -1,6 +1,8 @@
 import asyncio
 import json
-from app import app, logging
+from app import (app, logging)
+cached = app.cached
+
 from fastapi import Request
 from fastapi.responses import JSONResponse, StreamingResponse
 from backend import (
@@ -15,9 +17,9 @@ from .response.stream import completion_response
 logger = logging.getLogger(__name__)
 MODEL_SIZE = 7365960935
 
-
 @app.get("/api/version")
-def ollama_version():
+@cached()
+async def ollama_version():
     version = {"version": "0.5.1"}
     logger.info(version)
     return JSONResponse(content=version)
@@ -184,8 +186,8 @@ def ollama_model_details(model_id, model_name, model, modified_at):
         },
     }
 
-
 @app.get("/api/tags")
+@cached()
 async def list_straico_models():
     models = await list_model()
     if models is None:
@@ -246,6 +248,7 @@ async def user():
 
 
 @app.get("/api/model_list")
+@cached()
 async def straico_models():
     models = await list_model()
     return JSONResponse(content=models)
