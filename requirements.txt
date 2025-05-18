@@ -4,3 +4,4 @@ aio-straico>=0.2.0
 langfuse
 python-multipart
 jinja2
+aiocache

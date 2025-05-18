@@ -1,5 +1,6 @@
 from fastapi.responses import JSONResponse
 from app import app, logging
+cached = app.cached
 from backend import list_model, list_agents
 
 from asyncio import gather
@@ -64,6 +65,7 @@ def list_auto_select_models():
 @app.get("/v1/api/models")
 @app.get("/v1/models")
 @app.get("/models")
+@cached()
 async def lmstudio_list_models():
     """
      {'name': 'Anthropic: Claude 3 Haiku',

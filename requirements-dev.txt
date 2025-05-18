@@ -6,4 +6,4 @@ ollama
 openai
 python-multipart
 jinja2
-
+aiocache
