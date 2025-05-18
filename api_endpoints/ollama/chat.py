@@ -5,7 +5,10 @@ from fastapi.responses import JSONResponse, StreamingResponse
 from backend import prompt_completion
 from aio_straico.utils.tracing import observe, tracing_context
 from .response.stream.completion_response import generate_ollama_stream, response_stream
-from api_endpoints.response_utils import fix_escaped_characters
+from api_endpoints.response_utils import (
+    fix_escaped_characters,
+    load_json_with_fixed_escape,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -145,7 +148,7 @@ You must respond in valid JSON. Don't wrap the response in a markdown code.
     request_msg = json.dumps(messages, indent=True, ensure_ascii=False)
     response = await prompt_completion(request_msg, images, model, **settings)
     try:
-        response = json.loads(response)
+        response = load_json_with_fixed_escape(response)
         response_type = type(response)
         if response_type == dict and "content" in response:
             response = response["content"]
@@ -166,17 +169,17 @@ You must respond in valid JSON. Don't wrap the response in a markdown code.
             response = response.strip()
             if response.startswith("```json") and response.endswith("```"):
                 response = response[7:-3].strip()
-                response = json.loads(fix_escaped_characters(response))
+                response = load_json_with_fixed_escape(response)
             elif response.startswith("```") and response.endswith("```"):
                 response = response[3:-3].strip()
                 try:
-                    response = json.loads(fix_escaped_characters(response))
+                    response = load_json_with_fixed_escape(response)
                 except:
                     first_space_index = min(response.find("\n"), response.find(" "))
                     response = response[first_space_index:-3].strip()
             else:
                 try:
-                    response = json.loads(fix_escaped_characters(response))
+                    response = load_json_with_fixed_escape(response)
                 except:
                     pass
         if isinstance(response, list) and len(response) > 0:
@@ -222,13 +225,13 @@ You must respond in valid JSON. Don't wrap the response in a markdown code.
         response = response.strip()
         if response.startswith("```json") and response.endswith("```"):
             response = response[7:-3].strip()
-            original_response = json.loads(response)
+            original_response = load_json_with_fixed_escape(response)
         elif response.startswith("```") and response.endswith("```"):
             response = response[3:-3].strip()
-            original_response = json.loads(response)
+            original_response = load_json_with_fixed_escape(response)
         else:
             try:
-                original_response = json.loads(response)
+                original_response = load_json_with_fixed_escape(response)
 
             except:
                 pass

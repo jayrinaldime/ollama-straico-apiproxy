@@ -7,7 +7,10 @@ from .response.stream.completion_response import streamed_response
 from .response.basic.completion_response import response as basic_response
 from random import randint
 from aio_straico.utils.tracing import observe, tracing_context
-from api_endpoints.response_utils import fix_escaped_characters
+from api_endpoints.response_utils import (
+    fix_escaped_characters,
+    load_json_with_fixed_escape,
+)
 
 import re
 
@@ -144,13 +147,13 @@ Please only output valid json when using tools. Don't wrap the output in a markd
             response = response.strip()
             if response.startswith("```json") and response.endswith("```"):
                 response = response[7:-3].strip()
-                response = json.loads(response)
+                response = load_json_with_fixed_escape(response)
             elif response.startswith("```") and response.endswith("```"):
                 response = response[3:-3].strip()
-                response = json.loads(response)
+                response = load_json_with_fixed_escape(response)
             else:
                 try:
-                    response = json.loads(response)
+                    response = load_json_with_fixed_escape(response)
                 except:
                     pass
         if isinstance(response, list) and len(response) > 0:
@@ -213,7 +216,7 @@ Please only output valid json when using tools. Don't wrap the output in a markd
                 msg = response[0 : match.start()].strip()
                 tool_call = response[match.start() :].strip()
                 try:
-                    tool_call = json.loads(tool_call)
+                    tool_call = load_json_with_fixed_escape(tool_call)
                     return JSONResponse(
                         content={
                             "id": "chatcmpl-abc123",
@@ -250,17 +253,17 @@ Please only output valid json when using tools. Don't wrap the output in a markd
         response = response.strip()
         if response.startswith("```json") and response.endswith("```"):
             response = response[7:-3].strip()
-            original_response = json.loads(fix_escaped_characters(response))
+            original_response = load_json_with_fixed_escape(response)
         elif response.startswith("```") and response.endswith("```"):
             response = response[3:-3].strip()
             try:
-                original_response = json.loads(fix_escaped_characters(response))
+                original_response = load_json_with_fixed_escape(response)
             except:
                 first_space_index = min(response.find("\n"), response.find(" "))
                 original_response = response[first_space_index:-3].strip()
         else:
             try:
-                original_response = json.loads(fix_escaped_characters(response))
+                original_response = load_json_with_fixed_escape(response)
             except:
                 pass
 
