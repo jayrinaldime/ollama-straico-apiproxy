@@ -1,6 +1,7 @@
 import asyncio
 import json
-from app import (app, logging)
+from app import app, logging
+
 cached = app.cached
 
 from fastapi import Request
@@ -16,6 +17,7 @@ from .response.stream import completion_response
 
 logger = logging.getLogger(__name__)
 MODEL_SIZE = 7365960935
+
 
 @app.get("/api/version")
 @cached()
@@ -185,6 +187,7 @@ def ollama_model_details(model_id, model_name, model, modified_at):
             "quantization_level": "Q4_0",
         },
     }
+
 
 @app.get("/api/tags")
 @cached()
