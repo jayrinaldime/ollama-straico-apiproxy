@@ -2,7 +2,7 @@ import base64
 from os import environ
 from typing import List
 
-from app import logging
+from app import logging, TIMEOUT
 from const import VERSION, PROJECT_NAME
 import platform
 from datetime import datetime, timedelta
@@ -27,7 +27,6 @@ model_last_update_dt = None
 # logger.debug(f"Straico Client User Agent = {CLIENT_USER_AGENT}")
 
 CACHE_MODEL_LIST = int(environ.get("STRAICO_CACHE_MODEL_LIST", "60"))
-TIMEOUT = int(environ.get("STRAICO_TIMEOUT", "600"))
 
 
 async def get_model_mapping():
@@ -64,6 +63,7 @@ async def prompt_completion(
     model: str = "openai/gpt-3.5-turbo-0125",
     temperature: float = None,
     max_tokens: float = None,
+    timeout: [int | None] = TIMEOUT,
 ) -> str:
     # some  clients add :latest
     if model.startswith("Auto Select: "):
@@ -132,7 +132,7 @@ async def prompt_completion(
                         image
                     )  # .standard_b64decode(images[0])
                     fp.write(data)
-                async with aio_straico_client(timeout=TIMEOUT) as client:
+                async with aio_straico_client(timeout=timeout) as client:
                     file_url = await client.upload_file(pathfile)
                     image_url.append(file_url)
 
@@ -149,7 +149,7 @@ async def prompt_completion(
     if len(image_url) > 0:
         settings["images"] = image_url
         # adding an image will trigger the aio straico to use the v1 api
-        async with aio_straico_client(timeout=TIMEOUT) as client:
+        async with aio_straico_client(timeout=timeout) as client:
             response = await client.prompt_completion(model, msg, **settings)
             logger.debug(f"response body: {response}")
             if response is None:
@@ -159,7 +159,7 @@ async def prompt_completion(
                 "message"
             ]["content"]
 
-    async with aio_straico_client(timeout=TIMEOUT) as client:
+    async with aio_straico_client(timeout=timeout) as client:
         response = await client.prompt_completion(model, msg, **settings)
         logger.debug(f"response body: {response}")
         if response is None:
