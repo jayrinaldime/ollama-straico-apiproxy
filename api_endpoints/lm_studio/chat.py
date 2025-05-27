@@ -81,7 +81,7 @@ async def chat_completions(request: Request):
 
 ### JSON Schema:
 ``` json
-{json.dumps(structured_output["json_schema"], indent=True, ensure_ascii=False)}       
+{json.dumps(structured_output.get("json_schema",{}), indent=True, ensure_ascii=False)}       
 ``` 
 """.strip(),
             }
