@@ -146,7 +146,11 @@ Notes:
 
 Act like a script, you are given an optional input and the instructions to perform, you answer with the output of the requested task.
 
-Please only output valid json when using tools. Don't wrap the output in a markdown code.
+Please only output valid json when using tools and wrap the output json in a markdown code. 
+Example: 
+```json 
+...
+```
             """.strip(),
             }
         ]
