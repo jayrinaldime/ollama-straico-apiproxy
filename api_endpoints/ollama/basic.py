@@ -133,12 +133,13 @@ async def show_model_details(request: Request):
             word_limit = 10000
 
     capabilities = [m.strip().lower() for m in capabilities]
-    if "image input" in capabilities:
-        capabilities.remove("image input")
-        capabilities.append("vision")
-    if "coding" in capabilities:
-        capabilities.remove("coding")
-        capabilities.append("tools")
+    straico_to_ollama_mapping = {"image input": "vision",
+                                   "coding": "tools",
+                                   "reasoning": "thinking"}
+    for to_delete, replacement in straico_to_ollama_mapping.items():
+        if to_delete in capabilities:
+            capabilities.remove(to_delete)
+            capabilities.append(replacement)
 
     return JSONResponse(
         content={
