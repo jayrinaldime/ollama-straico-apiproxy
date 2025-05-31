@@ -22,12 +22,13 @@ tools = [
 ]
 
 completion = client.chat.completions.create(
-    model="openai/gpt-4o-mini",#"qwen/qwen3-1.7b",#"openai/gpt-4o-mini",
+    model="openai/gpt-4o-mini",  # "qwen/qwen3-1.7b",#"openai/gpt-4o-mini",
     messages=[{"role": "user", "content": "What's the weather like in Paris today?"}],
     tools=tools,
-    stream=False
+    stream=False,
 )
 import pprint
+
 pprint.pprint(completion.model_dump())
 """
 {'choices': [{'finish_reason': 'tool_calls',
@@ -64,5 +65,3 @@ pprint.pprint(completion.model_dump())
 
 """
 print(completion.choices[0].message.tool_calls)
-
-

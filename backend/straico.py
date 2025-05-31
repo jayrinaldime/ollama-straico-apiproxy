@@ -153,18 +153,24 @@ async def prompt_completion(
             response = await client.prompt_completion(model, msg, **settings)
             logger.debug(f"response body: {response}")
             if response is None:
-                return
+                return None, None
             model = list(response["completions"].keys())[0]
-            return response["completions"][model]["completion"]["choices"][-1][
+            message_last = response["completions"][model]["completion"]["choices"][-1][
                 "message"
-            ]["content"]
+            ]
+            content = message_last.get("content", "")
+            reasoning = message_last.get("reasoning", "")
+            return content, reasoning
 
     async with aio_straico_client(timeout=timeout) as client:
         response = await client.prompt_completion(model, msg, **settings)
         logger.debug(f"response body: {response}")
         if response is None:
-            return
-        return response["completion"]["choices"][-1]["message"]["content"]
+            return None, None
+        message_last = response["completion"]["choices"][-1]["message"]
+        content = message_last.get("content", "")
+        reasoning = message_last.get("reasoning", "")
+        return content, reasoning
 
 
 async def list_model():

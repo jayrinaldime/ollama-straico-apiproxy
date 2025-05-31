@@ -19,9 +19,10 @@ def end_response(rid, model, finish_reason="stop"):
         "choices": [{"index": 0, "delta": {}, "finish_reason": finish_reason}],
     }
 
+
 def streamed_response_toolcall(tool_call, model):
     request_id = str(uuid.uuid4())
-    tool_call["tool_calls"][0]["index"]=0
+    tool_call["tool_calls"][0]["index"] = 0
 
     yield stream_data_response(
         {
@@ -33,7 +34,7 @@ def streamed_response_toolcall(tool_call, model):
             "choices": [
                 {
                     "index": 0,
-                    "delta": {"role":"assistant","content": "\n\n"},
+                    "delta": {"role": "assistant", "content": "\n\n"},
                     "finish_reason": None,
                 }
             ],
@@ -57,7 +58,9 @@ def streamed_response_toolcall(tool_call, model):
         }
     )
 
-    yield stream_data_response(end_response(request_id, model, finish_reason="tool_calls"))
+    yield stream_data_response(
+        end_response(request_id, model, finish_reason="tool_calls")
+    )
 
     yield "data: [DONE]\n\n"
 

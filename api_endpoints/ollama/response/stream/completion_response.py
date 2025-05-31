@@ -9,7 +9,7 @@ def json_stream_json_dump(obj):
     return json.dumps(obj, ensure_ascii=False) + "\n"
 
 
-async def response_stream(model, response, is_tool=False):
+async def response_stream(model, response, thinking_text, is_tool=False):
     if is_tool:
         pass
     if is_tool:
@@ -17,7 +17,12 @@ async def response_stream(model, response, is_tool=False):
             {
                 "model": model,
                 "created_at": "2023-12-12T14:13:43.416799Z",
-                "message": {"role": "assistant", "content": "", "tool_calls": response},
+                "message": {
+                    "role": "assistant",
+                    "content": "",
+                    "tool_calls": response,
+                    "thinking": thinking_text,
+                },
                 "done": False,
                 "total_duration": 5191566416,
                 "load_duration": 2154458,
@@ -32,7 +37,11 @@ async def response_stream(model, response, is_tool=False):
             {
                 "model": model,
                 "created_at": "2023-12-12T14:13:43.416799Z",
-                "message": {"role": "assistant", "content": response},
+                "message": {
+                    "role": "assistant",
+                    "content": response,
+                    "thinking": thinking_text,
+                },
                 "done": False,
                 "total_duration": 5191566416,
                 "load_duration": 2154458,

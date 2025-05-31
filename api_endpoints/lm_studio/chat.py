@@ -3,7 +3,10 @@ from fastapi import Request
 from fastapi.responses import JSONResponse, StreamingResponse
 from app import app, logging
 from backend import prompt_completion
-from .response.stream.completion_response import streamed_response, streamed_response_toolcall
+from .response.stream.completion_response import (
+    streamed_response,
+    streamed_response_toolcall,
+)
 from .response.basic.completion_response import response as basic_response
 from random import randint
 from aio_straico.utils.tracing import observe, tracing_context
@@ -162,20 +165,20 @@ Example:
     if isinstance(msg, list):
         images, msg = extract_images_from_messages(msg)
         if images is None or len(images) == 0:
-            response = await prompt_completion(
+            response, thinking_text = await prompt_completion(
                 json.dumps(msg, indent=True, ensure_ascii=False),
                 model=model,
                 **settings,
             )
         else:
-            response = await prompt_completion(
+            response, thinking_text = await prompt_completion(
                 json.dumps(msg, indent=True, ensure_ascii=False),
                 images=images,
                 model=model,
                 **settings,
             )
     else:
-        response = await prompt_completion(
+        response, thinking_text = await prompt_completion(
             json.dumps(msg, indent=True, ensure_ascii=False), model=model, **settings
         )
 
@@ -224,47 +227,54 @@ Example:
                     for f in response["tool_calls"]:
                         i = randint(10000000, 999999999)
                         f["id"] = f"{i:}"
-                        new_tool.append({
-                            "id": f"{i:}",
-                            "type": "function",
-                            "function":{"name": f["function"]["name"],
-                                        "arguments":  f["function"]["arguments"], }
-                        })
+                        new_tool.append(
+                            {
+                                "id": f"{i:}",
+                                "type": "function",
+                                "function": {
+                                    "name": f["function"]["name"],
+                                    "arguments": f["function"]["arguments"],
+                                },
+                            }
+                        )
                     response["tool_calls"] = new_tool
-                        #f["function"]["arguments"] = f["function"]["arguments"].replace("\"", "\\\"")
-                        #f["call_id"] = f"call_{i:}"
+                    # f["function"]["arguments"] = f["function"]["arguments"].replace("\"", "\\\"")
+                    # f["call_id"] = f"call_{i:}"
                     print("Tool:", response["tool_calls"])
                     if post_json_data.get("stream", False):
                         return StreamingResponse(
-                            streamed_response_toolcall(response, model), media_type="text/event-stream"
+                            streamed_response_toolcall(response, model),
+                            media_type="text/event-stream",
                         )
                     else:
                         return JSONResponse(
-                        content={
-                            "id": "chatcmpl-abc123",
-                            "object": "chat.completion",
-                            "created": 1699896916,
-                            "model": model,
-                            "choices": [
-                                {
-                                    "index": 0,
-                                    "message": {
-                                        "role": "assistant",
-                                        "tool_calls": response["tool_calls"],
-                                        "content": "",
+                            content={
+                                "id": "chatcmpl-abc123",
+                                "object": "chat.completion",
+                                "created": 1699896916,
+                                "model": model,
+                                "choices": [
+                                    {
+                                        "index": 0,
+                                        "message": {
+                                            "role": "assistant",
+                                            "tool_calls": response["tool_calls"],
+                                            "content": "",
+                                        },
+                                        "logprobs": None,
+                                        "finish_reason": "tool_calls",
+                                    }
+                                ],
+                                "usage": {
+                                    "prompt_tokens": 82,
+                                    "completion_tokens": 17,
+                                    "total_tokens": 99,
+                                    "completion_tokens_details": {
+                                        "reasoning_tokens": 0
                                     },
-                                    "logprobs": None,
-                                    "finish_reason": "tool_calls",
-                                }
-                            ],
-                            "usage": {
-                                "prompt_tokens": 82,
-                                "completion_tokens": 17,
-                                "total_tokens": 99,
-                                "completion_tokens_details": {"reasoning_tokens": 0},
-                            },
-                        }
-                    )
+                                },
+                            }
+                        )
         if type(response) == str and "tool_calls" in response:
             pattern = r"\{\s*\"tool_calls\":\s*\["
             match = re.search(pattern, response, re.DOTALL)
@@ -356,7 +366,7 @@ async def completions(request: Request):
     tracing_context.update_current_observation(input=dict(post_json_data))
     msg = post_json_data["prompt"]
     model = post_json_data.get("model") or "openai/gpt-3.5-turbo-0125"
-    response = await prompt_completion(msg, model=model)
+    response, thinking_text = await prompt_completion(msg, model=model)
     response = fix_escaped_characters(response)
     return StreamingResponse(
         streamed_response(response, model), content_type="text/event-stream"

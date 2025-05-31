@@ -22,7 +22,7 @@ MODEL_SIZE = 7365960935
 @app.get("/api/version")
 @cached()
 async def ollama_version():
-    version = {"version": "0.5.1"}
+    version = {"version": "0.9.0"}
     logger.info(version)
     return JSONResponse(content=version)
 
@@ -133,9 +133,11 @@ async def show_model_details(request: Request):
             word_limit = 10000
 
     capabilities = [m.strip().lower() for m in capabilities]
-    straico_to_ollama_mapping = {"image input": "vision",
-                                   "coding": "tools",
-                                   "reasoning": "thinking"}
+    straico_to_ollama_mapping = {
+        "image input": "vision",
+        "coding": "tools",
+        "reasoning": "thinking",
+    }
     for to_delete, replacement in straico_to_ollama_mapping.items():
         if to_delete in capabilities:
             capabilities.remove(to_delete)

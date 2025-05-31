@@ -28,9 +28,9 @@ def main():
                 "content": "Describe the content of this image in detail.",
                 "images": [IMAGE_PATH],
             }
-        ],
+        ],think=True
     )
-
+    print(response.message.thinking)
     print(response.message.content)
 
 

@@ -38,7 +38,9 @@ async def ollamagenerate(request: Request):
         settings["max_tokens"] = options.get("max_tokens")
 
     if msg.get("stream") == False:
-        response = await prompt_completion(msg["prompt"], model=model, **settings)
+        response, thinking_text = await prompt_completion(
+            msg["prompt"], model=model, **settings
+        )
         return JSONResponse(
             content={
                 "model": model,
@@ -53,7 +55,7 @@ async def ollamagenerate(request: Request):
                 "eval_duration": 4232710000,
             }
         )
-    response = await prompt_completion(request_msg, model=model)
+    response, thinking_text = await prompt_completion(request_msg, model=model)
     response = fix_escaped_characters(response)
     return StreamingResponse(
         generate_ollama_stream(response, model), media_type="application/x-ndjson"
@@ -152,9 +154,11 @@ You must respond in valid JSON when using a function. Don't wrap the response in
         messages = new_messages
 
     request_msg = json.dumps(messages, indent=True, ensure_ascii=False)
-    response = await prompt_completion(
+    response, thinking_text = await prompt_completion(
         request_msg, images, model, timeout=timeout, **settings
     )
+    if not msg.get("think", False):
+        thinking_text = None
     try:
         response = load_json_with_fixed_escape(response)
         response_type = type(response)
@@ -208,7 +212,7 @@ You must respond in valid JSON when using a function. Don't wrap the response in
                     ]
                 }
 
-            return ResponseType.Tool, model, response["tool_calls"]
+            return ResponseType.Tool, model, response["tool_calls"], thinking_text
 
     response_type = type(response)
     if len(messages) > 1 and response_type == str:
@@ -246,9 +250,9 @@ You must respond in valid JSON when using a function. Don't wrap the response in
             pass
 
     if streaming:
-        return ResponseType.Stream, model, original_response
+        return ResponseType.Stream, model, original_response, thinking_text
     else:
-        return ResponseType.Basic, model, original_response
+        return ResponseType.Basic, model, original_response, thinking_text
 
 
 async def background_processed_chat(msg):
@@ -310,7 +314,7 @@ async def ollamachat(request: Request):
         create_task(background_processed_chat(msg))
         return JSONResponse(content={"status": "processing"})
 
-    response_type, model, response = await process_chat(msg)
+    response_type, model, response, thinking_text = await process_chat(msg)
     if response_type == ResponseType.Tool:
         return JSONResponse(
             content={
@@ -319,6 +323,7 @@ async def ollamachat(request: Request):
                 "message": {
                     "role": "assistant",
                     "content": "",
+                    "thinking": thinking_text,
                     "tool_calls": response,
                 },
                 "done_reason": "stop",
@@ -333,7 +338,7 @@ async def ollamachat(request: Request):
         )
     elif response_type == ResponseType.Stream:
         return StreamingResponse(
-            response_stream(model, response, is_tool=False),
+            response_stream(model, response, thinking_text, is_tool=False),
             media_type="application/x-ndjson",
         )
     elif response_type == ResponseType.Basic:
@@ -341,7 +346,11 @@ async def ollamachat(request: Request):
             content={
                 "model": model,
                 "created_at": "2023-12-12T14:13:43.416799Z",
-                "message": {"role": "assistant", "content": response},
+                "message": {
+                    "role": "assistant",
+                    "content": response,
+                    "thinking": thinking_text,
+                },
                 "done": True,
                 "total_duration": 5191566416,
                 "load_duration": 2154458,

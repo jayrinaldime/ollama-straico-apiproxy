@@ -38,7 +38,9 @@ async def message_completion(request: Request):
     else:
         request_msg = json.dumps(messages, indent=True, ensure_ascii=False)
 
-    response_text = await prompt_completion(request_msg, None, model, **settings)
+    response_text, thinking_text = await prompt_completion(
+        request_msg, None, model, **settings
+    )
     if not streaming:
         request_id = "msg_" + str(uuid.uuid4())
         response_object = {
