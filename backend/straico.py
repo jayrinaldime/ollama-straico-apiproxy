@@ -53,7 +53,7 @@ async def agent_promp_completion(agent_id, msg):
         settings = chat_settings_read(agent_id)
 
         response = await client.agent_prompt_completion(agent_id, msg, **settings)
-        return response["answer"]
+        return response["answer"], ""
 
 
 @observe
