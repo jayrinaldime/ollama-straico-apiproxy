@@ -205,6 +205,10 @@ async def itermodels():
 
     for model in models["models"]:
         model_name = model["model"]
+        model_details = await client.show(model_name)
+        capabilities = model_details.capabilities
+        if "tools" not in capabilities:
+            continue
         print("------------------------------")
         print("Testing model", model_name)
         try:
@@ -216,11 +220,11 @@ async def itermodels():
 
 # Run the async function
 
-if __name__ == "__main__1":
-    asyncio.run(itermodels())
+# if __name__ == "__main__":
+#     asyncio.run(itermodels())
 
 if __name__ == "__main__":
     asyncio.run(run("openai/gpt-4o-mini"))
 
-if __name__ == "__main__1":
-    asyncio.run(streaming_run("openai/gpt-4o-mini:latest"))
+# if __name__ == "__main__":
+#     asyncio.run(streaming_run("openai/gpt-4o-mini:latest"))
