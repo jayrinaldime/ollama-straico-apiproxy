@@ -1,5 +1,8 @@
 import json
-from app import app, logging
+
+from httpx import AsyncClient
+
+from app import app, logging, TIMEOUT
 from fastapi import Request
 from fastapi.responses import JSONResponse, StreamingResponse
 from backend import prompt_completion
@@ -9,6 +12,8 @@ from api_endpoints.response_utils import (
     fix_escaped_characters,
     load_json_with_fixed_escape,
 )
+from enum import Enum
+from asyncio import create_task, sleep
 
 logger = logging.getLogger(__name__)
 
@@ -55,14 +60,13 @@ async def ollamagenerate(request: Request):
     )
 
 
-@app.post("/api/chat")
-@observe
-async def ollamachat(request: Request):
-    try:
-        msg = await request.json()
-    except:
-        msg = json.loads((await request.body()).decode())
+class ResponseType(Enum):
+    Tool = "tool"
+    Stream = "stream"
+    Basic = "basic"
 
+
+async def process_chat(msg, timeout=TIMEOUT):
     model = msg["model"]
     tools = msg.get("tools")
     messages = msg["messages"]
@@ -148,7 +152,9 @@ You must respond in valid JSON when using a function. Don't wrap the response in
         messages = new_messages
 
     request_msg = json.dumps(messages, indent=True, ensure_ascii=False)
-    response = await prompt_completion(request_msg, images, model, **settings)
+    response = await prompt_completion(
+        request_msg, images, model, timeout=timeout, **settings
+    )
     try:
         response = load_json_with_fixed_escape(response)
         response_type = type(response)
@@ -202,25 +208,7 @@ You must respond in valid JSON when using a function. Don't wrap the response in
                     ]
                 }
 
-            return JSONResponse(
-                content={
-                    "model": model,
-                    "created_at": "2024-07-22T20:33:28.123648Z",
-                    "message": {
-                        "role": "assistant",
-                        "content": "",
-                        "tool_calls": response["tool_calls"],
-                    },
-                    "done_reason": "stop",
-                    "done": True,
-                    "total_duration": 885095291,
-                    "load_duration": 3753500,
-                    "prompt_eval_count": 122,
-                    "prompt_eval_duration": 328493000,
-                    "eval_count": 33,
-                    "eval_duration": 552222000,
-                }
-            )
+            return ResponseType.Tool, model, response["tool_calls"]
 
     response_type = type(response)
     if len(messages) > 1 and response_type == str:
@@ -254,16 +242,102 @@ You must respond in valid JSON when using a function. Don't wrap the response in
 
     original_response = fix_escaped_characters(original_response)
     if streaming:
+        return ResponseType.Stream, model, original_response
+    else:
+        return ResponseType.Basic, model, original_response
+
+
+async def background_processed_chat(msg):
+    webhook_url = msg["webhook_url"]
+    webhook_headers = msg.get("webhook_headers", {})
+    del msg["webhook_url"]
+    if "webhook_headers" in msg:
+        del msg["webhook_headers"]
+
+    response_type, model, response = await process_chat(
+        msg, timeout=None
+    )  # timeout none means no timeout wait forever
+
+    if response_type == ResponseType.Tool:
+        response_json = {
+            "model": model,
+            "created_at": "2024-07-22T20:33:28.123648Z",
+            "message": {
+                "role": "assistant",
+                "content": "",
+                "tool_calls": response,
+            },
+            "done_reason": "stop",
+            "done": True,
+            "total_duration": 885095291,
+            "load_duration": 3753500,
+            "prompt_eval_count": 122,
+            "prompt_eval_duration": 328493000,
+            "eval_count": 33,
+            "eval_duration": 552222000,
+        }
+    else:
+        response_json = {
+            "model": model,
+            "created_at": "2023-12-12T14:13:43.416799Z",
+            "message": {"role": "assistant", "content": response},
+            "done": True,
+            "total_duration": 5191566416,
+            "load_duration": 2154458,
+            "prompt_eval_count": 26,
+            "prompt_eval_duration": 383809000,
+            "eval_count": 298,
+            "eval_duration": 4799921000,
+        }
+    async with AsyncClient(timeout=60) as session:
+        r = await session.post(webhook_url, json=response_json, headers=webhook_headers)
+        logger.debug(f"Called Webhook: {webhook_url} status code: {r.status_code}")
+
+
+@app.post("/api/chat")
+@observe
+async def ollamachat(request: Request):
+    try:
+        msg = await request.json()
+    except:
+        msg = json.loads((await request.body()).decode())
+
+    if msg.get("webhook_url") is not None:
+        create_task(background_processed_chat(msg))
+        return JSONResponse(content={"status": "processing"})
+
+    response_type, model, response = await process_chat(msg)
+    if response_type == ResponseType.Tool:
+        return JSONResponse(
+            content={
+                "model": model,
+                "created_at": "2024-07-22T20:33:28.123648Z",
+                "message": {
+                    "role": "assistant",
+                    "content": "",
+                    "tool_calls": response,
+                },
+                "done_reason": "stop",
+                "done": True,
+                "total_duration": 885095291,
+                "load_duration": 3753500,
+                "prompt_eval_count": 122,
+                "prompt_eval_duration": 328493000,
+                "eval_count": 33,
+                "eval_duration": 552222000,
+            }
+        )
+    elif response_type == ResponseType.Stream:
         return StreamingResponse(
-            response_stream(model, original_response, is_tool=False),
+            response_stream(model, response, is_tool=False),
             media_type="application/x-ndjson",
         )
-    else:
+    elif response_type == ResponseType.Basic:
         return JSONResponse(
             content={
                 "model": model,
                 "created_at": "2023-12-12T14:13:43.416799Z",
-                "message": {"role": "assistant", "content": original_response},
+                "message": {"role": "assistant", "content": response},
                 "done": True,
                 "total_duration": 5191566416,
                 "load_duration": 2154458,

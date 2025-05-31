@@ -42,6 +42,8 @@ TTS_PROVIDER_STRAICO_PLATFORM = "STRAICO_PLATFORM"
 TTS_PROVIDER_LAZYBIRD = "LAZYBIRD"
 TTS_PROVIDER = os.environ.get("TTS_PROVIDER", TTS_PROVIDER_STRAICO_PLATFORM)
 
+TIMEOUT = int(os.environ.get("STRAICO_TIMEOUT", "600"))
+
 # Cache Configuration
 CACHE_TTL = int(os.environ.get("CACHE_TTL", "600"))  # Default to 10 minutes
 logger.info(f"Cache TTL set to: {CACHE_TTL} seconds")
