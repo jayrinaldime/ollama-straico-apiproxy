@@ -3,7 +3,7 @@ from fastapi import Request
 from fastapi.responses import JSONResponse, StreamingResponse
 from app import app, logging
 from backend import prompt_completion
-from .response.stream.completion_response import streamed_response
+from .response.stream.completion_response import streamed_response, streamed_response_toolcall
 from .response.basic.completion_response import response as basic_response
 from random import randint
 from aio_straico.utils.tracing import observe, tracing_context
@@ -95,22 +95,62 @@ async def chat_completions(request: Request):
                 "tools": tools,
                 "content": """
 If you need to use a tool to answer please use the defined tools. 
-Assuming the tools is 
+## Example tool definition 
 ```
-{"tools":[{"type":"function","function":{"name":"get_current_weather","description":"Get the current weather in a given location","parameters":{"type":"object","properties":{"location":{"type":"string","description":"The city and state, e.g. San Francisco, CA"},"unit":{"type":"string","enum":["celsius","fahrenheit"]}},"required":["location"]}}}]}
+{"tools":[
+{
+      "type": "function",
+      "function": {
+        "name": "get_current_weather",
+        "description": "Get the current weather in a given location.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "location": {
+              "type": "string",
+              "description":"The city and state, e.g. San Francisco, CA"
+            },
+            "unit":{"type":"string","enum":["celsius","fahrenheit"]}
+          },
+          "required": [
+            "location"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        }
+      }
+    }
+]}
 ```
-When you do use a tool your output should be like
+
+### When you do use a tool your output should be like
+
 ``` 
-{"tool_calls":[{"type":"function","function":{"name":"get_current_weather","arguments":"{\n\"location\": \"Boston, MA\"\n}"}}]}
+{"tool_calls": [
+                    {"function": {"arguments": "{\"location\":\"Paris, France\"}",
+                                        "name": "get_current_weather"},
+                                          "type": "function"}
+                ]
+}
 ``` 
-You must answer by exactly following the provided instructions. Do not add any additional comments or explanations.
-Do not add "Here is..." or anything like that.
-Follow the data type format listed in the argument. 
-Always set the function name! 
+Notes: 
+  - You must answer by exactly following the provided instructions.
+  - Do not add any additional comments or explanations.
+  - Follow the data type format listed in the parameters. 
+  - Function arguments is not a plain string it should **always** be a string of objects  properties names and values.
+    - Incorrect: `"arguments": "a b c d"`
+    - Correct: `"arguments": "{\"location\":\"Paris, France\"}"
+  - In the given example the argument string parameter name is `location` as defined in the tool definition parameters.properties.
+  - Always set the function name! 
+  - Do not add "Here is..." or anything like that.
 
 Act like a script, you are given an optional input and the instructions to perform, you answer with the output of the requested task.
 
-Please only output valid json when using tools. Don't wrap the output in a markdown code.
+Please only output valid json when using tools and wrap the output json in a markdown code. 
+Example: 
+```json 
+...
+```
             """.strip(),
             }
         ]
@@ -180,11 +220,26 @@ Please only output valid json when using tools. Don't wrap the output in a markd
                     response = ""
                     original_response = ""
                 else:
+                    new_tool = []
                     for f in response["tool_calls"]:
                         i = randint(10000000, 999999999)
-                        f["id"] = f"call_{i:}"
+                        f["id"] = f"{i:}"
+                        new_tool.append({
+                            "id": f"{i:}",
+                            "type": "function",
+                            "function":{"name": f["function"]["name"],
+                                        "arguments":  f["function"]["arguments"], }
+                        })
+                    response["tool_calls"] = new_tool
+                        #f["function"]["arguments"] = f["function"]["arguments"].replace("\"", "\\\"")
+                        #f["call_id"] = f"call_{i:}"
                     print("Tool:", response["tool_calls"])
-                    return JSONResponse(
+                    if post_json_data.get("stream", False):
+                        return StreamingResponse(
+                            streamed_response_toolcall(response, model), media_type="text/event-stream"
+                        )
+                    else:
+                        return JSONResponse(
                         content={
                             "id": "chatcmpl-abc123",
                             "object": "chat.completion",
@@ -196,6 +251,7 @@ Please only output valid json when using tools. Don't wrap the output in a markd
                                     "message": {
                                         "role": "assistant",
                                         "tool_calls": response["tool_calls"],
+                                        "content": "",
                                     },
                                     "logprobs": None,
                                     "finish_reason": "tool_calls",
@@ -279,7 +335,8 @@ Please only output valid json when using tools. Don't wrap the output in a markd
         original_response = json.dumps(original_response, ensure_ascii=False)
 
     original_response = fix_escaped_characters(original_response)
-    if streaming:
+
+    if streaming or post_json_data.get("stream"):
         # generate_json_data
         return StreamingResponse(
             streamed_response(original_response, model), media_type="text/event-stream"

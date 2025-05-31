@@ -22,12 +22,12 @@ tools = [
 ]
 
 completion = client.chat.completions.create(
-    model="openai/gpt-4o-mini",
+    model="openai/gpt-4o-mini",#"qwen/qwen3-1.7b",#"openai/gpt-4o-mini",
     messages=[{"role": "user", "content": "What's the weather like in Paris today?"}],
     tools=tools,
+    stream=False
 )
 import pprint
-
 pprint.pprint(completion.model_dump())
 """
 {'choices': [{'finish_reason': 'tool_calls',
@@ -42,6 +42,8 @@ pprint.pprint(completion.model_dump())
                                                        'name': 'get_weather'},
                                           'id': 'call_FdTNBSeC9RIzk2xOOgx9C0Ty',
                                           'type': 'function'}]}}],
+                                          
+                                          
  'created': 1735577518,
  'id': 'chatcmpl-AkDHicpR1N8hsMO5HbdNyTMdtOZ5w',
  'model': 'gpt-4o-2024-08-06',
@@ -56,5 +58,11 @@ pprint.pprint(completion.model_dump())
            'prompt_tokens': 45,
            'prompt_tokens_details': {'audio_tokens': 0, 'cached_tokens': 0},
            'total_tokens': 60}}
+           
+[ChatCompletionMessageToolCall(id='725518481', function=Function(arguments='{"location":"Paris"}', name='get_weather'), type='function')]
+[ChatCompletionMessageToolCall(id='fc_150113076', function=None, type='function_call', name='get_weather', arguments='{"location":"Paris, France"}', call_id='call_150113076')]
+
 """
 print(completion.choices[0].message.tool_calls)
+
+
