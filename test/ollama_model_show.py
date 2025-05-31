@@ -9,4 +9,4 @@ MODEL = "openai/gpt-4o-mini"
 
 details = client.show(model=MODEL)
 
-print(details.modelinfo["capabilities"])
+print(details.capabilities)

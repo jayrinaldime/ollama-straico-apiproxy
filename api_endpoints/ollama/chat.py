@@ -239,8 +239,12 @@ You must respond in valid JSON when using a function. Don't wrap the response in
 
     elif type(response) in [dict, list]:
         original_response = json.dumps(response, ensure_ascii=False)
+    else:
+        try:
+            original_response = fix_escaped_characters(original_response)
+        except:
+            pass
 
-    original_response = fix_escaped_characters(original_response)
     if streaming:
         return ResponseType.Stream, model, original_response
     else:
