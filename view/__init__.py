@@ -18,6 +18,7 @@ from backend import (
     get_model_mapping,
     update_agent,
 )
+from backend import get_errors as straico_errors
 
 from data.agent_data import chat_settings_write, chat_settings_read
 
@@ -297,3 +298,9 @@ if TTS_PROVIDER == TTS_PROVIDER_LAZYBIRD:
     async def lazybird_list_models():
         models = await tts_models()
         return JSONResponse(content=models)
+
+
+@app.get("/errors")
+async def get_errors():
+    errors = straico_errors()
+    return JSONResponse(content=errors)
