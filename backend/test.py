@@ -5,6 +5,10 @@ from typing import List
 logger = logging.getLogger(__name__)
 
 
+def get_errors():
+    return []
+
+
 async def prompt_completion(
     msg: str,
     images=None,

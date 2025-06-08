@@ -1,4 +1,5 @@
 import base64
+import json
 from os import environ
 from typing import List
 
@@ -17,6 +18,8 @@ from datetime import timezone, datetime
 from data.agent_data import chat_settings_read
 from pathlib import Path
 from tempfile import TemporaryDirectory
+from aio_straico import StraicoRequest
+from dataclasses import dataclass
 
 logger = logging.getLogger(__name__)
 
@@ -27,6 +30,52 @@ model_last_update_dt = None
 # logger.debug(f"Straico Client User Agent = {CLIENT_USER_AGENT}")
 
 CACHE_MODEL_LIST = int(environ.get("STRAICO_CACHE_MODEL_LIST", "60"))
+
+
+@dataclass
+class ErrorDetail:
+    timestamp: datetime
+    request_type: StraicoRequest
+    error_message: str
+    status_code: int
+
+    def to_json(self):
+        return {
+            "http_status_code": self.status_code,
+            "error_message": self.error_message.replace("\n", "<br/>"),
+            "request_type": self.request_type.value.replace("_", " "),
+        }
+
+
+_errors: [ErrorDetail] = []
+
+
+def refresh_errors():
+    global _errors
+    now = datetime.now()
+    errors = [
+        error for error in _errors if now - error.timestamp < timedelta(minutes=10)
+    ]
+    _errors = errors
+
+
+def on_error(request_type: StraicoRequest, response):
+    global _errors
+
+    if isinstance(response.json()["error"], str):
+        error_body = response.json()["error"]
+    else:
+        error_body = json.dumps(response.json()["error"], indent=True)
+    now = datetime.now()
+    error = ErrorDetail(now, request_type, error_body, response.status_code)
+    refresh_errors()
+    _errors.append(error)
+
+
+def get_errors() -> [ErrorDetail]:
+    global _errors
+    refresh_errors()
+    return _errors
 
 
 async def get_model_mapping():
@@ -49,7 +98,9 @@ async def get_model_mapping():
 
 
 async def agent_promp_completion(agent_id, msg):
-    async with aio_straico_client(timeout=TIMEOUT) as client:
+    async with aio_straico_client(
+        timeout=TIMEOUT, on_request_failure_callback=on_error
+    ) as client:
         settings = chat_settings_read(agent_id)
 
         response = await client.agent_prompt_completion(agent_id, msg, **settings)
@@ -132,7 +183,9 @@ async def prompt_completion(
                         image
                     )  # .standard_b64decode(images[0])
                     fp.write(data)
-                async with aio_straico_client(timeout=timeout) as client:
+                async with aio_straico_client(
+                    timeout=timeout, on_request_failure_callback=on_error
+                ) as client:
                     file_url = await client.upload_file(pathfile)
                     image_url.append(file_url)
 
@@ -149,7 +202,9 @@ async def prompt_completion(
     if len(image_url) > 0:
         settings["images"] = image_url
         # adding an image will trigger the aio straico to use the v1 api
-        async with aio_straico_client(timeout=timeout) as client:
+        async with aio_straico_client(
+            timeout=timeout, on_request_failure_callback=on_error
+        ) as client:
             response = await client.prompt_completion(model, msg, **settings)
             logger.debug(f"response body: {response}")
             if response is None:
@@ -162,7 +217,9 @@ async def prompt_completion(
             reasoning = message_last.get("reasoning", "")
             return content, reasoning
 
-    async with aio_straico_client(timeout=timeout) as client:
+    async with aio_straico_client(
+        timeout=timeout, on_request_failure_callback=on_error
+    ) as client:
         response = await client.prompt_completion(model, msg, **settings)
         logger.debug(f"response body: {response}")
         if response is None:
@@ -174,18 +231,24 @@ async def prompt_completion(
 
 
 async def list_model():
-    async with aio_straico_client(timeout=TIMEOUT) as client:
+    async with aio_straico_client(
+        timeout=TIMEOUT, on_request_failure_callback=on_error
+    ) as client:
         return await client.models(v=1)
 
 
 async def list_rags():
-    async with aio_straico_client(timeout=TIMEOUT) as client:
+    async with aio_straico_client(
+        timeout=TIMEOUT, on_request_failure_callback=on_error
+    ) as client:
         return await client.rags()
 
 
 async def delete_rag(rag_id: str):
     try:
-        async with aio_straico_client(timeout=TIMEOUT) as client:
+        async with aio_straico_client(
+            timeout=TIMEOUT, on_request_failure_callback=on_error
+        ) as client:
             # Assuming the method to delete a RAG is `client.delete_rag(rag_id)`
             result = await client.rag_delete(rag_id)
             return result
@@ -205,7 +268,9 @@ async def create_rag(
     buffer_size: int = 500,
 ):
     try:
-        async with aio_straico_client(timeout=TIMEOUT) as client:
+        async with aio_straico_client(
+            timeout=TIMEOUT, on_request_failure_callback=on_error
+        ) as client:
             # Prepare RAG creation parameters
             kwargs = {
                 "breakpoint_threshold_type": breakpoint_threshold_type,
@@ -228,19 +293,25 @@ async def create_rag(
 
 
 async def list_agents():
-    async with aio_straico_client(timeout=TIMEOUT) as client:
+    async with aio_straico_client(
+        timeout=TIMEOUT, on_request_failure_callback=on_error
+    ) as client:
         return await client.agents()
 
 
 async def delete_agent(agent_id):
-    async with aio_straico_client(timeout=TIMEOUT) as client:
+    async with aio_straico_client(
+        timeout=TIMEOUT, on_request_failure_callback=on_error
+    ) as client:
         agent = await client.agent_object(agent_id)
         r = await agent.delete()
         return r
 
 
 async def create_agent(name, description, custom_prompt, model, rag_id, tags):
-    async with aio_straico_client(timeout=TIMEOUT) as client:
+    async with aio_straico_client(
+        timeout=TIMEOUT, on_request_failure_callback=on_error
+    ) as client:
         rags = {}
         if rag_id is not None and len(rag_id.strip()) > 0:
             rags["rag"] = rag_id
@@ -252,7 +323,9 @@ async def create_agent(name, description, custom_prompt, model, rag_id, tags):
 
 
 async def update_agent(agent_id, name, description, custom_prompt, model, rag_id, tags):
-    async with aio_straico_client(timeout=TIMEOUT) as client:
+    async with aio_straico_client(
+        timeout=TIMEOUT, on_request_failure_callback=on_error
+    ) as client:
         rags = {}
         if rag_id is not None and len(rag_id.strip()) > 0:
             rags["rag"] = rag_id
@@ -270,12 +343,16 @@ async def update_agent(agent_id, name, description, custom_prompt, model, rag_id
 
 
 async def user_detail():
-    async with aio_straico_client(timeout=TIMEOUT) as client:
+    async with aio_straico_client(
+        timeout=TIMEOUT, on_request_failure_callback=on_error
+    ) as client:
         return await client.user()
 
 
 async def image_generation(model: str, n: int, prompt: str, size: ImageSize):
-    async with aio_straico_client(timeout=TIMEOUT) as client:
+    async with aio_straico_client(
+        timeout=TIMEOUT, on_request_failure_callback=on_error
+    ) as client:
         images = await client.image_generation(
             model=model,
             description=prompt,
@@ -286,7 +363,9 @@ async def image_generation(model: str, n: int, prompt: str, size: ImageSize):
 
 
 async def update_agent_chat_settings(agent_id, chat_settings):
-    async with aio_straico_client(timeout=TIMEOUT) as client:
+    async with aio_straico_client(
+        timeout=TIMEOUT, on_request_failure_callback=on_error
+    ) as client:
         # Validate chat settings
         valid_search_types = {"similarity", "mmr", "similarity_score_threshold"}
         if chat_settings.get("search_type") not in valid_search_types:

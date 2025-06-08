@@ -3,15 +3,7 @@ name: Builtin Embedding Build and Push Docker Images
 on:
   push:
     branches:
-      - 'develop'
       - 'main'
-
-  pull_request:
-    branches:
-      - 'develop'
-      - 'main'
-
-  workflow_dispatch:
 
 jobs:
   build-and-push:

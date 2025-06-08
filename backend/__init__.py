@@ -18,6 +18,7 @@ if STRAICO_API_KEY.strip().upper() == "TEST":
         delete_rag,
         create_rag,
         update_agent,
+        get_errors,
     )
     from .straico import get_model_mapping
 
@@ -37,6 +38,7 @@ else:
         get_model_mapping,
         create_agent,
         update_agent,
+        get_errors,
     )
 
     logger.info("Using Straico Backend")

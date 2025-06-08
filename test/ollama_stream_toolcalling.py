@@ -12,22 +12,24 @@ def add_two_numbers(a: int, b: int) -> int:
     """
     return a + b
 
+
 from ollama import Client, AsyncClient
+
 BASE_URL = "http://127.0.0.1:3214"
 client = Client(host=BASE_URL)
 
-messages = [{'role': 'user', 'content': 'what is -99 - 122?'}]
+messages = [{"role": "user", "content": "what is -99 - 122?"}]
 
 response = client.chat(
     model="anthropic/claude-3.7-sonnet",
     messages=messages,
     tools=[add_two_numbers],  # Python SDK supports passing tools as functions
-    stream=True
+    stream=True,
 )
 
 for chunk in response:
     # Print model content
-    print(chunk.message.content, end='', flush=True)
+    print(chunk.message.content, end="", flush=True)
     # Print the tool call
     if chunk.message.tool_calls:
         print("Tool call")

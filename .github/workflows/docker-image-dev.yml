@@ -6,11 +6,6 @@ on:
       - 'bug/**'
       - 'develop'
 
-  pull_request:
-    branches:
-      - 'bug/**'
-      - 'develop'
-
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
