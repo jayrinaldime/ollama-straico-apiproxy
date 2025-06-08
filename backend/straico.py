@@ -42,33 +42,39 @@ class ErrorDetail:
     def to_json(self):
         return {
             "http_status_code": self.status_code,
-            "error_message": self.error_message,
-            "request_type": self.request_type.value.replace("_"," "),
+            "error_message": self.error_message.replace("\n", "<br/>"),
+            "request_type": self.request_type.value.replace("_", " "),
         }
 
 
 _errors: [ErrorDetail] = []
 
 
-def on_error(request_type: StraicoRequest, response):
+def refresh_errors():
     global _errors
     now = datetime.now()
     errors = [
         error for error in _errors if now - error.timestamp < timedelta(minutes=10)
     ]
+    _errors = errors
+
+
+def on_error(request_type: StraicoRequest, response):
+    global _errors
+
     if isinstance(response.json()["error"], str):
         error_body = response.json()["error"]
     else:
         error_body = json.dumps(response.json()["error"], indent=True)
-    error = ErrorDetail(
-        now, request_type, error_body, response.status_code
-    )
-    errors.append(error)
-    _errors = errors
+    now = datetime.now()
+    error = ErrorDetail(now, request_type, error_body, response.status_code)
+    refresh_errors()
+    _errors.append(error)
 
 
 def get_errors() -> [ErrorDetail]:
     global _errors
+    refresh_errors()
     return _errors
 
 
