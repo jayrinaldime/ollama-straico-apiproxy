@@ -1,4 +1,5 @@
 import base64
+import json
 from os import environ
 from typing import List
 
@@ -55,8 +56,12 @@ def on_error(request_type: StraicoRequest, response):
     errors = [
         error for error in _errors if now - error.timestamp < timedelta(minutes=10)
     ]
+    if isinstance(response.json()["error"], str):
+        error_body = response.json()["error"]
+    else:
+        error_body = json.dumps(response.json()["error"], indent=True)
     error = ErrorDetail(
-        now, request_type, response.json()["error"], response.status_code
+        now, request_type, error_body, response.status_code
     )
     errors.append(error)
     _errors = errors
