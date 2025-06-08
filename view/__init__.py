@@ -302,5 +302,5 @@ if TTS_PROVIDER == TTS_PROVIDER_LAZYBIRD:
 
 @app.get("/errors")
 async def get_errors():
-    errors = straico_errors()
+    errors = [e.to_json() for e in straico_errors()]
     return JSONResponse(content=errors)
