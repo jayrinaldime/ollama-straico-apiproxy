@@ -42,7 +42,7 @@ class ErrorDetail:
         return {
             "http_status_code": self.status_code,
             "error_message": self.error_message,
-            "request_type": self.request_type.value(),
+            "request_type": self.request_type.value.replace("_"," "),
         }
 
 
