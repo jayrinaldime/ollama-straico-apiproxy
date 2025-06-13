@@ -1,7 +1,7 @@
 fastapi
 uvicorn
 aio-straico>=0.2.2
-langfuse
+langfuse<3.0.0
 python-multipart
 jinja2
 aiocache
