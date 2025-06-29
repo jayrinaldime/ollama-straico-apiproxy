@@ -3,7 +3,7 @@ from app import logging
 
 logger = logging.getLogger(__name__)
 
-STRAICO_API_KEY = environ["STRAICO_API_KEY"]
+STRAICO_API_KEY = environ.get("STRAICO_API_KEY", "PER_REQUEST")
 logger.debug(f"STRAICO_API_KEY={STRAICO_API_KEY}")
 
 if STRAICO_API_KEY.strip().upper() == "TEST":
@@ -23,7 +23,28 @@ if STRAICO_API_KEY.strip().upper() == "TEST":
     from .straico import get_model_mapping
 
     logger.info("Using Test Backend")
+elif STRAICO_API_KEY.strip().upper() == "PER_REQUEST":
+    from .test import (
+        user_detail,
+        list_agents,
+        create_agent,
+        delete_agent,
+        list_rags,
+        delete_rag,
+        create_rag,
+        update_agent,
+        get_errors,
+    )
 
+    from .straico import (
+        prompt_completion,
+        list_model,
+        list_agents,
+        image_generation,
+        get_model_mapping,
+    )
+
+    logger.info("Using Straico Backend Per Request")
 else:
     from .straico import (
         prompt_completion,

@@ -1,5 +1,6 @@
 import base64
 import json
+import os
 from os import environ
 from typing import List
 
@@ -78,14 +79,16 @@ def get_errors() -> [ErrorDetail]:
     return _errors
 
 
-async def get_model_mapping():
+async def get_model_mapping(api_key=None):
+    if environ.get("STRAICO_API_KEY", "PER_REQUEST").strip() != "PER_REQUEST":
+        api_key = None
     global model_last_update_dt, model_result
     if (
         model_last_update_dt is None
         or (model_last_update_dt + timedelta(minutes=CACHE_MODEL_LIST))
         <= datetime.now()
     ):
-        model_result = await list_model()
+        model_result = await list_model(api_key)
         model_last_update_dt = datetime.now()
 
     models = model_result
@@ -97,9 +100,9 @@ async def get_model_mapping():
     return models
 
 
-async def agent_promp_completion(agent_id, msg):
+async def agent_promp_completion(agent_id, msg, api_key=None):
     async with aio_straico_client(
-        timeout=TIMEOUT, on_request_failure_callback=on_error
+        API_KEY=api_key, timeout=TIMEOUT, on_request_failure_callback=on_error
     ) as client:
         settings = chat_settings_read(agent_id)
 
@@ -115,7 +118,11 @@ async def prompt_completion(
     temperature: float = None,
     max_tokens: float = None,
     timeout: [int | None] = TIMEOUT,
+    api_key=None,
 ) -> str:
+    if environ.get("STRAICO_API_KEY", "PER_REQUEST").strip() != "PER_REQUEST":
+        api_key = None
+
     # some  clients add :latest
     if model.startswith("Auto Select: "):
         m = model.replace("Auto Select: ", "").lower().strip()
@@ -133,7 +140,7 @@ async def prompt_completion(
         model = ModelSelector(price)
         is_model_found = True
     else:
-        models = await get_model_mapping()
+        models = await get_model_mapping(api_key)
         model_values = [m["model"] for m in models]
 
         is_model_found = model in model_values
@@ -141,10 +148,10 @@ async def prompt_completion(
     if not is_model_found:
         if model.startswith("agent/"):  # lmstudio agent request
             model = model.split(":")[-1]
-            return await agent_promp_completion(model, msg)
+            return await agent_promp_completion(model, msg, api_key=api_key)
         elif model.startswith("Agent: "):  # Ollama agent request
             model = model.split("(")[-1][:-1]
-            return await agent_promp_completion(model, msg)
+            return await agent_promp_completion(model, msg, api_key=api_key)
         elif model.endswith(":latest"):
             model = model.replace(":latest", "")
             is_model_found = model in model_values
@@ -184,7 +191,9 @@ async def prompt_completion(
                     )  # .standard_b64decode(images[0])
                     fp.write(data)
                 async with aio_straico_client(
-                    timeout=timeout, on_request_failure_callback=on_error
+                    API_KEY=api_key,
+                    timeout=timeout,
+                    on_request_failure_callback=on_error,
                 ) as client:
                     file_url = await client.upload_file(pathfile)
                     image_url.append(file_url)
@@ -203,7 +212,7 @@ async def prompt_completion(
         settings["images"] = image_url
         # adding an image will trigger the aio straico to use the v1 api
         async with aio_straico_client(
-            timeout=timeout, on_request_failure_callback=on_error
+            API_KEY=api_key, timeout=timeout, on_request_failure_callback=on_error
         ) as client:
             response = await client.prompt_completion(model, msg, **settings)
             logger.debug(f"response body: {response}")
@@ -218,7 +227,7 @@ async def prompt_completion(
             return content, reasoning
 
     async with aio_straico_client(
-        timeout=timeout, on_request_failure_callback=on_error
+        API_KEY=api_key, timeout=timeout, on_request_failure_callback=on_error
     ) as client:
         response = await client.prompt_completion(model, msg, **settings)
         logger.debug(f"response body: {response}")
@@ -230,9 +239,11 @@ async def prompt_completion(
         return content, reasoning
 
 
-async def list_model():
+async def list_model(api_key=None):
+    if environ.get("STRAICO_API_KEY", "PER_REQUEST").strip() != "PER_REQUEST":
+        api_key = None
     async with aio_straico_client(
-        timeout=TIMEOUT, on_request_failure_callback=on_error
+        API_KEY=api_key, timeout=TIMEOUT, on_request_failure_callback=on_error
     ) as client:
         return await client.models(v=1)
 
@@ -292,9 +303,12 @@ async def create_rag(
         raise
 
 
-async def list_agents():
+async def list_agents(api_key=None):
+    if environ.get("STRAICO_API_KEY", "PER_REQUEST").strip() != "PER_REQUEST":
+        api_key = None
+
     async with aio_straico_client(
-        timeout=TIMEOUT, on_request_failure_callback=on_error
+        API_KEY=api_key, timeout=TIMEOUT, on_request_failure_callback=on_error
     ) as client:
         return await client.agents()
 
@@ -349,9 +363,14 @@ async def user_detail():
         return await client.user()
 
 
-async def image_generation(model: str, n: int, prompt: str, size: ImageSize):
+async def image_generation(
+    model: str, n: int, prompt: str, size: ImageSize, api_key=None
+):
+    if environ.get("STRAICO_API_KEY", "PER_REQUEST").strip() != "PER_REQUEST":
+        api_key = None
+
     async with aio_straico_client(
-        timeout=TIMEOUT, on_request_failure_callback=on_error
+        API_KEY=api_key, timeout=TIMEOUT, on_request_failure_callback=on_error
     ) as client:
         images = await client.image_generation(
             model=model,
