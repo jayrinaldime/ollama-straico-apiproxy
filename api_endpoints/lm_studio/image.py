@@ -22,6 +22,9 @@ async def lm_image_generation(request: Request):
 
     # model = post_json_data.get("model")
     # if model != "openai/dall-e-3":
+    api_key = request.headers.get("authorization")
+    if api_key is not None:
+        api_key = api_key[7:]
     model = "openai/dall-e-3"
     prompt = post_json_data.get("prompt")
     n = int(post_json_data.get("n", "1"))
@@ -34,7 +37,9 @@ async def lm_image_generation(request: Request):
     elif x < y:
         size = ImageSize.portrait
 
-    images = await image_generation(model=model, n=n, prompt=prompt, size=size)
+    images = await image_generation(
+        model=model, n=n, prompt=prompt, size=size, api_key=api_key
+    )
 
     image_urls = [{"url": image_url} for image_url in images["images"]]
     print(image_urls)

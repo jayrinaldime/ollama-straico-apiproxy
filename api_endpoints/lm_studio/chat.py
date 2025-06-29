@@ -46,12 +46,16 @@ async def chat_completions(request: Request):
         post_json_data = await request.json()
     except:
         post_json_data = json.loads((await request.body()).decode())
+
+    api_key = request.headers.get("authorization")
+    if api_key is not None:
+        api_key = api_key[7:]
+
     tracing_context.update_current_observation(input=dict(post_json_data))
     model = post_json_data.get("model") or "openai/gpt-3.5-turbo-0125"
     msg = post_json_data["messages"]
     tools = post_json_data.get("tools")
     structured_output = post_json_data.get("response_format")
-
     settings = {
         "temperature": post_json_data.get("temperature"),
         "max_tokens": post_json_data.get("max_tokens"),
@@ -168,6 +172,7 @@ Example:
             response, thinking_text = await prompt_completion(
                 json.dumps(msg, indent=True, ensure_ascii=False),
                 model=model,
+                api_key=api_key,
                 **settings,
             )
         else:
@@ -175,11 +180,15 @@ Example:
                 json.dumps(msg, indent=True, ensure_ascii=False),
                 images=images,
                 model=model,
+                api_key=api_key,
                 **settings,
             )
     else:
         response, thinking_text = await prompt_completion(
-            json.dumps(msg, indent=True, ensure_ascii=False), model=model, **settings
+            json.dumps(msg, indent=True, ensure_ascii=False),
+            model=model,
+            api_key=api_key,
+            **settings,
         )
 
     response_type = type(response)
@@ -362,11 +371,13 @@ async def completions(request: Request):
         post_json_data = await request.json()
     except:
         post_json_data = json.loads((await request.body()).decode())
-
+    api_key = request.headers.get("authorization")
+    if api_key is not None:
+        api_key = api_key[7:]
     tracing_context.update_current_observation(input=dict(post_json_data))
     msg = post_json_data["prompt"]
     model = post_json_data.get("model") or "openai/gpt-3.5-turbo-0125"
-    response, thinking_text = await prompt_completion(msg, model=model)
+    response, thinking_text = await prompt_completion(msg, model=model, api_key=api_key)
     response = fix_escaped_characters(response)
     return StreamingResponse(
         streamed_response(response, model), content_type="text/event-stream"

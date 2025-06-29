@@ -15,6 +15,7 @@ async def prompt_completion(
     model: str = "openai/gpt-3.5-turbo-0125",
     temperature: float = None,
     max_tokens: float = None,
+    **kwargs,
 ) -> str:
     # some  clients add :latest
     if model.endswith(":latest"):
@@ -29,7 +30,7 @@ Nunc ac arcu ex. Proin ultrices ultricies semper. Ut id mauris eget tortor tinci
 """
 
 
-async def list_agents():
+async def list_agents(**kwargs):
     return [
         {
             "__v": 0,
@@ -89,7 +90,7 @@ async def list_agents():
     ]
 
 
-async def list_model():
+async def list_model(**kwargs):
     return {
         "chat": [
             {
