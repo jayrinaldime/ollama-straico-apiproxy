@@ -260,19 +260,20 @@ async def elevenlabs_voices(api_key=None):
 async def tts_openai(model, text, api_key=None):
     if environ.get("STRAICO_API_KEY", "PER_REQUEST").strip() != "PER_REQUEST":
         api_key = None
-    async with aio_straico_client(API_KEY=api_key, timeout=TIMEOUT, on_request_failure_callback=on_error) as client:
-        tts = await client.tts(
-            "tts-1", model, text=text
-        )
+    async with aio_straico_client(
+        API_KEY=api_key, timeout=TIMEOUT, on_request_failure_callback=on_error
+    ) as client:
+        tts = await client.tts("tts-1", model, text=text)
         return tts
+
 
 async def tts_elevenlabs(model, text, api_key=None):
     if environ.get("STRAICO_API_KEY", "PER_REQUEST").strip() != "PER_REQUEST":
         api_key = None
-    async with aio_straico_client(API_KEY=api_key, timeout=TIMEOUT, on_request_failure_callback=on_error) as client:
-        tts = await client.tts(
-            "eleven_multilingual_v2", model, text=text
-        )
+    async with aio_straico_client(
+        API_KEY=api_key, timeout=TIMEOUT, on_request_failure_callback=on_error
+    ) as client:
+        tts = await client.tts("eleven_multilingual_v2", model, text=text)
         return tts
 
 

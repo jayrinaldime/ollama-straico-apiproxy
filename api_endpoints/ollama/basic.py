@@ -271,10 +271,8 @@ async def straico_models():
     return JSONResponse(content=models)
 
 
-
 @app.get("/api/elevenlabs_voices")
 @cached()
 async def straico_models():
     models = await elevenlabs_voices()
     return JSONResponse(content=models)
-

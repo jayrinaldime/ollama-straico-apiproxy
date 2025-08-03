@@ -19,7 +19,7 @@ from backend import (
     update_agent,
 )
 from backend import get_errors as straico_errors
-
+from backend.lazybird import LAZYBIRD_API_KEY
 
 from data.agent_data import chat_settings_write, chat_settings_read
 
@@ -68,7 +68,7 @@ async def root(request: Request):
         {"name": "RAG Management", "url": "/rag-list"},
         {"name": "Agent Management", "url": "/agent-list"},
     ]
-    if TTS_PROVIDER == TTS_PROVIDER_LAZYBIRD:
+    if LAZYBIRD_API_KEY is not None:
         links.append({"name": "Lazybird Voice Model List", "url": "/lazybird-model"})
 
     return templates.TemplateResponse(
@@ -292,7 +292,7 @@ async def update_agent_chat_settings_endpoint(
         status_code=200,
     )
 
-from backend.lazybird import LAZYBIRD_API_KEY
+
 if LAZYBIRD_API_KEY is not None:
     from backend.lazybird import tts_models
 
