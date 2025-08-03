@@ -1,11 +1,9 @@
 from . import basic
 from . import chat
 from . import image
+from . import text_to_speech
 
 import app
-
-if app.PLATFORM_ENABLED:
-    from . import text_to_speech
 
 if app.EMBEDDING_ENABLED:
     from . import embedding

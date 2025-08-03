@@ -6,7 +6,7 @@ from fastapi import FastAPI, Request, HTTPException, Form, File, UploadFile
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.templating import Jinja2Templates
 
-from app import app, TTS_PROVIDER, TTS_PROVIDER_LAZYBIRD
+from app import app
 from backend import (
     user_detail,
     list_rags,
@@ -64,6 +64,7 @@ async def root(request: Request):
         },
         {"name": "User Details", "url": "/api/user"},
         {"name": "Straico Model List", "url": "/api/model_list"},
+        {"name": "ElevenLabs Voice List", "url": "/api/elevenlabs_voices"},
         {"name": "RAG Management", "url": "/rag-list"},
         {"name": "Agent Management", "url": "/agent-list"},
     ]
@@ -291,8 +292,8 @@ async def update_agent_chat_settings_endpoint(
         status_code=200,
     )
 
-
-if TTS_PROVIDER == TTS_PROVIDER_LAZYBIRD:
+from backend.lazybird import LAZYBIRD_API_KEY
+if LAZYBIRD_API_KEY is not None:
     from backend.lazybird import tts_models
 
     @app.get("/lazybird-model")

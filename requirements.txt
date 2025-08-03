@@ -1,6 +1,6 @@
 fastapi
 uvicorn
-aio-straico>=0.2.2
+aio-straico>=0.3.0
 langfuse<3.0.0
 python-multipart
 jinja2

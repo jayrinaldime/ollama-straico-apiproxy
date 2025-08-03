@@ -8,6 +8,7 @@ from fastapi import Request
 from fastapi.responses import JSONResponse, StreamingResponse
 from backend import (
     list_model,
+    elevenlabs_voices,
     user_detail,
     delete_agent,
     list_agents,
@@ -268,3 +269,12 @@ async def user():
 async def straico_models():
     models = await list_model()
     return JSONResponse(content=models)
+
+
+
+@app.get("/api/elevenlabs_voices")
+@cached()
+async def straico_models():
+    models = await elevenlabs_voices()
+    return JSONResponse(content=models)
+

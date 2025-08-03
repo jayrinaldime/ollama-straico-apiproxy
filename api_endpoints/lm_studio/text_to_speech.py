@@ -7,50 +7,47 @@ from fastapi.responses import StreamingResponse, JSONResponse
 from typing import Optional
 from app import (
     app,
-    logging,
-    PLATFORM_ENABLED,
-    TTS_PROVIDER,
-    TTS_PROVIDER_LAZYBIRD,
-    TTS_PROVIDER_STRAICO_PLATFORM,
+    logging
 )
 from io import BytesIO
-
 logger = logging.getLogger(__name__)
+from backend.lazybird import LAZYBIRD_API_KEY
 
-if TTS_PROVIDER == TTS_PROVIDER_LAZYBIRD:
-    logger.info("TTS Provider set to Lazybird")
-    from backend.lazybird import tts, tts_models
+if LAZYBIRD_API_KEY is not None:
+    logger.info("TTS Lazybird Enabled")
+    from backend.lazybird import (tts as tts_lazybird, tts_models as tts_models_lazybird)
 
-    voice_model_result = None
-    voice_model_last_update_dt = None
+    voice_model_result_lazybird = None
+    voice_model_last_update_dt_lazybird = None
     from datetime import timedelta, datetime
 
-    async def get_model_mapping():
-        global voice_model_last_update_dt, voice_model_result
+    async def get_lazybird_model_mapping():
+        global voice_model_last_update_dt_lazybird, voice_model_result_lazybird
         if (
-            voice_model_last_update_dt is None
-            or (voice_model_last_update_dt + timedelta(minutes=60)) <= datetime.now()
+            voice_model_last_update_dt_lazybird is None
+            or (voice_model_last_update_dt_lazybird + timedelta(minutes=60)) <= datetime.now()
         ):
-            voice_model_result = await tts_models()
-            voice_model_last_update_dt = datetime.now()
-        return voice_model_result
+            result = await tts_models_lazybird()
+            ids = (m["id"] for m in result)
+            name_mapping = dict(((m["displayName"], m["id"]) for m in result))
+            voice_model_last_update_dt_lazybird = datetime.now()
+            voice_model_result_lazybird = ids, name_mapping
+        return voice_model_result_lazybird
 
-    @app.post("/v1/audio/speech")
-    async def lm_studio_tts(request: Request):
+    @app.post("/v1/lazybird/audio/speech")
+    async def lazybird_tts(request: Request):
         try:
             post_json_data = await request.json()
         except:
             post_json_data = json.loads((await request.body()).decode())
         logger.debug(post_json_data)
 
-        model = post_json_data["model"]
         input_text = post_json_data["input"]
         voice = post_json_data["voice"]
         speed = post_json_data.get("speed", 1.0)
-        model_list = await tts_models()
-        model_ids = (m["id"] for m in model_list)
-        if voice not in model_ids:
-            model_mapping = dict(((m["displayName"], m["id"]) for m in model_list))
+        ids, model_mapping = await get_lazybird_model_mapping()
+
+        if voice not in ids:
             if voice not in model_mapping:
                 voice = os.environ.get(
                     "DEFAULT_LAZYBIRD_VOICE", "msa.en-US.AndrewMultilingual"
@@ -58,40 +55,75 @@ if TTS_PROVIDER == TTS_PROVIDER_LAZYBIRD:
             else:
                 voice = model_mapping[voice]
 
-        speech_content = await tts(input_text, voice, speed=speed)
+        speech_content = await tts_lazybird(input_text, voice, speed=speed)
         stream = BytesIO(speech_content)
         return StreamingResponse(stream, media_type="application/octet-stream")
 
 
-if TTS_PROVIDER == TTS_PROVIDER_STRAICO_PLATFORM and PLATFORM_ENABLED:
-    logger.info("TTS, STT Provider set to Straico Platform")
-    from backend.straico_platform import tts, download_file, stt
 
-    @app.post("/v1/audio/speech")
-    async def lm_studio_tts(request: Request):
-        try:
-            post_json_data = await request.json()
-        except:
-            post_json_data = json.loads((await request.body()).decode())
-        logger.debug(post_json_data)
 
-        model = post_json_data["model"]
-        input_text = post_json_data["input"]
-        voice = post_json_data["voice"]
+from backend.straico import tts_openai, tts_elevenlabs, elevenlabs_voices
+from backend.straico_platform import download_file
 
-        speech_url = await tts(input_text, model, voice)
-        if speech_url is None:
-            return
+@app.post("/v1/audio/speech")
+@app.post("/v1/openai/audio/speech")
+async def openai_tts(request: Request):
+    try:
+        post_json_data = await request.json()
+    except:
+        post_json_data = json.loads((await request.body()).decode())
+    logger.debug(post_json_data)
 
-        speech_blob = await download_file(speech_url)
-        stream = BytesIO(speech_blob)
-        return StreamingResponse(stream, media_type="application/octet-stream")
+    input_text = post_json_data["input"]
+    voice = post_json_data["voice"]
 
-    @app.post("/v1/audio/transcriptions")
-    async def lm_studio_stt(
-        file: UploadFile = File(...), model: Optional[str] = Form(None)
+    speech_url = await tts_openai(voice, input_text)
+    if speech_url is None:
+        return
+
+    speech_blob = await download_file(speech_url["audio"])
+    stream = BytesIO(speech_blob)
+    return StreamingResponse(stream, media_type="application/octet-stream")
+
+
+voice_model_result_elevenlabs = None
+voice_model_last_update_dt_elevenlabs = None
+
+async def get_elevenlabs_model_mapping():
+    global voice_model_last_update_dt_elevenlabs, voice_model_result_elevenlabs
+    if (
+        voice_model_last_update_dt_elevenlabs is None
+        or (voice_model_last_update_dt_elevenlabs + timedelta(minutes=60)) <= datetime.now()
     ):
-        contents = await file.read()
-        logger.debug(file.filename)
-        text = await stt(contents, file.filename)
-        return JSONResponse(content={"text": text})
+        result = await elevenlabs_voices()
+        voice_model_last_update_dt_elevenlabs = datetime.now()
+        ids = (m["voice_id"] for m in result["voices"])
+        name_mapping = dict(((m["name"], m["voice_id"]) for m in result["voices"]))
+        voice_model_result_elevenlabs = ids, name_mapping
+    return voice_model_result_elevenlabs
+@app.post("/v1/elevenlabs/audio/speech")
+async def elevenlabs_tts(request: Request):
+    try:
+        post_json_data = await request.json()
+    except:
+        post_json_data = json.loads((await request.body()).decode())
+    logger.debug(post_json_data)
+
+    input_text = post_json_data["input"]
+    voice = post_json_data["voice"]
+    ids, model_mapping = await get_elevenlabs_model_mapping()
+    if voice not in ids:
+        if voice not in model_mapping:
+            voice = os.environ.get(
+                "DEFAULT_ELEVENLABS_VOICE", "9BWtsMINqrJLrRacOk9x"
+            )
+        else:
+            voice = model_mapping[voice]
+
+    speech_url = await tts_elevenlabs(voice, input_text)
+    if speech_url is None:
+        return
+
+    speech_blob = await download_file(speech_url["audio"])
+    stream = BytesIO(speech_blob)
+    return StreamingResponse(stream, media_type="application/octet-stream")

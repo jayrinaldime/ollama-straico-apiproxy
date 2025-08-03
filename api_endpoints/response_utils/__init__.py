@@ -20,7 +20,8 @@ def fix_escaped_characters(text_with_errors: str) -> str:
 
     if not __FIX_ESCAPE_TYPOS:
         return text_with_errors
-
+    if text_with_errors is None:
+        return ""
     # Perform specific replacements
     fixed_text = text_with_errors
     fixed_text = fixed_text.replace("\\n", "\n")  # \n -> newline
