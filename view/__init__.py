@@ -64,6 +64,7 @@ async def root(request: Request):
         },
         {"name": "User Details", "url": "/api/user"},
         {"name": "Straico Model List", "url": "/api/model_list"},
+        {"name": "ElevenLabs Voice List", "url": "/api/elevenlabs_voices"},
         {"name": "RAG Management", "url": "/rag-list"},
         {"name": "Agent Management", "url": "/agent-list"},
     ]

@@ -248,6 +248,14 @@ async def list_model(api_key=None):
         return await client.models(v=1)
 
 
+async def elevenlabs_voices(api_key=None):
+    if environ.get("STRAICO_API_KEY", "PER_REQUEST").strip() != "PER_REQUEST":
+        api_key = None
+    async with aio_straico_client(
+        API_KEY=api_key, timeout=TIMEOUT, on_request_failure_callback=on_error
+    ) as client:
+        return await client.elevenlabs_voices()
+
 async def list_rags():
     async with aio_straico_client(
         timeout=TIMEOUT, on_request_failure_callback=on_error

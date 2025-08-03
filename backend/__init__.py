@@ -40,6 +40,7 @@ elif STRAICO_API_KEY.strip().upper() == "PER_REQUEST":
         prompt_completion,
         list_model,
         list_agents,
+        elevenlabs_voices,
         image_generation,
         get_model_mapping,
     )
@@ -49,6 +50,7 @@ else:
     from .straico import (
         prompt_completion,
         list_model,
+        elevenlabs_voices,
         list_agents,
         delete_agent,
         user_detail,
